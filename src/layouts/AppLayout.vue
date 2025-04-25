@@ -1,20 +1,11 @@
 <template>
   <UApp>
-    <div class="flex flex-col h-screen w-screen safe-area" v-if="authStore.isLoggedIn">
-      <div class="flex flex-grow overflow-y-auto p-4">
+    <div class="h-screen w-screen safe-area overflow-y-auto" v-if="authStore.isLoggedIn">
+      <div class="px-6 flex flex-col min-h-screen">
         <slot />
       </div>
-      <div class="flex-shrink-0">
-        <USeparator />
-        <div class="w-full p-4 flex justify-evenly">
-          <RouterLink v-for="item in items" :key="item.label" class="text-sm text-gray-500 hover:text-gray-700"
-            active-class="text-white" :to="item.to">
-            <UIcon :name="item.icon" class="size-5" />
-          </RouterLink>
-        </div>
-      </div>
     </div>
-    <div v-else class="h-screen w-screen">
+    <div v-else>
       <slot />
     </div>
   </UApp>
@@ -22,7 +13,9 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth/auth';
+import { useRouter } from 'vue-router';
 const authStore = useAuthStore();
+const router = useRouter();
 
 const items = [
   {

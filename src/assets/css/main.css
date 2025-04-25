@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "@nuxt/ui-pro";
+@import 'tailwindcss';
+@import '@nuxt/ui-pro';
 
 @theme static {
   --color-green-50: oklch(90.98% 0.04338 166.72);

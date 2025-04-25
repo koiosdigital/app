@@ -2,8 +2,8 @@ import * as stable from "@stablelib/x25519";
 import { AESCipher, create as createAES } from '@libp2p/aes-ctr';
 
 import { create, toBinary, fromBinary } from "@bufbuild/protobuf";
-import { SecSchemeVersion, SessionDataSchema } from "../proto/session_pb";
-import { Sec1MsgType, Sec1PayloadSchema } from "../proto/sec1_pb";
+import { SecSchemeVersion, SessionDataSchema } from "../../proto/session_pb";
+import { Sec1MsgType, Sec1PayloadSchema } from "../../proto/sec1_pb";
 
 enum SecurityState {
   REQUEST1,

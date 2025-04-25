@@ -4,8 +4,8 @@
     <div class="absolute inset-0 bg-cover bg-center z-0 blur-xs opacity-60"
       style="background-image: url('https://picsum.photos/1920/1080')">
     </div>
-    <div class="z-10 flex flex-col justify-between h-full p-28 items-center">
-      <h1 class="text-5xl font-semibold">Lantern</h1>
+    <div class="z-10 flex flex-col justify-between h-full py-60 items-center">
+      <h1 class="text-5xl font-semibold">Lantern</h1> <!-- TODO: Logo -->
       <UButton size="xl" trailing-icon="lucide:arrow-right" color="neutral" @click="startLogin">Login to continue
       </UButton>
     </div>
