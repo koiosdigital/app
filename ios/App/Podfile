@@ -1,0 +1,26 @@
+require_relative '../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios/scripts/pods_helpers'
+
+platform :ios, '14.0'
+use_frameworks!
+
+# workaround to avoid Xcode caching of Pods that requires
+# Product -> Clean Build Folder after new Cordova plugins installed
+# Requires CocoaPods 1.6 or newer
+install! 'cocoapods', :disable_input_output_paths => true
+
+def capacitor_pods
+  pod 'Capacitor', :path => '../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios'
+  pod 'CapacitorCommunityGenericOauth2', :path => '../../node_modules/.pnpm/@capacitor-community+generic-oauth2@6.1.0_patch_hash=a2e826f49d05ed06c58b8a7e247da87c48_a0c2ecfa790e070ab8964b8da1c6aa99/node_modules/@capacitor-community/generic-oauth2'
+  pod 'CapacitorPreferences', :path => '../../node_modules/.pnpm/@capacitor+preferences@7.0.1_@capacitor+core@7.2.0/node_modules/@capacitor/preferences'
+  pod 'GeneralGalacticCapacitorEspIdfProvisioning', :path => '../../node_modules/.pnpm/@general-galactic+capacitor-esp-idf-provisioning@0.0.97_@capacitor+core@7.2.0/node_modules/@general-galactic/capacitor-esp-idf-provisioning'
+end
+
+target 'App' do
+  capacitor_pods
+  # Add your Pods here
+end
+
+post_install do |installer|
+  assertDeploymentTarget(installer)
+end

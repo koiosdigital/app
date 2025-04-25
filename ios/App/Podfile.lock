@@ -1,0 +1,57 @@
+PODS:
+  - Capacitor (7.2.0):
+    - CapacitorCordova
+  - CapacitorCommunityGenericOauth2 (6.1.0):
+    - Capacitor
+    - OAuthSwift (= 2.2.0)
+  - CapacitorCordova (7.2.0)
+  - CapacitorPreferences (7.0.1):
+    - Capacitor
+  - ESPProvision (2.1.2):
+    - ESPProvision/Core (= 2.1.2)
+  - ESPProvision/Core (2.1.2):
+    - SwiftProtobuf (~> 1.22.0)
+  - GeneralGalacticCapacitorEspIdfProvisioning (0.0.97):
+    - Capacitor
+    - ESPProvision (= 2.1.2)
+  - OAuthSwift (2.2.0)
+  - SwiftProtobuf (1.22.1)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios`)"
+  - "CapacitorCommunityGenericOauth2 (from `../../node_modules/.pnpm/@capacitor-community+generic-oauth2@6.1.0_patch_hash=a2e826f49d05ed06c58b8a7e247da87c48_a0c2ecfa790e070ab8964b8da1c6aa99/node_modules/@capacitor-community/generic-oauth2`)"
+  - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios`)"
+  - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@7.0.1_@capacitor+core@7.2.0/node_modules/@capacitor/preferences`)"
+  - "GeneralGalacticCapacitorEspIdfProvisioning (from `../../node_modules/.pnpm/@general-galactic+capacitor-esp-idf-provisioning@0.0.97_@capacitor+core@7.2.0/node_modules/@general-galactic/capacitor-esp-idf-provisioning`)"
+
+SPEC REPOS:
+  trunk:
+    - ESPProvision
+    - OAuthSwift
+    - SwiftProtobuf
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios"
+  CapacitorCommunityGenericOauth2:
+    :path: "../../node_modules/.pnpm/@capacitor-community+generic-oauth2@6.1.0_patch_hash=a2e826f49d05ed06c58b8a7e247da87c48_a0c2ecfa790e070ab8964b8da1c6aa99/node_modules/@capacitor-community/generic-oauth2"
+  CapacitorCordova:
+    :path: "../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios"
+  CapacitorPreferences:
+    :path: "../../node_modules/.pnpm/@capacitor+preferences@7.0.1_@capacitor+core@7.2.0/node_modules/@capacitor/preferences"
+  GeneralGalacticCapacitorEspIdfProvisioning:
+    :path: "../../node_modules/.pnpm/@general-galactic+capacitor-esp-idf-provisioning@0.0.97_@capacitor+core@7.2.0/node_modules/@general-galactic/capacitor-esp-idf-provisioning"
+
+SPEC CHECKSUMS:
+  Capacitor: 03bc7cbdde6a629a8b910a9d7d78c3cc7ed09ea7
+  CapacitorCommunityGenericOauth2: cd98e4a7b684b9fc4c857d6f904fc3fc11812802
+  CapacitorCordova: 5967b9ba03915ef1d585469d6e31f31dc49be96f
+  CapacitorPreferences: 6c98117d4d7508034a4af9db64d6b26fc75d7b94
+  ESPProvision: f05031824999e3493e5e90b7c74d0aebcd7777d0
+  GeneralGalacticCapacitorEspIdfProvisioning: 8033bb12d0b9c833cff1f140b94920ca28ab9b5e
+  OAuthSwift: 75efbb5bd9a4b2b71a37bd7e986bf3f55ddd54c6
+  SwiftProtobuf: 7773c4e96a99d7b8ab7cda0fc30a883732ff93b1
+
+PODFILE CHECKSUM: 76776f0c0252ae934fa2c6616dc779fde89d6185
+
+COCOAPODS: 1.16.2

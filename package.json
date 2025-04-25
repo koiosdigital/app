@@ -1,0 +1,53 @@
+{
+  "name": "lantern-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npx cap sync",
+    "ios": "npx cap sync ios && npx cap open ios",
+    "android": "npx cap sync android && npx cap open android",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.vue src",
+    "typecheck": "vue-tsc -p ./tsconfig.app.json",
+    "postinstall": "buf generate"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.5",
+    "@capacitor-community/bluetooth-le": "^7.0.0",
+    "@capacitor-community/generic-oauth2": "^6.1.0",
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/core": "^7.2.0",
+    "@capacitor/ios": "^7.2.0",
+    "@capacitor/preferences": "^7.0.1",
+    "@libp2p/aes-ctr": "^1.0.0",
+    "@nuxt/ui-pro": "^3.1.0",
+    "@stablelib/x25519": "^2.0.1",
+    "jwt-decode": "^4.0.0",
+    "pinia": "^3.0.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.53.0",
+    "@bufbuild/protoc-gen-es": "^2.2.5",
+    "@capacitor/cli": "^7.2.0",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "eslint": "^9.25.1",
+    "eslint-plugin-vue": "^10.0.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.0",
+    "vite": "^6.3.3",
+    "vue-tsc": "^2.2.10"
+  },
+  "resolutions": {
+    "unimport": "4.1.1"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "esbuild",
+      "vue-demi"
+    ]
+  },
+  "packageManager": "pnpm@10.9.0"
+}
