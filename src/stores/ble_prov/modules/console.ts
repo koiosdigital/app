@@ -10,6 +10,7 @@ import {
   GetDsParamsRequestSchema,
   SetDsParamsRequestSchema,
   SetClaimTokenRequestSchema,
+  SetDeviceCertRequestSchema,
 } from '@/types/proto/kd/v1/console_pb'
 
 /**
@@ -18,7 +19,10 @@ import {
  *
  * Simplified BLE Console Protocol:
  * Frame Format (max 512 bytes MTU):
- * | magic (1) | total_len (2) | chunk_idx (1) | chunk_len (1) | payload (≤505) | crc16 (2) |
+ * Header (6 bytes): magic(1) | total_len_hi | total_len_lo | chunk_idx | chunk_len_hi | chunk_len_lo
+ * Payload: up to 504 bytes
+ * Trailer (2 bytes): crc_hi | crc_lo
+ * Total frame size: 512 bytes max (6 + 504 + 2)
  *
  * Control Commands (single byte, no framing):
  * - 0xAA: Reset state machine → Response: 0xFF
@@ -40,9 +44,9 @@ const RESP_NO_MORE_DATA = 0x00
 
 // Frame constants
 const FRAME_MAGIC = 0xa5
-const FRAME_HEADER_SIZE = 5 // magic(1) + total_len(2) + chunk_idx(1) + chunk_len(1)
+const FRAME_HEADER_SIZE = 6 // magic(1) + total_len(2) + chunk_idx(1) + chunk_len(2)
 const FRAME_CRC_SIZE = 2
-const MAX_PAYLOAD_PER_CHUNK = 505 // 512 MTU - 5 header - 2 CRC
+const MAX_PAYLOAD_PER_CHUNK = 504 // 512 MTU - 6 header - 2 CRC
 const MAX_RETRANSMIT_ATTEMPTS = 3
 
 /**
@@ -87,13 +91,17 @@ async function writeRaw(data: Uint8Array): Promise<void> {
     throw new Error('Device not connected or session not established')
   }
 
+  console.log(`[writeRaw] Plain data length: ${data.length}`)
   const encrypted = sec1.value.encryptData(data)
+  console.log(`[writeRaw] Encrypted length: ${encrypted.length}`)
+
   await BleClient.write(
     connectedDevice.value.deviceId,
     KOIOS_SERVICE_UUID,
     getCharacteristicUUID(),
     new DataView(encrypted.buffer)
   )
+  console.log('[writeRaw] Write complete')
 }
 
 /**
@@ -111,7 +119,12 @@ async function readRaw(): Promise<Uint8Array> {
   )
 
   const encrypted = new Uint8Array(response.buffer)
-  return sec1.value.decryptData(encrypted)
+  console.log('[readRaw] Encrypted length:', encrypted.length)
+
+  const decrypted = sec1.value.decryptData(encrypted)
+  console.log('[readRaw] Decrypted length:', decrypted.length)
+
+  return decrypted
 }
 
 /**
@@ -145,12 +158,15 @@ async function resetStateMachine(): Promise<void> {
  * Sends 0xBB, returns next chunk or null if no more data
  */
 async function requestNextChunk(): Promise<Uint8Array | null> {
+  console.log('[requestNextChunk] Sending 0xBB...')
   const response = await sendControlCommand(CMD_NEXT_CHUNK)
 
   if (response.length === 1 && response[0] === RESP_NO_MORE_DATA) {
+    console.log('[requestNextChunk] Got 0x00 - no more data')
     return null
   }
 
+  console.log(`[requestNextChunk] Got ${response.length} bytes`)
   return response
 }
 
@@ -159,13 +175,15 @@ async function requestNextChunk(): Promise<Uint8Array | null> {
  * Sends 0xCC, returns the retransmitted chunk
  */
 async function requestRetransmit(): Promise<Uint8Array> {
-  console.log('Requesting retransmit (0xCC)...')
-  return await sendControlCommand(CMD_RETRANSMIT)
+  console.log('[requestRetransmit] Sending 0xCC...')
+  const response = await sendControlCommand(CMD_RETRANSMIT)
+  console.log(`[requestRetransmit] Got ${response.length} bytes`)
+  return response
 }
 
 /**
  * Build a framed chunk for transmission
- * Format: magic(1) | total_len(2) | chunk_idx(1) | chunk_len(1) | payload | crc16(2)
+ * Format: magic(1) | total_len(2) | chunk_idx(1) | chunk_len(2) | payload | crc16(2)
  */
 function buildFrame(totalLen: number, chunkIdx: number, chunkData: Uint8Array): Uint8Array {
   const chunkLen = chunkData.length
@@ -175,12 +193,18 @@ function buildFrame(totalLen: number, chunkIdx: number, chunkData: Uint8Array): 
   frame[1] = (totalLen >> 8) & 0xff
   frame[2] = totalLen & 0xff
   frame[3] = chunkIdx
-  frame[4] = chunkLen
+  frame[4] = (chunkLen >> 8) & 0xff
+  frame[5] = chunkLen & 0xff
   frame.set(chunkData, FRAME_HEADER_SIZE)
 
   const crc = calculateCRC16(chunkData)
   frame[FRAME_HEADER_SIZE + chunkLen] = (crc >> 8) & 0xff
   frame[FRAME_HEADER_SIZE + chunkLen + 1] = crc & 0xff
+
+  console.log(`[buildFrame] totalLen=${totalLen}, chunkIdx=${chunkIdx}, chunkLen=${chunkLen}`)
+  console.log(`[buildFrame] Header bytes: ${hexDump(frame.slice(0, FRAME_HEADER_SIZE))}`)
+  console.log(`[buildFrame] CRC=0x${crc.toString(16).padStart(4, '0')}, frame size=${frame.length}`)
+  console.log(`[buildFrame] Full frame: ${hexDump(frame)}`)
 
   return frame
 }
@@ -190,15 +214,30 @@ type ParseFrameResult =
   | { success: false; error: string; isCrcError: boolean }
 
 /**
+ * Helper to format bytes as hex string for debugging
+ */
+function hexDump(data: Uint8Array, maxBytes = 32): string {
+  const slice = data.slice(0, Math.min(maxBytes, data.length))
+  const hex = Array.from(slice)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join(' ')
+  return data.length > maxBytes ? `${hex} ... (${data.length} bytes total)` : hex
+}
+
+/**
  * Parse and validate a framed response
  * Returns a result object - use isCrcError to determine if retransmit may help
  */
 function parseFrame(frame: Uint8Array): ParseFrameResult {
+  console.log('[parseFrame] Input frame:', hexDump(frame))
+
   if (frame.length < FRAME_HEADER_SIZE + FRAME_CRC_SIZE) {
+    console.log('[parseFrame] ERROR: Frame too short')
     return { success: false, error: `Frame too short: ${frame.length} bytes`, isCrcError: false }
   }
 
   if (frame[0] !== FRAME_MAGIC) {
+    console.log('[parseFrame] ERROR: Invalid magic byte')
     return {
       success: false,
       error: `Invalid frame magic: 0x${frame[0].toString(16).padStart(2, '0')}`,
@@ -208,10 +247,14 @@ function parseFrame(frame: Uint8Array): ParseFrameResult {
 
   const totalLen = (frame[1] << 8) | frame[2]
   const chunkIdx = frame[3]
-  const chunkLen = frame[4]
+  const chunkLen = (frame[4] << 8) | frame[5]
+
+  console.log(`[parseFrame] Header: totalLen=${totalLen}, chunkIdx=${chunkIdx}, chunkLen=${chunkLen}`)
+  console.log(`[parseFrame] Frame length=${frame.length}, expected min=${FRAME_HEADER_SIZE + chunkLen + FRAME_CRC_SIZE}`)
 
   const expectedFrameSize = FRAME_HEADER_SIZE + chunkLen + FRAME_CRC_SIZE
   if (frame.length < expectedFrameSize) {
+    console.log('[parseFrame] ERROR: Frame incomplete')
     return {
       success: false,
       error: `Frame incomplete: expected ${expectedFrameSize}, got ${frame.length}`,
@@ -220,10 +263,18 @@ function parseFrame(frame: Uint8Array): ParseFrameResult {
   }
 
   const chunkData = frame.slice(FRAME_HEADER_SIZE, FRAME_HEADER_SIZE + chunkLen)
-  const receivedCRC = (frame[FRAME_HEADER_SIZE + chunkLen] << 8) | frame[FRAME_HEADER_SIZE + chunkLen + 1]
+  const crcOffset = FRAME_HEADER_SIZE + chunkLen
+  const receivedCRC = (frame[crcOffset] << 8) | frame[crcOffset + 1]
   const calculatedCRC = calculateCRC16(chunkData)
 
+  console.log(`[parseFrame] CRC offset=${crcOffset}, bytes=[0x${frame[crcOffset].toString(16).padStart(2, '0')}, 0x${frame[crcOffset + 1].toString(16).padStart(2, '0')}]`)
+  console.log(`[parseFrame] Received CRC=0x${receivedCRC.toString(16).padStart(4, '0')}, Calculated CRC=0x${calculatedCRC.toString(16).padStart(4, '0')}`)
+  console.log(`[parseFrame] Chunk data (first 16 bytes):`, hexDump(chunkData, 16))
+
   if (receivedCRC !== calculatedCRC) {
+    console.log('[parseFrame] ERROR: CRC mismatch')
+    // Also log the last few bytes of the frame to check for alignment issues
+    console.log(`[parseFrame] Frame tail (last 8 bytes):`, hexDump(frame.slice(-8), 8))
     return {
       success: false,
       error:
@@ -233,6 +284,7 @@ function parseFrame(frame: Uint8Array): ParseFrameResult {
     }
   }
 
+  console.log('[parseFrame] SUCCESS: Frame valid')
   return { success: true, totalLen, chunkIdx, chunkData }
 }
 
@@ -298,26 +350,64 @@ async function sendKDConsoleCommand(payload: Uint8Array): Promise<Uint8Array> {
   console.log(`Sending ${numChunks} chunk(s), total ${totalLen} bytes`)
 
   let firstResponseFrame: Uint8Array | null = null
+  let chunkIdx = 0
 
-  for (let chunkIdx = 0; chunkIdx < numChunks; chunkIdx++) {
+  while (chunkIdx < numChunks) {
     const offset = chunkIdx * MAX_PAYLOAD_PER_CHUNK
     const chunkData = payload.slice(offset, Math.min(offset + MAX_PAYLOAD_PER_CHUNK, totalLen))
 
     const frame = buildFrame(totalLen, chunkIdx, chunkData)
-    console.log(`Sending chunk ${chunkIdx}: ${chunkData.length} bytes`)
+    console.log(`[sendKDConsoleCommand] Sending chunk ${chunkIdx}/${numChunks - 1}: ${chunkData.length} bytes`)
 
-    await writeRaw(frame)
+    let retransmitAttempts = 0
 
-    // Read response after each chunk
-    const response = await readRaw()
+    while (retransmitAttempts < MAX_RETRANSMIT_ATTEMPTS) {
+      await writeRaw(frame)
 
-    // On the last chunk, the response should be the first response frame
-    if (chunkIdx === numChunks - 1) {
-      // Check if we got a framed response or empty
-      if (response.length > 1 && response[0] === FRAME_MAGIC) {
-        firstResponseFrame = response
+      // Read response after each chunk
+      const response = await readRaw()
+      console.log(
+        `[sendKDConsoleCommand] After chunk ${chunkIdx}, got ${response.length} byte response:`,
+        hexDump(response, 16)
+      )
+
+      // Check for control command responses
+      if (response.length === 1) {
+        if (response[0] === CMD_NEXT_CHUNK) {
+          // Device says "next chunk please" (0xBB)
+          console.log('[sendKDConsoleCommand] Device ACK: 0xBB (send next chunk)')
+          break // Move to next chunk
+        } else if (response[0] === CMD_RETRANSMIT) {
+          // Device says "CRC error, retransmit" (0xCC)
+          retransmitAttempts++
+          console.warn(
+            `[sendKDConsoleCommand] Device NAK: 0xCC (CRC error), retransmitting chunk ${chunkIdx} (attempt ${retransmitAttempts}/${MAX_RETRANSMIT_ATTEMPTS})`
+          )
+          continue // Retry sending the same chunk
+        } else {
+          console.log(`[sendKDConsoleCommand] Unexpected single-byte response: 0x${response[0].toString(16).padStart(2, '0')}`)
+          break // Proceed anyway
+        }
       }
+
+      // On the last chunk, the response should be the first response frame
+      if (chunkIdx === numChunks - 1) {
+        // Check if we got a framed response
+        if (response.length > 1 && response[0] === FRAME_MAGIC) {
+          console.log('[sendKDConsoleCommand] Got first response frame with request response')
+          firstResponseFrame = response
+        } else {
+          console.log('[sendKDConsoleCommand] Response after last chunk is not a frame')
+        }
+      }
+      break // Success, move to next chunk
     }
+
+    if (retransmitAttempts >= MAX_RETRANSMIT_ATTEMPTS) {
+      throw new Error(`Failed to send chunk ${chunkIdx} after ${MAX_RETRANSMIT_ATTEMPTS} retransmit attempts`)
+    }
+
+    chunkIdx++
   }
 
   // Step 3: Collect response chunks
@@ -497,5 +587,35 @@ export async function setClaimToken(claimToken: string): Promise<void> {
 
   if (response.payload.value.result?.success !== true) {
     throw new Error('Failed to set claim token')
+  }
+}
+
+/**
+ * Set device certificate (PEM format)
+ */
+export async function setDeviceCert(certPem: string): Promise<void> {
+  console.log('setDeviceCert: Creating request')
+
+  const certPemBytes = new TextEncoder().encode(certPem)
+
+  const request = create(ConsoleMessageSchema, {
+    payload: {
+      case: 'setDeviceCertRequest',
+      value: create(SetDeviceCertRequestSchema, {
+        certPem: certPemBytes,
+      }),
+    },
+  })
+
+  const requestBytes = toBinary(ConsoleMessageSchema, request)
+  const responseBytes = await sendKDConsoleCommand(requestBytes)
+  const response = fromBinary(ConsoleMessageSchema, responseBytes)
+
+  if (response.payload.case !== 'setDeviceCertResponse') {
+    throw new Error(`Unexpected response type: ${response.payload.case}`)
+  }
+
+  if (response.payload.value.result?.success !== true) {
+    throw new Error('Failed to set device certificate')
   }
 }

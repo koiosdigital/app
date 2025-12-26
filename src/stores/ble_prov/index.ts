@@ -96,6 +96,7 @@ export const useBleProvStore = defineStore('ble_prov', () => {
       getDSParams: kdConsole.getDSParams,
       setDSParams: kdConsole.setDSParams,
       setClaimToken: kdConsole.setClaimToken,
+      setDeviceCert: kdConsole.setDeviceCert,
     },
   }
 })

@@ -1,6 +1,6 @@
 require_relative '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios/scripts/pods_helpers'
 
-platform :ios, '14.0'
+platform :ios, '15.0'
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
@@ -12,7 +12,8 @@ def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios'
   pod 'CapacitorCommunityBluetoothLe', :path => '../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le'
-  pod 'CapacitorCommunityGenericOauth2', :path => '../../node_modules/.pnpm/@capacitor-community+generic-oauth2@7.0.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/generic-oauth2'
+  pod 'CapacitorApp', :path => '../../node_modules/.pnpm/@capacitor+app@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/app'
+  pod 'CapacitorBrowser', :path => '../../node_modules/.pnpm/@capacitor+browser@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/browser'
   pod 'CapacitorPreferences', :path => '../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences'
 end
 

@@ -1,0 +1,22 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": [
+          "C79ED2F8UF.net.koiosdigital.koiosapp"
+        ],
+        "components": [
+          {
+            "/": "/login/*",
+            "comment": "OAuth callback"
+          },
+          {
+            "/": "/setup/*",
+            "comment": "Setup flow callbacks"
+          }
+        ]
+      }
+    ]
+  }
+}

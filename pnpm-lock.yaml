@@ -21,8 +21,11 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0(@capacitor/core@8.0.0)
       '@capacitor/app':
-        specifier: ^7.0.0
-        version: 7.1.1(@capacitor/core@8.0.0)
+        specifier: ^8.0.0
+        version: 8.0.0(@capacitor/core@8.0.0)
+      '@capacitor/browser':
+        specifier: ^8.0.0
+        version: 8.0.0(@capacitor/core@8.0.0)
       '@capacitor/core':
         specifier: ^8.0.0
         version: 8.0.0
@@ -36,7 +39,7 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@nuxt/ui':
-        specifier: ^4.2.1
+        specifier: ^4.3.0
         version: 4.3.0(b643b71af67447492c5b87dedaf2e32c)
       '@stablelib/x25519':
         specifier: ^2.0.1
@@ -45,7 +48,7 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       oidc-client-ts:
-        specifier: ^3.0.0
+        specifier: ^3.4.1
         version: 3.4.1
       openapi-fetch:
         specifier: ^0.15.0
@@ -200,10 +203,15 @@ packages:
     peerDependencies:
       '@capacitor/core': ^8.0.0
 
-  '@capacitor/app@7.1.1':
-    resolution: {integrity: sha512-H4rmMXlL6GEDs2Yds5JvYqZxz4mdp7R4XdGJ7p+oGV+YapuQ2kW38UabuhdP6qSrKfIeLde6qx+8FEX02krypA==}
+  '@capacitor/app@8.0.0':
+    resolution: {integrity: sha512-OwzIkUs4w433Bu9WWAEbEYngXEfJXZ9Wmdb8eoaqzYBgB0W9/3Ed/mh6sAYPNBAZlpyarmewgP7Nb+d3Vrh+xA==}
     peerDependencies:
-      '@capacitor/core': '>=7.0.0'
+      '@capacitor/core': '>=8.0.0'
+
+  '@capacitor/browser@8.0.0':
+    resolution: {integrity: sha512-xey7maszGABKuStvXDV4vXN+EzIyz0o7zlyzw4JKG6o/1GzqeqHqVuE+8Ux+Hks3DZji4LoriWZVgVF6mR6RGg==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
 
   '@capacitor/cli@8.0.0':
     resolution: {integrity: sha512-v9hEBi69xGxuuZhg55N031bMEenKaPSv71Il8C22VOOH6surDyv/MPeImN0oVfFc7eiklaW3rDFYVz6cmXfJWQ==}
@@ -906,8 +914,8 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@swc/helpers@0.5.17':
-    resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
+  '@swc/helpers@0.5.18':
+    resolution: {integrity: sha512-TXTnIcNJQEKwThMMqBXsZ4VGAza6bvN4pa41Rkqoio6QBKMvo+5lexeTMScGCIxtzgQJzElcvIltani+adC5PQ==}
 
   '@tailwindcss/node@4.1.18':
     resolution: {integrity: sha512-DoR7U1P7iYhw16qJ49fgXUlry1t4CpXeErJHnQ44JgTSKMaZUdf17cfn5mHchfJ4KRBZRFA/Coo+MUF5+gOaCQ==}
@@ -1331,8 +1339,8 @@ packages:
     peerDependencies:
       typescript: '*'
 
-  '@unhead/vue@2.0.19':
-    resolution: {integrity: sha512-7BYjHfOaoZ9+ARJkT10Q2TjnTUqDXmMpfakIAsD/hXiuff1oqWg1xeXT5+MomhNcC15HbiABpbbBmITLSHxdKg==}
+  '@unhead/vue@2.1.1':
+    resolution: {integrity: sha512-WYa8ORhfv7lWDSoNpkMKhbW1Dbsux/3HqMcVkZS3xZ2/c/VrcChLj+IMadpCd1WNR0srITfRJhBYZ1i9hON5Qw==}
     peerDependencies:
       vue: '>=3.5.18'
 
@@ -1490,8 +1498,8 @@ packages:
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
 
-  alien-signals@3.1.1:
-    resolution: {integrity: sha512-ogkIWbVrLwKtHY6oOAXaYkAxP+cTH7V5FZ5+Tm4NZFd8VDZ6uNMDrfzqctTZ42eTMCSR3ne3otpcxmqSnFfPYA==}
+  alien-signals@3.1.2:
+    resolution: {integrity: sha512-d9dYqZTS90WLiU0I5c6DHj/HcKkF8ZyGN3G5x8wSbslulz70KOxaqCT0hQCo9KOyhVqzqGojvNdJXoTumZOtcw==}
 
   ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
@@ -2556,8 +2564,8 @@ packages:
   prosemirror-state@1.4.4:
     resolution: {integrity: sha512-6jiYHH2CIGbCfnxdHbXZ12gySFY/fz/ulZE333G6bPqIZ4F+TXo9ifiR86nAHpWnfoNjOb3o5ESi7J8Uz1jXHw==}
 
-  prosemirror-tables@1.8.4:
-    resolution: {integrity: sha512-CGr2BK5sLdZx+ARbeLO4HBZYa3qSG3FmwOVmzYs0Zp7n5SkrGqj+1CeNuubFNZEr64yMAQ20SanbFyIyHWZc8w==}
+  prosemirror-tables@1.8.5:
+    resolution: {integrity: sha512-V/0cDCsHKHe/tfWkeCmthNUcEp1IVO3p6vwN8XtwE9PZQLAZJigbw3QoraAdfJPir4NKJtNvOB8oYGKRl+t0Dw==}
 
   prosemirror-trailing-node@3.0.0:
     resolution: {integrity: sha512-xiun5/3q0w5eRnGYfNlW1uU9W6x5MoFKWwq/0TIRgt09lv7Hcser2QYV8t4muXbEr+Fwo0geYn79Xs4GKywrRQ==}
@@ -2844,8 +2852,8 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
-  unhead@2.0.19:
-    resolution: {integrity: sha512-gEEjkV11Aj+rBnY6wnRfsFtF2RxKOLaPN4i+Gx3UhBxnszvV6ApSNZbGk7WKyy/lErQ6ekPN63qdFL7sa1leow==}
+  unhead@2.1.1:
+    resolution: {integrity: sha512-NOt8n2KybAOxSLfNXegAVai4SGU8bPKqWnqCzNAvnRH2i8mW+0bbFjN/L75LBgCSTiOjJSpANe5w2V34Grr7Cw==}
 
   unicode-properties@1.4.1:
     resolution: {integrity: sha512-CLjCCLQ6UuMxWnbIylkisbRj31qxHPAurvena/0iwSVbQ2G1VY5/HjV0IRabOEbDHlzZlRdCrD4NhB0JtU40Pg==}
@@ -3220,7 +3228,11 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.0.0
 
-  '@capacitor/app@7.1.1(@capacitor/core@8.0.0)':
+  '@capacitor/app@8.0.0(@capacitor/core@8.0.0)':
+    dependencies:
+      '@capacitor/core': 8.0.0
+
+  '@capacitor/browser@8.0.0(@capacitor/core@8.0.0)':
     dependencies:
       '@capacitor/core': 8.0.0
 
@@ -3514,11 +3526,11 @@ snapshots:
 
   '@internationalized/date@3.10.1':
     dependencies:
-      '@swc/helpers': 0.5.17
+      '@swc/helpers': 0.5.18
 
   '@internationalized/number@3.6.5':
     dependencies:
-      '@swc/helpers': 0.5.17
+      '@swc/helpers': 0.5.18
 
   '@ionic/cli-framework-output@2.2.8':
     dependencies:
@@ -3800,7 +3812,7 @@ snapshots:
       '@tiptap/starter-kit': 3.13.0
       '@tiptap/suggestion': 3.13.0(@tiptap/core@3.13.0(@tiptap/pm@3.13.0))(@tiptap/pm@3.13.0)
       '@tiptap/vue-3': 3.13.0(@floating-ui/dom@1.7.4)(@tiptap/core@3.13.0(@tiptap/pm@3.13.0))(@tiptap/pm@3.13.0)(vue@3.5.26(typescript@5.9.3))
-      '@unhead/vue': 2.0.19(vue@3.5.26(typescript@5.9.3))
+      '@unhead/vue': 2.1.1(vue@3.5.26(typescript@5.9.3))
       '@vueuse/core': 14.1.0(vue@3.5.26(typescript@5.9.3))
       '@vueuse/integrations': 14.1.0(change-case@5.4.4)(fuse.js@7.1.0)(jwt-decode@4.0.0)(vue@3.5.26(typescript@5.9.3))
       colortranslator: 5.0.0
@@ -4011,7 +4023,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@swc/helpers@0.5.17':
+  '@swc/helpers@0.5.18':
     dependencies:
       tslib: 2.8.1
 
@@ -4279,7 +4291,7 @@ snapshots:
       prosemirror-schema-basic: 1.2.4
       prosemirror-schema-list: 1.5.1
       prosemirror-state: 1.4.4
-      prosemirror-tables: 1.8.4
+      prosemirror-tables: 1.8.5
       prosemirror-trailing-node: 3.0.0(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.4)
       prosemirror-transform: 1.10.5
       prosemirror-view: 1.41.4
@@ -4460,10 +4472,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@unhead/vue@2.0.19(vue@3.5.26(typescript@5.9.3))':
+  '@unhead/vue@2.1.1(vue@3.5.26(typescript@5.9.3))':
     dependencies:
       hookable: 5.5.3
-      unhead: 2.0.19
+      unhead: 2.1.1
       vue: 3.5.26(typescript@5.9.3)
 
   '@vitejs/plugin-vue@6.0.3(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2))(vue@3.5.26(typescript@5.9.3))':
@@ -4539,7 +4551,7 @@ snapshots:
       '@volar/language-core': 2.4.27
       '@vue/compiler-dom': 3.5.26
       '@vue/shared': 3.5.26
-      alien-signals: 3.1.1
+      alien-signals: 3.1.2
       muggle-string: 0.4.1
       path-browserify: 1.0.1
       picomatch: 4.0.3
@@ -4644,7 +4656,7 @@ snapshots:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  alien-signals@3.1.1: {}
+  alien-signals@3.1.2: {}
 
   ansi-colors@4.1.3: {}
 
@@ -5088,7 +5100,7 @@ snapshots:
 
   fontkit@2.0.4:
     dependencies:
-      '@swc/helpers': 0.5.17
+      '@swc/helpers': 0.5.18
       brotli: 1.3.3
       clone: 2.1.2
       dfa: 1.2.0
@@ -5759,7 +5771,7 @@ snapshots:
       prosemirror-transform: 1.10.5
       prosemirror-view: 1.41.4
 
-  prosemirror-tables@1.8.4:
+  prosemirror-tables@1.8.5:
     dependencies:
       prosemirror-keymap: 1.2.3
       prosemirror-model: 1.25.4
@@ -6042,7 +6054,7 @@ snapshots:
 
   undici-types@7.16.0: {}
 
-  unhead@2.0.19:
+  unhead@2.1.1:
     dependencies:
       hookable: 5.5.3
 
