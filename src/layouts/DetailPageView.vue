@@ -1,31 +1,47 @@
 <template>
-  <div class="flex flex-col flex-grow pb-8 h-full">
-    <div class="h-28 flex items-center justify-center">
-      <div class="flex-1 flex items-center justify-start">
-        <UButton :disabled="!props.backEnabled" @click="router.back()" size="sm" color="neutral"
-          leading-icon="feather:chevron-left">Back
-        </UButton>
+  <section class="space-y-4">
+    <header class="flex items-center gap-3">
+      <UButton
+        v-if="backEnabled"
+        variant="ghost"
+        icon="i-lucide-chevron-left"
+        size="sm"
+        @click="router.back()"
+      >
+        Back
+      </UButton>
+      <div>
+        <p v-if="eyebrow" class="text-xs uppercase tracking-wide text-white/50">{{ eyebrow }}</p>
+        <h1 class="text-2xl font-semibold">{{ title }}</h1>
+        <p v-if="description" class="text-sm text-white/70">{{ description }}</p>
       </div>
-      <h1 class="text-xl font-semibold text-center flex-grow">{{ props.title }}</h1>
-      <div class="flex-1" />
+    </header>
+    <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+      <slot />
     </div>
-    <slot />
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { toRefs } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
-
-const props = defineProps({
-  backEnabled: {
-    type: Boolean,
-    default: true
-  },
-  title: {
-    type: String,
-    default: ''
+const props = withDefaults(
+  defineProps<{
+    backEnabled?: boolean
+    title?: string
+    description?: string
+    eyebrow?: string
+  }>(),
+  {
+    backEnabled: true,
+    title: '',
+    description: '',
+    eyebrow: undefined,
   }
-});
+)
+
+const router = useRouter()
+
+const { backEnabled, title, description, eyebrow } = toRefs(props)
 </script>

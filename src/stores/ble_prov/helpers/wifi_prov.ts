@@ -1,5 +1,5 @@
 import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
-import { WiFiConfigPayloadSchema, WiFiConfigMsgType, CmdSetConfigSchema } from "../proto/wifi_config_pb"
+import { WiFiConfigPayloadSchema, WiFiConfigMsgType, CmdSetConfigSchema } from "@/types/proto/wifi_config_pb"
 
 export const createGetStatusRequest = () => {
   const msg = create(WiFiConfigPayloadSchema);

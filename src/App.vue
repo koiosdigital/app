@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import AppLayout from './layouts/AppLayout.vue';
+import { onMounted } from 'vue'
 
-import { useAuthStore } from '@/stores/auth/auth';
-import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
+import AppLayout from './layouts/AppLayout.vue'
+import { useAuthStore } from '@/stores/auth/auth'
 
-const authStore = useAuthStore();
-const router = useRouter();
+const authStore = useAuthStore()
+
+const hydrateAuth = async () => {
+  if (!authStore.isLoggedIn) {
+    await authStore.initialize()
+  }
+}
 
 onMounted(async () => {
-  if (!authStore.isLoggedIn) {
-    await authStore.initialize();
-  }
-
-  if (!authStore.isLoggedIn) {
-    router.push('/login');
-  }
-});
+  await hydrateAuth()
+})
 </script>
 
 <template>
   <AppLayout>
-    <RouterView />
+    <Suspense>
+      <RouterView />
+    </Suspense>
   </AppLayout>
 </template>

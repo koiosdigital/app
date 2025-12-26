@@ -1,5 +1,5 @@
 import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
-import { WiFiCtrlMsgType, WiFiCtrlPayloadSchema } from "../proto/wifi_ctrl_pb"
+import { WiFiCtrlMsgType, WiFiCtrlPayloadSchema } from "@/types/proto/wifi_ctrl_pb"
 
 export const createCtrlReset = () => {
   const msg = create(WiFiCtrlPayloadSchema);

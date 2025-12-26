@@ -1,6 +1,6 @@
 import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
-import { CmdScanResultSchema, CmdScanStartSchema, WiFiScanMsgType, WiFiScanPayloadSchema } from "../proto/wifi_scan_pb";
-import { Status } from "../proto/constants_pb";
+import { CmdScanResultSchema, CmdScanStartSchema, WiFiScanMsgType, WiFiScanPayloadSchema } from "@/types/proto/wifi_scan_pb";
+import { Status } from "@/types/proto/constants_pb";
 
 export const createScanStartRequest = (blocking: boolean = true, passive: boolean = false, group_channels: number = 5, period_ms: number = 120) => {
   const msg = create(WiFiScanPayloadSchema);

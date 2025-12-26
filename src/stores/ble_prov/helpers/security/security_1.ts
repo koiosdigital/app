@@ -2,8 +2,8 @@ import * as stable from "@stablelib/x25519";
 import { AESCipher, create as createAES } from '@libp2p/aes-ctr';
 
 import { create, toBinary, fromBinary } from "@bufbuild/protobuf";
-import { SecSchemeVersion, SessionDataSchema } from "../../proto/session_pb";
-import { Sec1MsgType, Sec1PayloadSchema } from "../../proto/sec1_pb";
+import { SecSchemeVersion, SessionDataSchema } from "@/types/proto/session_pb";
+import { Sec1MsgType, Sec1PayloadSchema } from "@/types/proto/sec1_pb";
 
 enum SecurityState {
   REQUEST1,
@@ -38,7 +38,7 @@ export class Security1 {
 
   private log(message: string) {
     if (this.verbose) {
-      console.log(`%c++++ ${message} ++++`, 'color: #32cd32');
+      console.debug(`%c++++ ${message} ++++`, 'color: #32cd32');
     }
   }
 
@@ -99,7 +99,7 @@ export class Security1 {
 
     if (this.pop.length > 0) {
       const popHash = new Uint8Array(
-        await crypto.subtle.digest("SHA-256", this.pop)
+        await crypto.subtle.digest("SHA-256", new Uint8Array(this.pop))
       );
       sharedKey.set(this.xorBytes(sharedKey, popHash));
     }

@@ -1,90 +1,172 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { Preferences } from '@capacitor/preferences'
-import { KoiosOAuth2 } from './oauthlib'
+import { KoiosOidcClient } from './oauthlib'
 import { jwtDecode } from 'jwt-decode'
 
+const TOKEN_KEYS = {
+  ACCESS: 'access_token',
+  REFRESH: 'refresh_token',
+} as const
+
+type JwtPayload = {
+  exp: number
+  sub: string
+  [key: string]: unknown
+}
+
+/**
+ * Helper to set or remove a preference
+ */
+async function setOrRemovePreference(key: string, value?: string) {
+  if (value) {
+    await Preferences.set({ key, value })
+  } else {
+    await Preferences.remove({ key })
+  }
+}
+
+/**
+ * Authentication store
+ * Manages user authentication state and tokens
+ */
 export const useAuthStore = defineStore('auth', () => {
-  const isLoggedIn = computed(() => {
-    return accessToken.value != undefined && accessTokenExpired.value == false;
-  });
+  // State
+  const accessToken = ref<string>()
+  const refreshToken = ref<string>()
 
-  const accessToken = ref<string | undefined>(undefined);
-  const refreshToken = ref<string | undefined>(undefined);
-
+  // Computed
   const accessTokenExpired = computed(() => {
-    if (accessToken.value) {
-      const decodedToken: { exp: number } = jwtDecode(accessToken.value);
-      const currentTime = Math.floor(Date.now() / 1000);
-      return decodedToken.exp < currentTime;
-    }
-    return true;
-  });
+    if (!accessToken.value) return true
 
-  //Initialization logic
-  const initialize = async () => {
-    const access_token = await Preferences.get({ key: 'access_token' });
-    const refresh_token = await Preferences.get({ key: 'refresh_token' });
-
-    if (access_token.value) {
-      accessToken.value = access_token.value;
+    try {
+      const decoded = jwtDecode<JwtPayload>(accessToken.value)
+      const currentTime = Math.floor(Date.now() / 1000)
+      return decoded.exp < currentTime
+    } catch (error) {
+      console.error('Failed to decode access token', error)
+      return true
     }
-    if (refresh_token.value) {
-      refreshToken.value = refresh_token.value;
-    }
+  })
 
+  const isLoggedIn = computed(() => {
+    return accessToken.value !== undefined && !accessTokenExpired.value
+  })
+
+  // Actions
+
+  /**
+   * Initialize auth state from stored tokens
+   * Should be called on app startup
+   */
+  async function initialize() {
+    const [accessResult, refreshResult] = await Promise.all([
+      Preferences.get({ key: TOKEN_KEYS.ACCESS }),
+      Preferences.get({ key: TOKEN_KEYS.REFRESH }),
+    ])
+
+    accessToken.value = accessResult.value ?? undefined
+    refreshToken.value = refreshResult.value ?? undefined
+
+    // Auto-refresh if access token is expired but refresh token exists
     if (accessTokenExpired.value && refreshToken.value) {
-      await refreshAccessToken();
+      await refreshAccessToken()
     }
   }
 
-  //Logout logic
-  const logout = async () => {
-    await Preferences.remove({ key: 'access_token' });
-    await Preferences.remove({ key: 'refresh_token' });
-    accessToken.value = undefined;
-    refreshToken.value = undefined;
+  /**
+   * Persist tokens to storage and update reactive state
+   */
+  async function persistTokens(nextAccessToken?: string, nextRefreshToken?: string) {
+    accessToken.value = nextAccessToken
+    refreshToken.value = nextRefreshToken
+
+    await Promise.all([
+      setOrRemovePreference(TOKEN_KEYS.ACCESS, nextAccessToken),
+      setOrRemovePreference(TOKEN_KEYS.REFRESH, nextRefreshToken),
+    ])
   }
 
-  //Login logic
-  const beginAuthentication = async () => {
-    const response = await KoiosOAuth2.authenticate();
-    if (response) {
-      accessToken.value = response.access_token_response.access_token;
-      refreshToken.value = response.access_token_response.refresh_token;
-      await Preferences.set({ key: 'access_token', value: response.access_token_response.access_token });
-      await Preferences.set({ key: 'refresh_token', value: response.access_token_response.refresh_token });
+  /**
+   * Initiate OAuth login flow
+   */
+  async function beginAuthentication() {
+    await KoiosOidcClient.beginAuthentication()
+  }
+
+  /**
+   * Complete OAuth callback and store tokens
+   */
+  async function completeAuthentication(callbackUrl?: string) {
+    const tokens = await KoiosOidcClient.completeAuthentication(callbackUrl)
+
+    if (!tokens.accessToken) {
+      throw new Error('OIDC callback missing access token')
+    }
+
+    await persistTokens(tokens.accessToken, tokens.refreshToken)
+    return tokens
+  }
+
+  /**
+   * Refresh the access token using the refresh token
+   */
+  async function refreshAccessToken(): Promise<string | undefined> {
+    if (!refreshToken.value) {
+      await logout()
+      return undefined
+    }
+
+    try {
+      const response = await KoiosOidcClient.refreshToken(refreshToken.value)
+      await persistTokens(response.access_token, response.refresh_token ?? refreshToken.value)
+      return accessToken.value
+    } catch (error) {
+      console.error('Token refresh failed', error)
+      await logout()
+      return undefined
     }
   }
 
-  //Refresh token logic
-  const refreshAccessToken = async () => {
-    if (refreshToken.value) {
-      try {
-        const response = await KoiosOAuth2.refreshToken(refreshToken.value);
-        if (response) {
-          accessToken.value = response.access_token;
-          refreshToken.value = response.refresh_token;
-          await Preferences.set({ key: 'access_token', value: response.access_token });
-          await Preferences.set({ key: 'refresh_token', value: response.refresh_token });
-          return accessToken.value;
-        }
-      } catch {
-        await logout();
-      }
-    } else {
-      await logout();
-    }
-  }
-
-  const getAccessToken = async () => {
+  /**
+   * Get a valid access token, refreshing if necessary
+   */
+  async function getAccessToken(): Promise<string | undefined> {
     if (accessToken.value && !accessTokenExpired.value) {
-      return accessToken.value;
-    } else if (refreshToken.value) {
-      return await refreshAccessToken();
+      return accessToken.value
     }
-    return undefined;
+
+    if (refreshToken.value) {
+      return await refreshAccessToken()
+    }
+
+    return undefined
   }
 
-  return { getAccessToken, logout, isLoggedIn, beginAuthentication, initialize }
+  /**
+   * Log out the user and clear all tokens
+   */
+  async function logout() {
+    await persistTokens(undefined, undefined)
+
+    try {
+      await KoiosOidcClient.logout()
+    } catch (error) {
+      console.warn('Remote logout failed', error)
+    }
+  }
+
+  return {
+    // State
+    isLoggedIn,
+    accessTokenExpired,
+
+    // Actions
+    initialize,
+    beginAuthentication,
+    completeAuthentication,
+    getAccessToken,
+    refreshAccessToken,
+    logout,
+  }
 })

@@ -1,5 +1,5 @@
 {
-  "name": "lantern-app",
+  "name": "koios-app",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,35 +10,40 @@
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue src",
     "typecheck": "vue-tsc -p ./tsconfig.app.json",
-    "postinstall": "buf generate"
+    "postinstall": "buf generate",
+    "generate:api": "openapi-typescript http://localhost:9090/docs-json -o src/types/api.d.ts"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^2.2.5",
-    "@capacitor-community/bluetooth-le": "^7.0.0",
-    "@capacitor-community/generic-oauth2": "^6.1.0",
-    "@capacitor/android": "^7.2.0",
-    "@capacitor/core": "^7.2.0",
-    "@capacitor/ios": "^7.2.0",
-    "@capacitor/preferences": "^7.0.1",
-    "@libp2p/aes-ctr": "^1.0.0",
-    "@nuxt/ui-pro": "^3.1.0",
+    "@bufbuild/protobuf": "^2.10.2",
+    "@capacitor-community/bluetooth-le": "^7.3.0",
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@capacitor/preferences": "^8.0.0",
+    "@libp2p/aes-ctr": "^1.0.1",
+    "@nuxt/ui": "^4.2.1",
     "@stablelib/x25519": "^2.0.1",
     "jwt-decode": "^4.0.0",
-    "pinia": "^3.0.2",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "oidc-client-ts": "^3.0.0",
+    "openapi-fetch": "^0.15.0",
+    "pinia": "^3.0.4",
+    "tailwindcss": "^4.1.18",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@bufbuild/buf": "^1.53.0",
-    "@bufbuild/protoc-gen-es": "^2.2.5",
-    "@capacitor/cli": "^7.2.0",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "eslint": "^9.25.1",
-    "eslint-plugin-vue": "^10.0.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.0",
-    "vite": "^6.3.3",
-    "vue-tsc": "^2.2.10"
+    "@bufbuild/buf": "^1.61.0",
+    "@bufbuild/protoc-gen-es": "^2.10.2",
+    "@capacitor/cli": "^8.0.0",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "eslint": "^9.39.2",
+    "eslint-plugin-vue": "^10.6.2",
+    "openapi-typescript": "^7.10.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.1",
+    "vite": "^7.3.0",
+    "vue-tsc": "^3.2.1"
   },
   "resolutions": {
     "unimport": "4.1.1"
@@ -47,7 +52,10 @@
     "ignoredBuiltDependencies": [
       "esbuild",
       "vue-demi"
+    ],
+    "onlyBuiltDependencies": [
+      "@bufbuild/buf"
     ]
   },
-  "packageManager": "pnpm@10.9.0"
+  "packageManager": "pnpm@11.0.0-dev.1005+sha512.91f84a392eea348ea4852a182912d2520273a4336f933b78cc44bc931eb999923c097e9433a9b355adc1f725725ea99082fc9f032a559df832632e764c92c798"
 }

@@ -1,4 +1,4 @@
-require_relative '../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios/scripts/pods_helpers'
+require_relative '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '14.0'
 use_frameworks!
@@ -9,11 +9,11 @@ use_frameworks!
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../node_modules/.pnpm/@capacitor+ios@7.2.0_@capacitor+core@7.2.0/node_modules/@capacitor/ios'
-  pod 'CapacitorCommunityGenericOauth2', :path => '../../node_modules/.pnpm/@capacitor-community+generic-oauth2@6.1.0_patch_hash=a2e826f49d05ed06c58b8a7e247da87c48_a0c2ecfa790e070ab8964b8da1c6aa99/node_modules/@capacitor-community/generic-oauth2'
-  pod 'CapacitorPreferences', :path => '../../node_modules/.pnpm/@capacitor+preferences@7.0.1_@capacitor+core@7.2.0/node_modules/@capacitor/preferences'
-  pod 'GeneralGalacticCapacitorEspIdfProvisioning', :path => '../../node_modules/.pnpm/@general-galactic+capacitor-esp-idf-provisioning@0.0.97_@capacitor+core@7.2.0/node_modules/@general-galactic/capacitor-esp-idf-provisioning'
+  pod 'Capacitor', :path => '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios'
+  pod 'CapacitorCommunityBluetoothLe', :path => '../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le'
+  pod 'CapacitorCommunityGenericOauth2', :path => '../../node_modules/.pnpm/@capacitor-community+generic-oauth2@7.0.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/generic-oauth2'
+  pod 'CapacitorPreferences', :path => '../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences'
 end
 
 target 'App' do

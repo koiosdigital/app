@@ -1,6 +1,9 @@
-version: v1
+version: v2
+inputs:
+  - directory: src/stores/ble_prov/proto
+  - directory: src/protobufs/proto
 plugins:
-  - plugin: es
-    out: src/stores/ble_prov/proto
+  - remote: buf.build/bufbuild/es
+    out: src/types/proto
     opt:
       - target=ts

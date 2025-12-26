@@ -1,0 +1,206 @@
+# Koios App - Claude Development Instructions
+
+## Project Overview
+Vue 3 + TypeScript mobile application for managing Koios smart devices (Matrix displays and Lantern devices). Built with Vite, Capacitor for native iOS/Android support, and Nuxt UI for components.
+
+## Technology Stack
+- **Framework**: Vue 3.5+ with Composition API (script setup)
+- **Build Tool**: Vite 7+
+- **UI Library**: Nuxt UI 4.2.1 (preferred version)
+- **Routing**: Vue Router 4 (not Nuxt's file-based routing)
+- **State Management**: Pinia 3.0+
+- **Styling**: Tailwind CSS 4+
+- **TypeScript**: Strict mode enabled
+- **Native**: Capacitor 8.0
+- **Authentication**: oidc-client-ts (PKCE flow)
+- **API Client**: openapi-fetch with generated types
+
+## Code Style & Patterns
+
+### Vue Components
+- Always use `<script setup lang="ts">` syntax
+- Use Composition API exclusively (no Options API)
+- Export types from components when needed by parent components
+- Use `toRef()` when passing props to composables
+- Prefer computed properties over methods for derived state
+- Use proper TypeScript types for props and emits
+
+### File Organization
+```
+src/
+├── assets/          # Static assets (CSS, images)
+├── components/      # Vue components
+│   ├── devices/     # Device-specific cards
+│   └── provisioning/# BLE provisioning components
+├── composables/     # Reusable composition functions
+├── config/          # Configuration (environment, etc.)
+├── layouts/         # Layout components
+├── lib/             # Library code (API client, etc.)
+├── router/          # Vue Router configuration
+├── stores/          # Pinia stores
+├── types/           # TypeScript type definitions
+├── utils/           # Utility functions
+└── views/           # Route views
+```
+
+### Naming Conventions
+- **Components**: PascalCase (e.g., `DeviceCard.vue`)
+- **Composables**: camelCase with `use` prefix (e.g., `useDeviceCard.ts`)
+- **Utils**: camelCase (e.g., `getStatusColor`)
+- **Stores**: camelCase with `use` prefix (e.g., `useAuthStore`)
+- **Types**: PascalCase (e.g., `MatrixDevice`)
+
+### State Management
+- Use Pinia stores for global state
+- Use Composition API pattern in stores (not Options API)
+- Keep stores focused on a single domain
+- Use composables for reusable local state logic
+
+### API Integration
+- Use `apiClient` from `@/lib/api/client.ts` for all API calls
+- All API types are auto-generated in `src/types/api.d.ts`
+- Run `pnpm run generate:api` to regenerate types from OpenAPI spec
+- API client automatically adds authentication headers
+- Base URL is environment-aware (dev vs prod)
+
+### Environment Configuration
+- Use `ENV` from `@/config/environment.ts` for all environment variables
+- Never access `import.meta.env` directly in components
+- Centralize all environment configuration in one place
+
+### Styling & Design System
+- Use Tailwind utility classes (Tailwind CSS 4+)
+- Use Nuxt UI components (v4.2.1) for interactive elements
+- **Color Scheme**:
+  - Primary: `pink` (pink-400, pink-500 variants)
+  - Neutral: `zinc` (zinc-800, zinc-900, zinc-950)
+  - Background: `bg-zinc-950` (main app background)
+  - Cards/surfaces: `bg-white/5` with `border-white/10`
+  - Text primary: `text-white`
+  - Text secondary: `text-white/70`, `text-white/60`, `text-white/50`
+
+- **Typography**:
+  - Page titles (header): `text-xl font-semibold`
+  - Section headings: `text-lg font-medium text-white/90`
+  - Body text: `text-sm text-white/60` or `text-white/70`
+  - Small text/captions: `text-xs text-white/50`
+  - Labels (uppercase): `text-xs uppercase tracking-[0.3em] text-white/60`
+
+- **Layout & Spacing**:
+  - Page wrapper: `flex min-h-screen flex-col bg-zinc-950`
+  - Sticky header: `sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4`
+  - Content container: `flex flex-1 flex-col gap-6 p-5`
+  - Card spacing: `gap-6` between cards, `space-y-3` or `space-y-4` within cards
+  - Button padding: Use Nuxt UI size variants (`size="sm"`, `size="lg"`)
+  - Icon sizes: `h-5 w-5` (small), `h-8 w-8` (medium), `h-12 w-12` (large)
+
+- **Component Patterns**:
+  - Headers: Always include back button (`icon="i-lucide-arrow-left"`) except on home
+  - Cards: `UCard class="bg-white/5"` with rounded corners
+  - Buttons: Use `UButton` with appropriate `color` and `variant`
+  - Loading states: `i-lucide-loader-2` with `animate-spin` and `text-primary-400`
+  - Lists: `space-y-2` or `space-y-3` for list items
+  - Modals: `UModal` with proper z-index and backdrop
+
+- Mobile-first responsive design (md:, lg:, xl: breakpoints)
+- Use safe area insets for mobile (Capacitor)
+
+### Authentication
+- All auth logic in `@/stores/auth/auth.ts`
+- OIDC client configured in `@/stores/auth/oauthlib.ts`
+- Use PKCE flow (Authorization Code with PKCE)
+- Tokens stored in Capacitor Preferences (native) or localStorage (web)
+- Auto-refresh expired tokens using refresh token
+- Route guards in `@/router/index.ts`
+
+### TypeScript
+- Strict mode enabled - no `any` types
+- Use proper type inference where possible
+- Export types that are used by other modules
+- Use type imports: `import type { ... }`
+
+## Common Patterns
+
+### Device Cards
+- Use `useDeviceCard` composable for common computed properties
+- Import utilities from `@/utils/device.ts`
+- Emit events up, don't mutate props
+- Use click.stop for button actions inside clickable cards
+
+### API Calls
+```typescript
+import { apiClient } from '@/lib/api/client'
+
+const { data, error } = await apiClient.GET('/api/devices')
+```
+
+### Environment Variables
+```typescript
+import { ENV } from '@/config/environment'
+
+const apiUrl = ENV.apiBaseUrl
+```
+
+### Composables
+```typescript
+export function useDeviceCard<T extends DeviceWithStatus>(device: Ref<T>) {
+  const statusLabel = computed(() => getStatusLabel(device.value.status))
+  return { statusLabel }
+}
+```
+
+## Development Workflow
+
+### Commands
+- `pnpm dev` - Start dev server
+- `pnpm build` - Build for production
+- `pnpm typecheck` - Run TypeScript type checking
+- `pnpm lint` - Run ESLint
+- `pnpm generate:api` - Generate API types from OpenAPI spec
+- `pnpm ios` - Open in Xcode
+- `pnpm android` - Open in Android Studio
+
+### Before Committing
+1. Run `pnpm typecheck` to ensure no type errors
+2. Run `pnpm lint` to check code style
+3. Test on both web and native platforms if possible
+
+## Important Notes
+- This is NOT a Nuxt app - it's a standard Vue 3 + Vite SPA
+- We use Vue Router, not Nuxt's file-based routing
+- Nuxt UI is used as a component library only (standalone mode)
+- Always test auth flows end-to-end (login, refresh, logout)
+- Device provisioning uses BLE (Bluetooth Low Energy) via Capacitor
+- All device data will eventually come from the API (currently mock data in HomeView)
+
+## Anti-Patterns to Avoid
+- Don't use Options API (use Composition API)
+- Don't access environment variables directly (use ENV config)
+- Don't create one-off utilities inline (extract to utils/)
+- Don't duplicate logic across components (use composables)
+- Don't skip TypeScript types (no `any`)
+- Don't mutate props directly
+- Don't use `v-html` unless absolutely necessary (XSS risk)
+- Don't hardcode URLs or configuration values
+
+## Accessibility
+- Use semantic HTML elements
+- Include `aria-label` for icon-only buttons
+- Ensure keyboard navigation works
+- Test with screen readers when possible
+- Maintain color contrast ratios (WCAG AA minimum)
+
+## Performance
+- Lazy load routes with dynamic imports
+- Use `v-show` vs `v-if` appropriately
+- Minimize bundle size - tree-shake unused dependencies
+- Use Vue's built-in memoization (computed, readonly)
+- Avoid unnecessary watchers
+
+## Security
+- Never expose secrets in code
+- Sanitize user input
+- Use HTTPS in production
+- Follow OWASP top 10 guidelines
+- Keep dependencies up to date
+- Use Content Security Policy headers in production

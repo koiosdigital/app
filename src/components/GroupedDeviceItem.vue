@@ -1,20 +1,48 @@
 <template>
-  <div class="flex items-center justify-between my-4 w-full">
-    <USkeleton class="w-22 h-22 rounded-full" />
-    <div class="flex flex-col items-end gap-5">
-      <div class="flex gap-2 items-center">
-        <UBadge>Status</UBadge>
-        <h1 class="text-lg font-semibold">Device Name</h1>
+  <div class="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
+    <div class="flex items-center gap-3">
+      <UAvatar
+        :alt="device.name"
+        icon="i-lucide-cpu"
+        size="lg"
+        :class="statusColor === 'primary' ? 'ring-2 ring-primary-500/50' : ''"
+      />
+      <div>
+        <p class="text-xs uppercase tracking-[0.3em] text-white/60">{{ device.location }}</p>
+        <p class="text-lg font-semibold">{{ device.name }}</p>
       </div>
-      <div class="flex items-center gap-4">
-        <div class="inline-flex items-center text-lg gap-2">
-          <UIcon name="feather:map-pin" class="w-4 h-4" />
-          <span>Location</span>
-        </div>
-        <button to="/device/TODO-getid/settings" class="text-sm p-2 font-light rounded-full bg-gray-500">
-          <UIcon name="feather:settings" class="h-5 w-5" />
-        </button>
-      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <UBadge :color="statusColor" variant="soft" class="capitalize">{{ device.status }}</UBadge>
+      <UButton
+        size="sm"
+        color="neutral"
+        variant="soft"
+        icon="i-lucide-settings"
+        @click="emit('settings', device.id)"
+      >
+        Configure
+      </UButton>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, toRef } from 'vue'
+import { getStatusColor } from '@/utils/device'
+
+type DeviceStatus = 'online' | 'offline'
+type GroupDevice = {
+  id: string
+  name: string
+  status: DeviceStatus
+  location: string
+}
+
+const props = defineProps<{ device: GroupDevice }>()
+const emit = defineEmits<{ (e: 'settings', id: string): void }>()
+
+const device = toRef(props, 'device')
+
+const statusColor = computed(() => getStatusColor(device.value.status))
+</script>

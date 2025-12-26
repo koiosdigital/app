@@ -2,24 +2,40 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import uiPro from '@nuxt/ui-pro/vite'
+import ui from '@nuxt/ui/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  appType: 'spa',
   plugins: [
-    vue(),
-    uiPro({
+    ui({
       ui: {
         colors: {
-          primary: 'green',
-          neutral: 'slate'
-        }
-      }
-    })
+          primary: 'pink',
+          neutral: 'zinc',
+        },
+      },
+    }),
+    vue({
+      script: {
+        defineModel: true,
+        propsDestructure: true,
+      },
+    }),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+  },
+  server: {
+    host: true,
+    port: 5173,
+  },
+  preview: {
+    port: 4173,
+  },
+  css: {
+    devSourcemap: true,
   },
 })
