@@ -44,6 +44,9 @@ importers:
       '@stablelib/x25519':
         specifier: ^2.0.1
         version: 2.0.1
+      '@unhead/vue':
+        specifier: ^2.1.1
+        version: 2.1.1(vue@3.5.26(typescript@5.9.3))
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0

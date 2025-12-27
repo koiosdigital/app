@@ -84,8 +84,11 @@ export const useBleProvStore = defineStore('ble_prov', () => {
       scanningForAPs: wifi.scanningForAPs,
       connectingToAP: wifi.connectingToAP,
       connectedToAP: wifi.connectedToAP,
+      connectionError: wifi.connectionError,
+      lastWifiStatus: wifi.lastWifiStatus,
       scanForAPs: wifi.scanForAPs,
       connectToAP: wifi.connectToAP,
+      clearConnectionError: wifi.clearConnectionError,
       resetWiFiState: wifi.resetWiFiState,
     },
 

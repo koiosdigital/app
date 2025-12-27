@@ -69,7 +69,7 @@
                 name="i-lucide-loader-2"
                 class="h-12 w-12 animate-spin text-primary-400 mx-auto"
               />
-              <p class="text-md text-white/70">Scanning for devices...</p>
+              <p class="text-sm text-white/70">Scanning for devices...</p>
             </div>
           </div>
         </div>
@@ -124,10 +124,16 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
 import { Capacitor } from '@capacitor/core'
 import { useBleProvStore } from '@/stores/ble_prov'
 import { checkBleAvailability, type BleAvailabilityResult } from '@/utils/ble'
+
+useHead({
+  title: 'Add Device | Koios',
+  meta: [{ name: 'description', content: 'Add a new Koios device' }],
+})
 
 const router = useRouter()
 const bleStore = useBleProvStore()

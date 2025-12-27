@@ -46,7 +46,6 @@ export async function startScan() {
       isScanning.value = false
     } catch (err) {
       console.error('Failed to request device:', err)
-      console.error('Stack trace:', err instanceof Error ? err.stack : 'No stack available')
       isScanning.value = false
       throw err
     }
@@ -73,8 +72,8 @@ export async function stopScan() {
   if (!isWebPlatform() && isScanning.value) {
     try {
       await BleClient.stopLEScan()
-    } catch (error) {
-      console.debug('Failed to stop scan:', error)
+    } catch {
+      // Ignore errors when stopping scan
     }
   }
   isScanning.value = false
@@ -85,21 +84,15 @@ export async function stopScan() {
  */
 export async function connectToDevice(device: BleDevice) {
   try {
-    console.log('Connecting to device:', device.deviceId, device.name)
-
     await BleClient.connect(device.deviceId, () => {
-      console.log('Device disconnected')
       connectedDevice.value = undefined
       connectedDeviceServiceMap.value.clear()
     })
 
-    console.log('Connected successfully')
     connectedDevice.value = device
 
-    console.log('Getting services...')
     // Build service characteristic map
     const services = await BleClient.getServices(device.deviceId)
-    console.log('Services retrieved:', services.length)
 
     // Map characteristic UUIDs to names
     const CHAR_UUID_MAP: Record<string, string> = {
@@ -124,8 +117,7 @@ export async function connectToDevice(device: BleDevice) {
 
     connectedDeviceServiceMap.value = serviceMap
   } catch (error) {
-    console.error('Error in connectToDevice:', error)
-    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack available')
+    console.error('Error connecting to device:', error)
     throw error
   }
 }
@@ -158,22 +150,15 @@ export async function sendData(
   characteristicName: string
 ): Promise<Uint8Array | undefined> {
   try {
-    console.log(`sendData: Writing to ${characteristicName}, total size: ${data.length} bytes`)
-
     if (!connectedDevice.value || !connectedDeviceServiceMap.value.has(characteristicName)) {
       throw new Error('Device not connected or characteristic not found')
     }
 
     const characteristic = connectedDeviceServiceMap.value.get(characteristicName)!
-    console.log(
-      `  Device: ${connectedDevice.value.deviceId}, Service: ${KOIOS_SERVICE_UUID}, Char: ${characteristic.uuid}`
-    )
-    console.log('  Characteristic properties:', characteristic.properties)
 
     // Check if we need to chunk the data
     if (data.length <= MAX_CHUNK_SIZE) {
       // Single write - no chunking needed
-      console.log('  Single write (no chunking)')
       await BleClient.write(
         connectedDevice.value.deviceId,
         KOIOS_SERVICE_UUID,
@@ -181,33 +166,23 @@ export async function sendData(
         new DataView(data.buffer)
       )
 
-      console.log('  Write successful, reading response...')
-
       const response = await BleClient.read(
         connectedDevice.value.deviceId,
         KOIOS_SERVICE_UUID,
         characteristic.uuid
       )
 
-      console.log('  Read successful')
       return new Uint8Array(response.buffer)
     }
 
     // Chunked write - split into multiple packets
-    console.log(`  Chunked write: splitting into ${Math.ceil(data.length / MAX_CHUNK_SIZE)} chunks`)
-
     let offset = 0
-    let chunkNum = 1
     let lastResponse: Uint8Array | undefined = undefined
 
     while (offset < data.length) {
       const remainingBytes = data.length - offset
       const chunkSize = Math.min(MAX_CHUNK_SIZE, remainingBytes)
       const chunkData = data.slice(offset, offset + chunkSize)
-
-      console.log(
-        `  Writing chunk ${chunkNum} (${chunkSize} bytes, offset ${offset}/${data.length})`
-      )
 
       // Build packet: 0xA5 | LenHi | LenLo | Data
       const packet = new Uint8Array(3 + chunkSize)
@@ -224,8 +199,6 @@ export async function sendData(
         new DataView(packet.buffer)
       )
 
-      console.log(`  Chunk ${chunkNum} written, reading acknowledgment...`)
-
       // Read acknowledgment before sending next chunk
       const ack = await BleClient.read(
         connectedDevice.value.deviceId,
@@ -234,17 +207,12 @@ export async function sendData(
       )
 
       lastResponse = new Uint8Array(ack.buffer)
-      console.log(`  Chunk ${chunkNum} acknowledged (${lastResponse.length} bytes)`)
-
       offset += chunkSize
-      chunkNum++
     }
 
-    console.log('  All chunks sent successfully')
     return lastResponse
   } catch (error) {
     console.error(`Error in sendData (${characteristicName}):`, error)
-    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack available')
     throw error
   }
 }

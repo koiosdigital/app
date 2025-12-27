@@ -17,114 +17,143 @@
     </header>
 
     <!-- Content -->
-    <div class="flex flex-1 flex-col gap-6 p-5">
-      <div class="space-y-2">
-        <h2 class="text-lg font-medium text-white/90">Connect to WiFi</h2>
-        <p class="text-sm text-white/60">
-          Select your WiFi network to connect the device to the internet.
-        </p>
-      </div>
+    <div class="flex flex-1 flex-col items-center justify-center p-5">
+      <div class="w-full max-w-md space-y-6">
+        <!-- Scanning State -->
+        <div v-if="bleStore.wifi.scanningForAPs" class="flex flex-1 items-center justify-center">
+          <div class="space-y-3 text-center">
+            <UIcon name="i-lucide-loader-2" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
+            <p class="text-sm text-white/70">Scanning for networks...</p>
+          </div>
+        </div>
 
-      <!-- Scanning State -->
-      <div v-if="bleStore.wifi.scanningForAPs" class="flex items-center justify-center py-8">
-        <div class="space-y-3 text-center">
-          <UIcon name="i-lucide-loader-2" class="h-12 w-12 animate-spin text-primary-400 mx-auto" />
-          <p class="text-sm text-white/70">Scanning for networks...</p>
+        <!-- Network List -->
+        <div v-else-if="bleStore.wifi.discoveredAPs.length" class="space-y-6">
+          <div class="space-y-2">
+            <h2 class="text-lg font-medium text-white/90">Connect to WiFi</h2>
+            <p class="text-sm text-white/60">
+              Select your WiFi network to connect the device to the internet.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <button
+              v-for="ap in sortedNetworks"
+              :key="ap.ssid"
+              class="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
+              :disabled="bleStore.wifi.connectingToAP?.ssid === ap.ssid"
+              @click="selectNetwork(ap)"
+            >
+              <div class="flex items-center gap-3">
+                <UIcon
+                  :name="ap.auth === 0 ? 'i-lucide-wifi' : 'i-lucide-lock'"
+                  class="h-5 w-5"
+                  :class="getSignalColor(ap.rssi)"
+                />
+                <div class="text-left">
+                  <p class="font-medium">{{ ap.ssid }}</p>
+                  <p class="text-xs text-white/50">
+                    {{ getSecurityLabel(ap.auth) }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-white/50">{{ getSignalStrength(ap.rssi) }}%</span>
+                <UIcon name="i-lucide-chevron-right" class="h-5 w-5 text-white/40" />
+              </div>
+            </button>
+          </div>
+
+          <div class="flex gap-3">
+            <UButton color="neutral" variant="soft" class="flex-1" @click="scanNetworks">
+              Scan Again
+            </UButton>
+            <UButton color="neutral" variant="soft" class="flex-1" @click="showOtherNetworkModal">
+              Other Network
+            </UButton>
+          </div>
+        </div>
+
+        <!-- No Networks Found -->
+        <div v-else class="space-y-4">
+          <div
+            class="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/20 py-12 text-center"
+          >
+            <UIcon name="i-lucide-wifi-off" class="h-12 w-12 text-white/40" />
+            <p class="mt-4 text-sm text-white/70">No networks found</p>
+            <p class="mt-1 text-xs text-white/50">Make sure WiFi is enabled on your device</p>
+          </div>
+
+          <UButton color="primary" block @click="scanNetworks"> Scan for Networks </UButton>
         </div>
       </div>
+    </div>
 
-      <!-- Network List -->
-      <div v-else-if="bleStore.wifi.discoveredAPs.length" class="space-y-3">
-        <div class="space-y-2">
-          <button
-            v-for="ap in sortedNetworks"
-            :key="ap.ssid"
-            class="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
-            :disabled="bleStore.wifi.connectingToAP?.ssid === ap.ssid"
-            @click="selectNetwork(ap)"
-          >
-            <div class="flex items-center gap-3">
-              <UIcon
-                :name="ap.auth === 0 ? 'i-lucide-wifi' : 'i-lucide-lock'"
-                class="h-5 w-5"
-                :class="getSignalColor(ap.rssi)"
-              />
-              <div class="text-left">
-                <p class="font-medium">{{ ap.ssid }}</p>
-                <p class="text-xs text-white/50">
-                  {{ getSecurityLabel(ap.auth) }}
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-white/50">{{ getSignalStrength(ap.rssi) }}%</span>
-              <UIcon name="i-lucide-chevron-right" class="h-5 w-5 text-white/40" />
-            </div>
-          </button>
+    <!-- Connecting Modal -->
+    <div
+      v-if="bleStore.wifi.connectingToAP && !bleStore.wifi.connectedToAP"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5"
+    >
+      <div
+        class="w-full max-w-md space-y-6 rounded-lg border border-white/10 bg-zinc-900 p-6 text-center"
+      >
+        <div class="flex flex-col items-center gap-4">
+          <UIcon name="i-lucide-loader-2" class="h-12 w-12 animate-spin text-primary-400" />
+          <div>
+            <h2 class="text-lg font-semibold">
+              Connecting to {{ bleStore.wifi.connectingToAP.ssid }}
+            </h2>
+            <p class="mt-2 text-sm text-white/60">
+              Your device is connecting to the WiFi network. This may take up to 30 seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connection Success -->
+    <div
+      v-if="bleStore.wifi.connectedToAP"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5"
+    >
+      <div
+        class="w-full max-w-md space-y-6 rounded-lg border border-primary-500/20 bg-zinc-900 p-6"
+      >
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-check-circle" class="h-8 w-8 text-primary-400" />
+          <div>
+            <h2 class="text-lg font-semibold text-primary-400">Connected!</h2>
+            <p class="text-sm text-white/70">Device is online</p>
+          </div>
+        </div>
+
+        <UButton color="primary" size="lg" block @click="finishSetup"> Finish Setup </UButton>
+      </div>
+    </div>
+
+    <!-- Connection Error -->
+    <div
+      v-if="bleStore.wifi.connectionError"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5"
+    >
+      <div
+        class="w-full max-w-md space-y-6 rounded-lg border border-red-500/20 bg-zinc-900 p-6"
+      >
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-wifi-off" class="h-8 w-8 text-red-400" />
+          <div>
+            <h2 class="text-lg font-semibold text-red-400">Connection Failed</h2>
+            <p class="text-sm text-white/70">{{ bleStore.wifi.connectionError }}</p>
+          </div>
         </div>
 
         <div class="flex gap-3">
-          <UButton color="neutral" variant="soft" class="flex-1" @click="scanNetworks">
-            Scan Again
+          <UButton color="neutral" variant="soft" class="flex-1" @click="dismissError">
+            Try Different Network
           </UButton>
-          <UButton color="neutral" variant="soft" class="flex-1" @click="showOtherNetworkModal">
-            Other Network
+          <UButton color="primary" class="flex-1" @click="retryConnection">
+            Retry
           </UButton>
-        </div>
-      </div>
-
-      <!-- No Networks Found -->
-      <div v-else class="space-y-4">
-        <div
-          class="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/20 py-12 text-center"
-        >
-          <UIcon name="i-lucide-wifi-off" class="h-12 w-12 text-white/40" />
-          <p class="mt-4 text-sm text-white/70">No networks found</p>
-          <p class="mt-1 text-xs text-white/50">Make sure WiFi is enabled on your device</p>
-        </div>
-
-        <UButton color="primary" block @click="scanNetworks"> Scan for Networks </UButton>
-      </div>
-
-      <!-- Connecting Modal -->
-      <div
-        v-if="bleStore.wifi.connectingToAP && !bleStore.wifi.connectedToAP"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5"
-      >
-        <div
-          class="w-full max-w-md space-y-6 rounded-lg border border-white/10 bg-zinc-900 p-6 text-center"
-        >
-          <div class="flex flex-col items-center gap-4">
-            <UIcon name="i-lucide-loader-2" class="h-12 w-12 animate-spin text-primary-400" />
-            <div>
-              <h2 class="text-lg font-semibold">
-                Connecting to {{ bleStore.wifi.connectingToAP.ssid }}
-              </h2>
-              <p class="mt-2 text-sm text-white/60">
-                Your device is connecting to the WiFi network. This may take up to 30 seconds.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Connection Success -->
-      <div
-        v-if="bleStore.wifi.connectedToAP"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5"
-      >
-        <div
-          class="w-full max-w-md space-y-6 rounded-lg border border-primary-500/20 bg-zinc-900 p-6"
-        >
-          <div class="flex items-center gap-3">
-            <UIcon name="i-lucide-check-circle" class="h-8 w-8 text-primary-400" />
-            <div>
-              <h2 class="text-lg font-semibold text-primary-400">Connected!</h2>
-              <p class="text-sm text-white/70">Device is online</p>
-            </div>
-          </div>
-
-          <UButton color="primary" size="lg" block @click="finishSetup"> Finish Setup </UButton>
         </div>
       </div>
     </div>
@@ -242,8 +271,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { useBleProvStore, type WifiAP } from '@/stores/ble_prov'
 import { getSignalStrength, WIFI_SECURITY_LABELS } from '@/utils/wifi'
+
+useHead({
+  title: 'WiFi Setup | Koios',
+  meta: [{ name: 'description', content: 'Connect your Koios device to WiFi' }],
+})
 
 const router = useRouter()
 const bleStore = useBleProvStore()
@@ -400,6 +435,33 @@ async function finishSetup() {
 
   // Navigate to success page
   router.push('/setup/successful')
+}
+
+/**
+ * Dismiss connection error and return to network list
+ */
+function dismissError() {
+  bleStore.wifi.clearConnectionError()
+}
+
+/**
+ * Retry connection to the last attempted network
+ */
+async function retryConnection() {
+  if (!selectedAP.value) {
+    dismissError()
+    return
+  }
+
+  // Clear error and retry
+  bleStore.wifi.clearConnectionError()
+
+  // Re-show password modal for secured networks, or connect directly for open networks
+  if (selectedAP.value.auth === 0) {
+    await connectToNetwork()
+  } else {
+    showPasswordModal.value = true
+  }
 }
 
 onMounted(async () => {

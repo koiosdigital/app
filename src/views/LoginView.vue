@@ -28,9 +28,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
+import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/auth/constants'
+
+useHead({
+  title: 'Sign In | Koios',
+  meta: [{ name: 'description', content: 'Sign in to manage your Koios devices' }],
+})
 
 const authStore = useAuthStore()
 const router = useRouter()

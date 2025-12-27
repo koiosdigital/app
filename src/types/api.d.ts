@@ -90,8 +90,27 @@ export interface paths {
         delete: operations["DevicesController_remove_v1"];
         options?: never;
         head?: never;
-        /** Update a device (owner only) */
-        patch: operations["DevicesController_update_v1"];
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update device settings (owner only)
+         * @description Update display name and type-specific settings. The `type` field must match the device type.
+         */
+        patch: operations["DevicesController_updateSettings_v1"];
         trace?: never;
     };
     "/v1/devices/{deviceId}/installations": {
@@ -131,31 +150,65 @@ export interface paths {
         patch: operations["InstallationsController_update_v1"];
         trace?: never;
     };
-    "/v1/devices/{deviceId}/installations/{id}/render/{dimensions}.gif": {
+    "/v1/devices/{deviceId}/installations/bulk": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Render installation as GIF using stored config */
-        get: operations["InstallationsController_renderGif_v1"];
+        get?: never;
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Bulk update sort order and display times for multiple installations */
+        patch: operations["InstallationsController_bulkUpdate_v1"];
         trace?: never;
     };
-    "/v1/devices/{deviceId}/installations/{id}/render/{dimensions}.webp": {
+    "/v1/devices/{deviceId}/installations/{id}/skip": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Render installation as WebP using stored config */
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set skip state for an installation */
+        patch: operations["InstallationsController_setSkipState_v1"];
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/installations/{id}/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set pin state for an installation (unpins any other pinned installation) */
+        patch: operations["InstallationsController_setPinState_v1"];
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/installations/{id}/render.webp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Render installation as WebP using stored config and device dimensions */
         get: operations["InstallationsController_renderWebp_v1"];
         put?: never;
         post?: never;
@@ -361,6 +414,41 @@ export interface components {
              */
             scopes: unknown[][];
         };
+        ErrorResponseDto: {
+            /**
+             * @description HTTP status code
+             * @example 400
+             */
+            statusCode: number;
+            /**
+             * @description Error type/code
+             * @example BAD_REQUEST
+             */
+            error: string;
+            /**
+             * @description Human-readable error message
+             * @example Invalid request parameters
+             */
+            message: string;
+            /**
+             * @description Detailed validation errors or additional context
+             * @example [
+             *       "field must be a string",
+             *       "value is required"
+             *     ]
+             */
+            details?: string[];
+            /**
+             * @description Request path that caused the error
+             * @example /v1/devices/abc123
+             */
+            path?: string;
+            /**
+             * @description Timestamp when the error occurred
+             * @example 2025-12-26T12:00:00.000Z
+             */
+            timestamp?: string;
+        };
         /**
          * @description User access level to this device
          * @enum {string}
@@ -389,6 +477,12 @@ export interface components {
              * @example Living Room Matrx
              */
             displayName: string;
+            /** @description Device display width in pixels (read-only) */
+            width?: number;
+            /** @description Device display height in pixels (read-only) */
+            height?: number;
+            /** @description Whether device has a light sensor (read-only) */
+            hasLightSensor?: boolean;
             /** @description Lantern-specific settings */
             typeSettings?: components["schemas"]["LanternSettingsDto"] | null;
         };
@@ -466,6 +560,12 @@ export interface components {
              * @example Living Room Matrx
              */
             displayName: string;
+            /** @description Device display width in pixels (read-only) */
+            width?: number;
+            /** @description Device display height in pixels (read-only) */
+            height?: number;
+            /** @description Whether device has a light sensor (read-only) */
+            hasLightSensor?: boolean;
             /** @description Matrx-specific settings */
             typeSettings?: components["schemas"]["MatrxSettingsDto"] | null;
         };
@@ -527,12 +627,74 @@ export interface components {
              */
             expiresAt: number;
         };
-        UpdateDeviceDto: {
+        LanternTypeSettingsDto: {
+            /**
+             * @description LED brightness level (0-255)
+             * @example 255
+             */
+            brightness?: number;
+            /**
+             * @description Hour when sleep mode starts (0-23)
+             * @example 22
+             */
+            sleep_start?: number;
+            /**
+             * @description Hour when sleep mode ends (0-23)
+             * @example 7
+             */
+            sleep_end?: number;
+        };
+        UpdateLanternSettingsDto: {
+            /**
+             * @description Device type discriminator
+             * @example LANTERN
+             * @enum {string}
+             */
+            type: "LANTERN";
+            /**
+             * @description Display name for the device
+             * @example Living Room Lantern
+             */
+            displayName?: string;
+            /** @description Lantern-specific settings */
+            typeSettings?: components["schemas"]["LanternTypeSettingsDto"];
+        };
+        MatrxTypeSettingsDto: {
+            /**
+             * @description Whether the screen is enabled
+             * @example true
+             */
+            screenEnabled?: boolean;
+            /**
+             * @description Screen brightness level (0-255)
+             * @example 128
+             */
+            screenBrightness?: number;
+            /**
+             * @description Whether automatic brightness adjustment is enabled
+             * @example false
+             */
+            autoBrightnessEnabled?: boolean;
+            /**
+             * @description Lux threshold below which screen turns off
+             * @example 5
+             */
+            screenOffLux?: number;
+        };
+        UpdateMatrxSettingsDto: {
+            /**
+             * @description Device type discriminator
+             * @example MATRX
+             * @enum {string}
+             */
+            type: "MATRX";
             /**
              * @description Display name for the device
              * @example Living Room Matrx
              */
             displayName?: string;
+            /** @description Matrx-specific settings */
+            typeSettings?: components["schemas"]["MatrxTypeSettingsDto"];
         };
         InstallationConfigInputDto: {
             /**
@@ -612,6 +774,11 @@ export interface components {
              */
             skippedByUser: boolean;
             /**
+             * @description Whether the server skipped this installation (e.g., render errors)
+             * @example false
+             */
+            skippedByServer: boolean;
+            /**
              * @description Whether the user pinned this installation
              * @example false
              */
@@ -656,6 +823,21 @@ export interface components {
              */
             enabled: boolean;
             /**
+             * @description Whether the installation is skipped by user
+             * @example false
+             */
+            skippedByUser: boolean;
+            /**
+             * @description Whether the installation is skipped by server (e.g., render errors)
+             * @example false
+             */
+            skippedByServer: boolean;
+            /**
+             * @description Whether the installation is pinned by user
+             * @example false
+             */
+            pinnedByUser: boolean;
+            /**
              * @description Sort order for display rotation
              * @example 0
              */
@@ -689,6 +871,65 @@ export interface components {
              * @example 0
              */
             sortOrder?: number;
+        };
+        BulkUpdateInstallationItemDto: {
+            /**
+             * @description Installation UUID
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description New sort order for the installation
+             * @example 0
+             */
+            sortOrder?: number;
+            /**
+             * @description Display time in seconds (0 = use default)
+             * @example 30
+             */
+            displayTime?: number;
+        };
+        BulkUpdateInstallationsDto: {
+            /** @description List of installations to update */
+            installations: components["schemas"]["BulkUpdateInstallationItemDto"][];
+        };
+        BulkUpdateResultDto: {
+            /**
+             * @description Number of installations updated
+             * @example 5
+             */
+            updated: number;
+        };
+        SetSkipStateDto: {
+            /**
+             * @description Whether to skip this installation
+             * @example true
+             */
+            skipped: boolean;
+        };
+        InstallationStateResponseDto: {
+            /**
+             * @description Installation UUID
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description Whether this installation is skipped
+             * @example false
+             */
+            skippedByUser: boolean;
+            /**
+             * @description Whether this installation is pinned
+             * @example true
+             */
+            pinnedByUser: boolean;
+        };
+        SetPinStateDto: {
+            /**
+             * @description Whether to pin this installation (unpins any other pinned installation on the device)
+             * @example true
+             */
+            pinned: boolean;
         };
         AppSchemaDto: {
             /**
@@ -2034,6 +2275,24 @@ export interface operations {
                     "application/json": (components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"])[];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
         };
     };
     DevicesController_getClaimToken_v1: {
@@ -2052,6 +2311,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClaimTokenResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
                 };
             };
         };
@@ -2076,19 +2353,41 @@ export interface operations {
                     "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Device not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2110,23 +2409,45 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Only device owners can delete */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Device not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
-    DevicesController_update_v1: {
+    DevicesController_updateSettings_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2135,11 +2456,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateDeviceDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Updated device */
             200: {
@@ -2150,19 +2467,50 @@ export interface operations {
                     "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"];
                 };
             };
-            /** @description Only device owners can update */
+            /** @description Device type mismatch */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Only device owners can update settings */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Device not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2187,12 +2535,32 @@ export interface operations {
                     "application/json": components["schemas"]["InstallationListItemDto"][];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2221,19 +2589,41 @@ export interface operations {
                     "application/json": components["schemas"]["InstallationResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Validation failed */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2260,19 +2650,41 @@ export interface operations {
                     "application/json": components["schemas"]["InstallationResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Installation not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2297,19 +2709,41 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Installation not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2340,30 +2774,108 @@ export interface operations {
                     "application/json": components["schemas"]["InstallationResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Installation not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Validation failed */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
-    InstallationsController_renderGif_v1: {
+    InstallationsController_bulkUpdate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device ID */
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkUpdateInstallationsDto"];
+            };
+        };
+        responses: {
+            /** @description Number of installations updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkUpdateResultDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    InstallationsController_setSkipState_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2372,20 +2884,31 @@ export interface operations {
                 deviceId: string;
                 /** @description Installation ID */
                 id: string;
-                /** @description Format: WIDTHxHEIGHT */
-                dimensions: string;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetSkipStateDto"];
+            };
+        };
         responses: {
-            /** @description Binary GIF render */
+            /** @description Installation state updated */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "image/gif": string;
+                    "application/json": components["schemas"]["InstallationStateResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
                 };
             };
             /** @description Access denied */
@@ -2393,14 +2916,92 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Installation not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    InstallationsController_setPinState_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device ID */
+                deviceId: string;
+                /** @description Installation ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPinStateDto"];
+            };
+        };
+        responses: {
+            /** @description Installation state updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallationStateResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Installation not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2413,8 +3014,6 @@ export interface operations {
                 deviceId: string;
                 /** @description Installation ID */
                 id: string;
-                /** @description Format: WIDTHxHEIGHT */
-                dimensions: string;
             };
             cookie?: never;
         };
@@ -2429,19 +3028,41 @@ export interface operations {
                     "image/webp": string;
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "image/webp": components["schemas"]["ErrorResponseDto"];
+                };
             };
-            /** @description Installation not found */
+            /** @description Installation or device dimensions not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "image/webp": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2474,6 +3095,24 @@ export interface operations {
                     "application/json": components["schemas"]["PaginatedAppsResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
         };
     };
     AppsController_getApp_v1: {
@@ -2496,12 +3135,32 @@ export interface operations {
                     "application/json": components["schemas"]["AppManifestDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description App not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2525,12 +3184,32 @@ export interface operations {
                     "application/json": components["schemas"]["AppSchemaDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description App not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2558,12 +3237,41 @@ export interface operations {
                     "image/webp": string;
                 };
             };
+            /** @description Invalid dimensions */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description App not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "image/webp": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2591,12 +3299,41 @@ export interface operations {
                     "image/gif": string;
                 };
             };
+            /** @description Invalid dimensions */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/gif": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description App not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "image/gif": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2633,12 +3370,23 @@ export interface operations {
                     "application/json": components["schemas"]["RenderResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description App not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
             /** @description Validation failed */
             422: {
@@ -2646,7 +3394,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ValidateSchemaResponseDto"];
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
                 };
             };
         };
@@ -2677,12 +3434,32 @@ export interface operations {
                     "application/json": components["schemas"]["ValidateSchemaResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description App not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };
@@ -2710,12 +3487,32 @@ export interface operations {
                     "application/json": components["schemas"]["CallSchemaHandlerResponseDto"];
                 };
             };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
             /** @description App or handler not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
             };
         };
     };

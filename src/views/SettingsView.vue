@@ -70,8 +70,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { ENV } from '@/config/environment'
+
+useHead({
+  title: 'Settings | Koios',
+  meta: [{ name: 'description', content: 'Manage your Koios account settings' }],
+})
 
 const authStore = useAuthStore()
 const router = useRouter()

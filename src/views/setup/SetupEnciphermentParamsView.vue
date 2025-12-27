@@ -20,14 +20,14 @@
     <div class="flex flex-1 flex-col items-center justify-center p-5">
       <div class="w-full max-w-md space-y-6">
         <!-- Loading State -->
-        <div v-if="isLoading && !error" class="space-y-6">
-          <div class="flex items-center justify-center py-8">
+        <div v-if="isLoading && !error" class="flex flex-1 items-center justify-center">
+          <div class="space-y-3 text-center">
             <UIcon
               name="i-lucide-loader-2"
-              class="h-12 w-12 animate-spin text-primary-400 mx-auto"
+              class="mx-auto h-12 w-12 animate-spin text-primary-400"
             />
+            <p class="text-sm text-white/70">{{ loadingMessage }}</p>
           </div>
-          <p class="text-sm text-white/70 text-center">{{ loadingMessage }}</p>
         </div>
 
         <!-- Error State -->
@@ -82,8 +82,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { useBleProvStore, KDCryptoStatus } from '@/stores/ble_prov'
 import { provisioningClient } from '@/lib/api/provisioning'
+
+useHead({
+  title: 'Device Security | Koios',
+  meta: [{ name: 'description', content: 'Verifying device security credentials' }],
+})
 
 const router = useRouter()
 const bleStore = useBleProvStore()

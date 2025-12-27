@@ -14,6 +14,16 @@ export default defineConfig({
           primary: 'pink',
           neutral: 'zinc',
         },
+        input: {
+          slots: {
+            root: 'w-full',
+          },
+        },
+        formField: {
+          slots: {
+            root: 'w-full',
+          },
+        },
       },
     }),
     vue({

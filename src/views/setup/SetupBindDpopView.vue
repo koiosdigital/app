@@ -121,9 +121,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { useBleProvStore } from '@/stores/ble_prov'
+
+useHead({
+  title: 'Pair Device | Koios',
+  meta: [{ name: 'description', content: 'Pair your Koios device' }],
+})
 
 const router = useRouter()
 const bleStore = useBleProvStore()
@@ -265,9 +271,21 @@ async function proceedToCrypto() {
   }
 }
 
+// Watch for device disconnection
+watch(
+  () => bleStore.connection.connectedDevice,
+  (device) => {
+    if (!device) {
+      bleStore.setGattError(new Error('Device disconnected during pairing'))
+      router.replace('/setup/new')
+    }
+  }
+)
+
 onMounted(() => {
   // Redirect if no device connected
   if (!bleStore.connection.connectedDevice) {
+    bleStore.setGattError(new Error('Device disconnected before pairing'))
     router.replace('/setup/new')
   }
 })

@@ -17,7 +17,7 @@
     </header>
 
     <!-- Content -->
-    <div class="flex flex-1 flex-col items-center p-5">
+    <div class="flex flex-1 flex-col items-center justify-center p-5">
       <div class="w-full max-w-md space-y-6">
         <!-- Error Alert -->
         <UAlert
@@ -31,10 +31,7 @@
         <!-- Checking Crypto Status -->
         <div v-if="isCheckingStatus" class="flex flex-1 items-center justify-center">
           <div class="space-y-3 text-center">
-            <UIcon
-              name="i-lucide-loader-2"
-              class="h-12 w-12 animate-spin text-primary-400 mx-auto"
-            />
+            <UIcon name="i-lucide-loader-2" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
             <p class="text-sm text-white/70">{{ statusMessage }}</p>
           </div>
         </div>
@@ -51,9 +48,11 @@
             </div>
           </div>
 
-          <div v-if="isGettingClaimToken" class="space-y-3 text-center">
-            <UIcon name="i-lucide-loader-2" class="h-8 w-8 animate-spin text-primary-400" />
-            <p class="text-sm text-white/70">Getting claim token...</p>
+          <div v-if="isGettingClaimToken" class="flex flex-1 items-center justify-center">
+            <div class="space-y-3 text-center">
+              <UIcon name="i-lucide-loader-2" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
+              <p class="text-sm text-white/70">Getting claim token...</p>
+            </div>
           </div>
 
           <UButton
@@ -169,12 +168,57 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { Browser } from '@capacitor/browser'
+import { Preferences } from '@capacitor/preferences'
 import { useBleProvStore, KDCryptoStatus } from '@/stores/ble_prov'
 import { apiClient } from '@/lib/api/client'
 import { provisioningClient } from '@/lib/api/provisioning'
 import { ENV } from '@/config/environment'
 import { isNativePlatform, openPopupSync, addBrowserFinishedListener } from '@/utils/browser'
+
+useHead({
+  title: 'Device Security | Koios',
+  meta: [{ name: 'description', content: 'Configure security for your Koios device' }],
+})
+
+// Storage keys for license checkout recovery
+const PENDING_LICENSE_KEY = 'pending_license_key'
+const PENDING_DEVICE_ID = 'pending_device_id'
+
+/**
+ * Store license key and device ID for recovery if app is killed during checkout
+ */
+async function storePendingLicense(licenseKey: string, deviceId: string) {
+  await Promise.all([
+    Preferences.set({ key: PENDING_LICENSE_KEY, value: licenseKey }),
+    Preferences.set({ key: PENDING_DEVICE_ID, value: deviceId }),
+  ])
+}
+
+/**
+ * Get pending license key and device ID from storage
+ */
+async function getPendingLicense(): Promise<{ licenseKey: string | null; deviceId: string | null }> {
+  const [licenseResult, deviceResult] = await Promise.all([
+    Preferences.get({ key: PENDING_LICENSE_KEY }),
+    Preferences.get({ key: PENDING_DEVICE_ID }),
+  ])
+  return {
+    licenseKey: licenseResult.value,
+    deviceId: deviceResult.value,
+  }
+}
+
+/**
+ * Clear pending license data after successful redemption
+ */
+async function clearPendingLicense() {
+  await Promise.all([
+    Preferences.remove({ key: PENDING_LICENSE_KEY }),
+    Preferences.remove({ key: PENDING_DEVICE_ID }),
+  ])
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -194,6 +238,8 @@ const error = ref<{ title: string; description: string } | undefined>(undefined)
 let checkoutPopup: Window | null = null
 // Cleanup function for browser listener (native only)
 let cleanupBrowserListener: (() => void) | null = null
+// Cleanup function for message listener (web only)
+let cleanupMessageListener: (() => void) | null = null
 
 /**
  * Build the return URL for checkout callback
@@ -201,7 +247,7 @@ let cleanupBrowserListener: (() => void) | null = null
  */
 function getReturnUrl(): string {
   const baseUrl = isNativePlatform() ? ENV.appNativeUrl : window.location.origin
-  return `${baseUrl}/setup/crypto`
+  return `${baseUrl}/setup/license_callback`
 }
 
 /**
@@ -286,8 +332,8 @@ async function startCheckout() {
       // Redirect popup to Stripe checkout
       checkoutPopup.location.href = data.url
 
-      // Start polling to detect when popup closes or redirects back
-      startCheckoutPolling()
+      // Set up message listener for callback
+      setupMessageListener()
     }
   } catch (err) {
     console.error('Checkout error:', err)
@@ -301,59 +347,41 @@ async function startCheckout() {
 }
 
 /**
- * Poll to detect checkout completion (web only)
- * Checks if popup is closed or has returned to our domain with license_key
+ * Handle postMessage from checkout callback popup (web only)
  */
-function startCheckoutPolling() {
-  const pollInterval = setInterval(() => {
-    if (!checkoutPopup || checkoutPopup.closed) {
-      clearInterval(pollInterval)
-      checkoutPopup = null
-      // Popup was closed - check if we got a license key via URL change
-      checkForLicenseKeyInUrl()
-      return
-    }
+function handleLicenseMessage(event: MessageEvent) {
+  // Verify origin
+  if (event.origin !== window.location.origin) {
+    return
+  }
 
-    // Try to read popup URL (only works if same origin)
-    try {
-      const popupUrl = checkoutPopup.location.href
-      if (popupUrl.includes('/setup/crypto') && popupUrl.includes('license_key=')) {
-        // Extract license key and close popup
-        const url = new URL(popupUrl)
-        const key = url.searchParams.get('license_key')
-        clearInterval(pollInterval)
-        checkoutPopup.close()
-        checkoutPopup = null
+  // Check message type
+  if (event.data?.type === 'LICENSE_CALLBACK') {
+    const key = event.data.licenseKey
+    checkoutPopup = null
 
-        if (key) {
-          licenseKey.value = key
-          provisionWithLicenseKey()
-        }
+    if (key) {
+      licenseKey.value = key
+      // Store for recovery in case of failure
+      const deviceId = bleStore.connection.connectedDevice?.deviceId
+      if (deviceId) {
+        storePendingLicense(key, deviceId)
       }
-    } catch {
-      // Cross-origin - can't read URL, continue polling
+      provisionWithLicenseKey()
     }
-  }, 500)
-
-  // Stop polling after 10 minutes
-  setTimeout(() => {
-    clearInterval(pollInterval)
-  }, 10 * 60 * 1000)
+  }
 }
 
 /**
- * Check current URL for license_key parameter
- * Used when returning from checkout redirect
+ * Set up message listener for checkout callback (web only)
  */
-function checkForLicenseKeyInUrl() {
-  const urlLicenseKey = route.query.license_key as string | undefined
-  if (urlLicenseKey) {
-    licenseKey.value = urlLicenseKey
-    // Clean up URL
-    router.replace({ path: route.path, query: {} })
-    provisionWithLicenseKey()
+function setupMessageListener() {
+  window.addEventListener('message', handleLicenseMessage)
+  cleanupMessageListener = () => {
+    window.removeEventListener('message', handleLicenseMessage)
   }
 }
+
 
 /**
  * Provision certificate using license key
@@ -373,31 +401,26 @@ async function provisionWithLicenseKey() {
 
     // Step 2: Redeem license key to sign CSR
     statusMessage.value = 'Signing certificate...'
-    const response = await fetch('https://provisioning.api.koiosdigital.net/v1/license/redeem', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const { data: certPem, error: redeemError, response } = await provisioningClient.POST('/v1/license/redeem', {
+      body: {
         license_key: licenseKey.value,
         csr: csr,
-      }),
+      },
+      parseAs: 'text',
     })
 
-    if (response.status === 404) {
+    if (response?.status === 404) {
       throw new Error('Invalid license key. Please check and try again.')
     }
 
-    if (response.status === 400) {
+    if (response?.status === 400) {
       throw new Error('License key has already been used.')
     }
 
-    if (!response.ok) {
-      throw new Error(`Failed to redeem license: ${response.status} ${response.statusText}`)
+    if (redeemError || !certPem) {
+      throw new Error('Failed to redeem license. Please try again.')
     }
 
-    // Get signed certificate (PEM format)
-    const certPem = await response.text()
     console.log('Got signed certificate from server')
 
     // Step 3: Set certificate on device
@@ -417,6 +440,9 @@ async function provisionWithLicenseKey() {
     cryptoStatus.value = status
     licenseKey.value = ''
     isCheckingStatus.value = false
+
+    // Clear pending license from storage
+    await clearPendingLicense()
 
     // Get claim token and proceed to network setup
     await getAndSendClaimToken()
@@ -536,11 +562,7 @@ async function proceedToNetwork() {
 }
 
 onMounted(async () => {
-  // Redirect if no device connected
-  if (!bleStore.connection.connectedDevice) {
-    router.replace('/setup/new')
-    return
-  }
+  const connectedDevice = bleStore.connection.connectedDevice
 
   // Check if returning from checkout with license_key
   const urlLicenseKey = route.query.license_key as string | undefined
@@ -552,7 +574,53 @@ onMounted(async () => {
     if (isNativePlatform()) {
       Browser.close().catch(() => {})
     }
-    await provisionWithLicenseKey()
+
+    // Store license key for recovery
+    if (connectedDevice?.deviceId) {
+      await storePendingLicense(urlLicenseKey, connectedDevice.deviceId)
+    }
+
+    // If device is still connected, provision immediately
+    if (connectedDevice) {
+      await provisionWithLicenseKey()
+      return
+    }
+
+    // Device disconnected during checkout - show recovery message
+    error.value = {
+      title: 'Device Disconnected',
+      description:
+        'The device was disconnected during checkout. Please reconnect to the same device to complete setup. Your license key has been saved.',
+    }
+    router.replace('/setup/new')
+    return
+  }
+
+  // Check for pending license from previous session (app was killed)
+  const pending = await getPendingLicense()
+  if (pending.licenseKey) {
+    // We have a pending license - check if we're connected to the same device
+    if (connectedDevice?.deviceId === pending.deviceId) {
+      licenseKey.value = pending.licenseKey
+      await provisionWithLicenseKey()
+      return
+    } else if (connectedDevice) {
+      // Connected to a different device - clear pending and continue normally
+      await clearPendingLicense()
+    } else {
+      // No device connected but we have a pending license
+      error.value = {
+        title: 'License Key Saved',
+        description: `You have a pending license key. Please reconnect to your device to complete setup.`,
+      }
+      router.replace('/setup/new')
+      return
+    }
+  }
+
+  // Redirect if no device connected
+  if (!connectedDevice) {
+    router.replace('/setup/new')
     return
   }
 
@@ -560,10 +628,15 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Cleanup browser listener on unmount
+  // Cleanup browser listener on unmount (native)
   if (cleanupBrowserListener) {
     cleanupBrowserListener()
     cleanupBrowserListener = null
+  }
+  // Cleanup message listener on unmount (web)
+  if (cleanupMessageListener) {
+    cleanupMessageListener()
+    cleanupMessageListener = null
   }
 })
 </script>

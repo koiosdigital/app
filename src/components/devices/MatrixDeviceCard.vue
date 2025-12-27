@@ -1,8 +1,10 @@
 <template>
   <BaseDeviceCard
     eyebrow="Smart matrix"
-    :title="device.name"
-    :subtitle="`${device.installations} installation${device.installations !== 1 ? 's' : ''}`"
+    :title="displayName"
+    :subtitle="`${device.installationCount} app${
+      device.installationCount !== 1 ? 's' : ''
+    } installed`"
     card-background-class="bg-white/5"
     @click="handleOpen"
   >
@@ -17,46 +19,54 @@
       </span>
       <span class="inline-flex items-center gap-2">
         <UIcon name="i-lucide-sparkles" class="h-4 w-4" />
-        Brightness {{ device.brightness }}%
+        Brightness {{ brightnessPercent }}%
       </span>
     </template>
 
     <template #preview>
-      <div v-if="device.preview" class="mt-4 flex justify-center">
-        <MatrixDevicePreview
-          :src="device.preview"
-          :width="matrixWidth"
-          :height="matrixHeight"
+      <div class="mt-4 flex justify-center">
+        <!-- Show installation preview if one is currently displaying -->
+        <InstallationPreview
+          v-if="device.currentlyDisplayingInstallation"
+          :device-id="device.id"
+          :installation-id="device.currentlyDisplayingInstallation"
+          :app-id="device.currentlyDisplayingInstallation"
+          :app-name="''"
+          :width="deviceWidth"
+          :height="deviceHeight"
+          :dot-size="3"
+          :dot-gap="1"
           :show-frame="true"
+          class="no-label"
         />
+        <!-- Show empty/off state when no installation is displaying -->
+        <div
+          v-else
+          class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
+        >
+          <div class="flex items-center justify-center bg-black rounded-sm" :style="screenStyle">
+            <UIcon name="i-lucide-image-off" class="h-5 w-5 text-white" />
+          </div>
+        </div>
       </div>
     </template>
 
     <template #actions>
       <UButton
         size="sm"
-        :color="device.isOn ? 'primary' : 'neutral'"
+        :color="screenEnabled ? 'primary' : 'neutral'"
         variant="soft"
         icon="i-lucide-power"
-        @click.stop="emit('toggle-power', device.mac)"
+        @click.stop="emit('toggle-screen', device.id)"
       >
-        {{ powerLabel }}
-      </UButton>
-      <UButton
-        size="sm"
-        color="neutral"
-        variant="soft"
-        icon="i-lucide-skip-forward"
-        @click.stop="emit('skip', device.mac)"
-      >
-        Skip
+        {{ screenEnabled ? 'On' : 'Off' }}
       </UButton>
       <UButton
         size="sm"
         color="neutral"
         variant="ghost"
         icon="i-lucide-settings-2"
-        @click.stop="emit('open-settings', device.mac)"
+        @click.stop="emit('open-settings', device.id)"
       >
         Settings
       </UButton>
@@ -68,47 +78,55 @@
 import { computed, toRef } from 'vue'
 import { useDeviceCard } from '@/composables/useDeviceCard'
 import { getStatusColor } from '@/utils/device'
+import type { MatrxDevice } from '@/lib/api/mappers/deviceMapper'
 import BaseDeviceCard from './BaseDeviceCard.vue'
-import MatrixDevicePreview from '../MatrixDevicePreview.vue'
+import InstallationPreview from '../installations/InstallationPreview.vue'
 
-export type MatrixDevice = {
-  type: 'matrix'
-  mac: string
-  name: string
-  status: 'online' | 'offline'
-  resolution: '32x64' | '64x64'
-  brightness: number
-  installations: number
-  preview?: string
-  isOn: boolean
-}
-
-const props = defineProps<{ device: MatrixDevice }>()
+const props = defineProps<{ device: MatrxDevice }>()
 
 const emit = defineEmits<{
-  (e: 'open', mac: string): void
-  (e: 'toggle-power', mac: string): void
-  (e: 'skip', mac: string): void
-  (e: 'open-settings', mac: string): void
+  (e: 'open', id: string): void
+  (e: 'toggle-screen', id: string): void
+  (e: 'open-settings', id: string): void
 }>()
 
 const device = toRef(props, 'device')
-const { statusLabel, powerLabel } = useDeviceCard(device)
+const { statusLabel } = useDeviceCard(device)
 
-const resolutionLabel = computed(() => `${device.value.resolution} pixels`)
-const statusColor = computed(() => getStatusColor(device.value.status))
+const screenEnabled = computed(() => device.value.settings?.typeSettings?.screenEnabled ?? true)
 
-const matrixWidth = computed(() => {
-  const [width] = device.value.resolution.split('x').map(Number)
-  return width
+const displayName = computed(() => device.value.settings?.displayName || device.value.id)
+
+const deviceWidth = computed(() => device.value.settings?.width ?? 64)
+const deviceHeight = computed(() => device.value.settings?.height ?? 32)
+
+const resolutionLabel = computed(() => `${deviceWidth.value}x${deviceHeight.value} pixels`)
+const statusColor = computed(() => getStatusColor(device.value.online))
+
+const brightnessPercent = computed(() => {
+  const brightness = device.value.settings?.typeSettings?.screenBrightness ?? 200
+  return Math.round((brightness / 255) * 100)
 })
 
-const matrixHeight = computed(() => {
-  const [, height] = device.value.resolution.split('x').map(Number)
-  return height
+const screenStyle = computed(() => {
+  const dotSize = 3
+  const dotGap = 1
+  const cellSize = dotSize + dotGap
+  const displayWidth = deviceWidth.value * cellSize - dotGap
+  const displayHeight = deviceHeight.value * cellSize - dotGap
+  return {
+    width: `${displayWidth}px`,
+    height: `${displayHeight}px`,
+  }
 })
 
 const handleOpen = () => {
-  emit('open', device.value.mac)
+  emit('open', device.value.id)
 }
 </script>
+
+<style scoped>
+.no-label :deep(span) {
+  display: none;
+}
+</style>

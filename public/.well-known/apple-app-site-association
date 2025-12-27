@@ -12,6 +12,10 @@
             "comment": "OAuth callback"
           },
           {
+            "/": "/setup/license_callback",
+            "comment": "License checkout callback"
+          },
+          {
             "/": "/setup/*",
             "comment": "Setup flow callbacks"
           }

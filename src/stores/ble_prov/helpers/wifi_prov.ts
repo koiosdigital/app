@@ -1,5 +1,27 @@
 import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
 import { WiFiConfigPayloadSchema, WiFiConfigMsgType, CmdSetConfigSchema } from "@/types/proto/wifi_config_pb"
+import { WifiStationState, WifiConnectFailedReason } from "@/types/proto/wifi_constants_pb"
+
+export { WifiStationState, WifiConnectFailedReason }
+
+export type WifiStatusResult = {
+  /** Protobuf status (success/failure of the request itself) */
+  status: number;
+  /** WiFi station state */
+  staState: WifiStationState;
+  /** Connection failure reason (if staState is ConnectionFailed) */
+  failReason?: WifiConnectFailedReason;
+  /** Connected state details (if staState is Connected) */
+  connected?: {
+    ip4Addr: string;
+    ssid: string;
+    channel: number;
+  };
+  /** Attempt failed details (if connection attempt failed but retrying) */
+  attemptFailed?: {
+    attemptsRemaining: number;
+  };
+}
 
 export const createGetStatusRequest = () => {
   const msg = create(WiFiConfigPayloadSchema);
@@ -25,7 +47,7 @@ export const createApplyConfigRequest = () => {
   return toBinary(WiFiConfigPayloadSchema, msg);
 }
 
-export const parseGetStatusResponse = (data: Uint8Array) => {
+export const parseGetStatusResponse = (data: Uint8Array): WifiStatusResult => {
   const msg = fromBinary(WiFiConfigPayloadSchema, data);
   if (msg.msg !== WiFiConfigMsgType.TypeRespGetStatus) {
     throw new Error("Invalid message type");
@@ -33,7 +55,33 @@ export const parseGetStatusResponse = (data: Uint8Array) => {
   if (msg.payload.case !== 'respGetStatus') {
     throw new Error("Invalid payload case");
   }
-  return msg.payload.value;
+
+  const resp = msg.payload.value;
+  const result: WifiStatusResult = {
+    status: resp.status,
+    staState: resp.staState,
+  };
+
+  // Parse the state oneof
+  switch (resp.state.case) {
+    case 'failReason':
+      result.failReason = resp.state.value;
+      break;
+    case 'connected':
+      result.connected = {
+        ip4Addr: resp.state.value.ip4Addr,
+        ssid: new TextDecoder().decode(resp.state.value.ssid),
+        channel: resp.state.value.channel,
+      };
+      break;
+    case 'attemptFailed':
+      result.attemptFailed = {
+        attemptsRemaining: resp.state.value.attemptsRemaining,
+      };
+      break;
+  }
+
+  return result;
 }
 
 export const parseSetConfigResponse = (data: Uint8Array) => {

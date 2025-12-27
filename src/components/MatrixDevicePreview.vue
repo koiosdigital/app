@@ -30,6 +30,8 @@ const props = withDefaults(
     dotGap?: number
     /** Show the physical frame around the matrix */
     showFrame?: boolean
+    /** Use circular LED dots (true) or square pixels (false) */
+    roundDots?: boolean
   }>(),
   {
     alt: 'Matrix display',
@@ -38,12 +40,15 @@ const props = withDefaults(
     dotSize: 3,
     dotGap: 1,
     showFrame: true,
+    roundDots: true,
   }
 )
 
+const cellSize = computed(() => props.dotSize + props.dotGap)
+
 const containerStyle = computed(() => {
-  const displayWidth = props.width * (props.dotSize + props.dotGap) - props.dotGap
-  const displayHeight = props.height * (props.dotSize + props.dotGap) - props.dotGap
+  const displayWidth = props.width * cellSize.value - props.dotGap
+  const displayHeight = props.height * cellSize.value - props.dotGap
   return {
     width: `${displayWidth}px`,
     height: `${displayHeight}px`,
@@ -51,13 +56,43 @@ const containerStyle = computed(() => {
 })
 
 const imageStyle = computed(() => {
-  const scale = props.dotSize + props.dotGap
+  // Scale the image so each source pixel becomes cellSize display pixels
   return {
     width: `${props.width}px`,
     height: `${props.height}px`,
-    transform: `scale(${scale})`,
+    transform: `scale(${cellSize.value})`,
   }
 })
+
+/**
+ * Generate an SVG data URL for a single LED dot mask tile.
+ * The mask is applied at 1x1 source pixel size, then scaled with the image.
+ */
+const dotMaskUrl = computed(() => {
+  // The mask tile is 1x1 source pixel, which gets scaled with the image
+  // We need to create the dot pattern within that 1x1 space
+  const dotRatio = props.dotSize / cellSize.value
+  const gapRatio = props.dotGap / cellSize.value / 2
+
+  if (props.roundDots) {
+    // Circular LED dot centered in the cell
+    const radius = dotRatio / 2
+    const center = 0.5
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1">
+      <circle cx="${center}" cy="${center}" r="${radius}" fill="white"/>
+    </svg>`
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+  } else {
+    // Square pixel with gap offset
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1">
+      <rect x="${gapRatio}" y="${gapRatio}" width="${dotRatio}" height="${dotRatio}" fill="white"/>
+    </svg>`
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+  }
+})
+
+// Mask size in source pixels (1x1) that scales with transform
+const maskSize = computed(() => '1px 1px')
 </script>
 
 <style scoped>
@@ -74,37 +109,13 @@ const imageStyle = computed(() => {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  mask-image:
-    repeating-linear-gradient(
-      to right,
-      black 0,
-      black calc(v-bind(dotSize) * 1px),
-      transparent calc(v-bind(dotSize) * 1px),
-      transparent calc((v-bind(dotSize) + v-bind(dotGap)) * 1px)
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      black 0,
-      black calc(v-bind(dotSize) * 1px),
-      transparent calc(v-bind(dotSize) * 1px),
-      transparent calc((v-bind(dotSize) + v-bind(dotGap)) * 1px)
-    );
-  mask-composite: intersect;
-  -webkit-mask-image:
-    repeating-linear-gradient(
-      to right,
-      black 0,
-      black calc(v-bind(dotSize) * 1px),
-      transparent calc(v-bind(dotSize) * 1px),
-      transparent calc((v-bind(dotSize) + v-bind(dotGap)) * 1px)
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      black 0,
-      black calc(v-bind(dotSize) * 1px),
-      transparent calc(v-bind(dotSize) * 1px),
-      transparent calc((v-bind(dotSize) + v-bind(dotGap)) * 1px)
-    );
-  -webkit-mask-composite: source-in;
+  /* Use the generated SVG mask, repeated to cover the entire image */
+  /* Mask is 1x1 px tiles that scale with the image transform */
+  mask-image: v-bind(dotMaskUrl);
+  mask-repeat: repeat;
+  mask-size: v-bind(maskSize);
+  -webkit-mask-image: v-bind(dotMaskUrl);
+  -webkit-mask-repeat: repeat;
+  -webkit-mask-size: v-bind(maskSize);
 }
 </style>

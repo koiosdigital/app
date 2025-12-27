@@ -24,9 +24,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
+import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/auth/constants'
+
+useHead({
+  title: 'Signing In... | Koios',
+  meta: [{ name: 'robots', content: 'noindex' }],
+})
 
 const router = useRouter()
 const route = useRoute()

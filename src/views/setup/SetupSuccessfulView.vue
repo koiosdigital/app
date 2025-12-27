@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-5">
-    <div class="w-full max-w-md space-y-8 text-center">
+    <div class="w-full max-w-md space-y-6 text-center">
       <!-- Success Icon -->
       <div class="flex justify-center">
         <div
@@ -53,7 +53,13 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { useBleProvStore } from '@/stores/ble_prov'
+
+useHead({
+  title: 'Setup Complete | Koios',
+  meta: [{ name: 'description', content: 'Your Koios device has been successfully configured' }],
+})
 
 const router = useRouter()
 const bleStore = useBleProvStore()

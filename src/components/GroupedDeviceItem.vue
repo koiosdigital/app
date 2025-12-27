@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <UBadge :color="statusColor" variant="soft" class="capitalize">{{ device.status }}</UBadge>
+      <UBadge :color="statusColor" variant="soft" class="capitalize">{{ statusLabel }}</UBadge>
       <UButton
         size="sm"
         color="neutral"
@@ -29,13 +29,12 @@
 
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { getStatusColor } from '@/utils/device'
+import { getStatusColor, getStatusLabel } from '@/utils/device'
 
-type DeviceStatus = 'online' | 'offline'
 type GroupDevice = {
   id: string
   name: string
-  status: DeviceStatus
+  online: boolean
   location: string
 }
 
@@ -44,5 +43,6 @@ const emit = defineEmits<{ (e: 'settings', id: string): void }>()
 
 const device = toRef(props, 'device')
 
-const statusColor = computed(() => getStatusColor(device.value.status))
+const statusColor = computed(() => getStatusColor(device.value.online))
+const statusLabel = computed(() => getStatusLabel(device.value.online))
 </script>

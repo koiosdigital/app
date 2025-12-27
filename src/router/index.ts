@@ -9,6 +9,12 @@ import SetupCryptoView from '@/views/setup/SetupCryptoView.vue'
 import SetupEnciphermentParamsView from '@/views/setup/SetupEnciphermentParamsView.vue'
 import SetupNetworkView from '@/views/setup/SetupNetworkView.vue'
 import SetupSuccessfulView from '@/views/setup/SetupSuccessfulView.vue'
+import SetupLicenseCallbackView from '@/views/setup/SetupLicenseCallbackView.vue'
+import OAuthCallbackView from '@/views/OAuthCallbackView.vue'
+import MatrxDeviceView from '@/views/matrx/MatrxDeviceView.vue'
+import MatrxDeviceSettingsView from '@/views/matrx/MatrxDeviceSettingsView.vue'
+import MatrxAppsView from '@/views/matrx/MatrxAppsView.vue'
+import InstallationEditorView from '@/views/matrx/InstallationEditorView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 
 
@@ -61,14 +67,59 @@ const router = createRouter({
       component: SetupSuccessfulView,
     },
     {
+      path: '/setup/license_callback',
+      name: 'setup-license-callback',
+      component: SetupLicenseCallbackView,
+    },
+    {
+      path: '/oauth/callback',
+      name: 'oauth-callback',
+      component: OAuthCallbackView,
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: SettingsView,
     },
+    {
+      path: '/matrx/:id',
+      name: 'matrx-device',
+      component: MatrxDeviceView,
+    },
+    {
+      path: '/matrx/:id/settings',
+      name: 'matrx-device-settings',
+      component: MatrxDeviceSettingsView,
+    },
+    {
+      path: '/matrx/:id/apps',
+      name: 'matrx-apps',
+      component: MatrxAppsView,
+    },
+    {
+      path: '/matrx/:id/apps/:app_id',
+      name: 'matrx-install-app',
+      component: InstallationEditorView,
+      props: (route) => ({
+        deviceId: route.params.id,
+        appId: route.params.app_id,
+        mode: 'install',
+      }),
+    },
+    {
+      path: '/matrx/:id/installations/:installation_id',
+      name: 'matrx-edit-installation',
+      component: InstallationEditorView,
+      props: (route) => ({
+        deviceId: route.params.id,
+        installationId: route.params.installation_id,
+        mode: 'edit',
+      }),
+    },
   ],
 })
 
-const PUBLIC_PATHS = new Set(['/login', '/login/callback'])
+const PUBLIC_PATHS = new Set(['/login', '/login/callback', '/setup/license_callback', '/oauth/callback'])
 let authInitialized = false
 
 router.beforeEach(async (to) => {

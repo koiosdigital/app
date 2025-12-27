@@ -1,5 +1,25 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-zinc-950">
+  <div ref="scrollContainer" class="flex min-h-screen flex-col bg-zinc-950 overflow-auto">
+    <!-- Pull to Refresh Indicator -->
+    <div
+      class="flex items-center justify-center overflow-hidden transition-all duration-200"
+      :style="{ height: `${pullDistance}px` }"
+    >
+      <div
+        v-if="pullDistance > 0"
+        class="flex items-center gap-2 text-white/70"
+      >
+        <UIcon
+          :name="isRefreshing ? 'i-lucide-loader-2' : 'i-lucide-arrow-down'"
+          class="h-5 w-5"
+          :class="{ 'animate-spin': isRefreshing }"
+        />
+        <span class="text-sm">
+          {{ isRefreshing ? 'Refreshing...' : pullDistance >= 80 ? 'Release to refresh' : 'Pull to refresh' }}
+        </span>
+      </div>
+    </div>
+
     <!-- Top Header -->
     <header class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4">
       <div class="flex items-center justify-between">
@@ -37,16 +57,23 @@
       </div>
 
       <div v-else-if="sortedDevices.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <component
-          :is="componentRegistry[device.type]"
-          v-for="device in sortedDevices"
-          :key="device.mac"
-          :device="device"
-          @open="openDevice"
-          @toggle-power="togglePower"
-          @open-settings="openSettings"
-          v-on="device.type === 'matrix' ? { skip: handleSkip } : { 'send-touch': handleSendTouch }"
-        />
+        <template v-for="device in sortedDevices" :key="device.id">
+          <MatrixDeviceCard
+            v-if="isMatrxDevice(device)"
+            :device="device"
+            @open="openDevice"
+            @toggle-screen="toggleScreen"
+            @open-settings="openSettings"
+          />
+          <LanternDeviceCard
+            v-else
+            :device="device"
+            @open="openDevice"
+            @toggle-power="togglePower"
+            @send-touch="handleSendTouch"
+            @open-settings="openSettings"
+          />
+        </template>
       </div>
 
       <div
@@ -60,28 +87,52 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
 import { devicesApi } from '@/lib/api/devices'
-import { mapApiDevices, type Device } from '@/lib/api/mappers/deviceMapper'
+import { getErrorMessage } from '@/lib/api/errors'
+import { type ApiDevice, isMatrxDevice } from '@/lib/api/mappers/deviceMapper'
+import { usePullToRefresh } from '@/composables/usePullToRefresh'
+
+useHead({
+  title: 'Devices | Koios',
+  meta: [{ name: 'description', content: 'Manage your Koios devices' }],
+})
 
 const router = useRouter()
 
-const componentRegistry: Record<'matrix' | 'lantern', Component> = {
-  matrix: MatrixDeviceCard,
-  lantern: LanternDeviceCard,
-}
-
-const devices = ref<Device[]>([])
+const devices = ref<ApiDevice[]>([])
 const loading = ref(false)
 const error = ref<string>()
 
-const sortedDevices = computed(() =>
-  [...devices.value].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-)
+// Pull to refresh
+const scrollContainer = ref<HTMLElement | null>(null)
+
+const refreshDevices = async () => {
+  error.value = undefined
+  try {
+    const apiDevices = await devicesApi.getDevices()
+    devices.value = apiDevices
+  } catch (err) {
+    error.value = getErrorMessage(err, 'Failed to load devices')
+    console.error('Failed to refresh devices:', err)
+  }
+}
+
+const { isRefreshing, pullDistance } = usePullToRefresh(scrollContainer, {
+  onRefresh: refreshDevices,
+})
+
+const sortedDevices = computed(() => {
+  return [...devices.value].sort((a, b) => {
+    const nameA = a.settings?.displayName || a.id
+    const nameB = b.settings?.displayName || b.id
+    return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' })
+  })
+})
 
 const loadDevices = async () => {
   loading.value = true
@@ -89,74 +140,100 @@ const loadDevices = async () => {
 
   try {
     const apiDevices = await devicesApi.getDevices()
-    devices.value = mapApiDevices(apiDevices)
+    devices.value = apiDevices
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load devices'
+    error.value = getErrorMessage(err, 'Failed to load devices')
     console.error('Failed to load devices:', err)
   } finally {
     loading.value = false
   }
 }
 
-const findDevice = (mac: string) => devices.value.find((device: Device) => device.mac === mac)
+const findDevice = (id: string) => devices.value.find((device) => device.id === id)
 
-const patchDevice = (mac: string, patch: Partial<Device>) => {
-  const index = devices.value.findIndex((device: Device) => device.mac === mac)
-  if (index === -1) return
-
-  devices.value[index] = { ...devices.value[index], ...patch } as Device
-}
-
-const togglePower = async (mac: string) => {
-  const device = findDevice(mac)
+const togglePower = async (id: string) => {
+  const device = findDevice(id)
   if (!device) return
 
-  const nextIsOn = !device.isOn
+  // TODO: Implement power toggle for Lantern devices when API supports it
+  console.info('Toggle power for lantern', id)
+}
+
+const toggleScreen = async (id: string) => {
+  const device = findDevice(id)
+  if (!device || !isMatrxDevice(device)) return
+
+  const currentEnabled = device.settings?.typeSettings?.screenEnabled ?? true
+  const nextEnabled = !currentEnabled
 
   // Optimistic update
-  patchDevice(mac, { isOn: nextIsOn, status: nextIsOn ? 'online' : 'offline' })
+  const index = devices.value.findIndex((d) => d.id === id)
+  if (index !== -1 && isMatrxDevice(devices.value[index])) {
+    const matrxDevice = devices.value[index] as typeof device
+    devices.value[index] = {
+      ...matrxDevice,
+      settings: {
+        ...matrxDevice.settings,
+        displayName: matrxDevice.settings?.displayName ?? '',
+        typeSettings: {
+          ...matrxDevice.settings?.typeSettings,
+          screenEnabled: nextEnabled,
+          screenBrightness: matrxDevice.settings?.typeSettings?.screenBrightness ?? 200,
+          autoBrightnessEnabled: matrxDevice.settings?.typeSettings?.autoBrightnessEnabled ?? false,
+          screenOffLux: matrxDevice.settings?.typeSettings?.screenOffLux ?? 3,
+        },
+      },
+    }
+  }
 
   try {
-    await devicesApi.updateDevice(mac, { online: nextIsOn } as any)
+    await devicesApi.updateMatrxSettings(id, { typeSettings: { screenEnabled: nextEnabled } })
   } catch (err) {
     // Revert on error
-    patchDevice(mac, { isOn: device.isOn, status: device.status })
-    console.error('Failed to toggle power:', err)
+    if (index !== -1 && isMatrxDevice(devices.value[index])) {
+      const matrxDevice = devices.value[index] as typeof device
+      devices.value[index] = {
+        ...matrxDevice,
+        settings: {
+          ...matrxDevice.settings,
+          displayName: matrxDevice.settings?.displayName ?? '',
+          typeSettings: {
+            ...matrxDevice.settings?.typeSettings,
+            screenEnabled: currentEnabled,
+            screenBrightness: matrxDevice.settings?.typeSettings?.screenBrightness ?? 200,
+            autoBrightnessEnabled: matrxDevice.settings?.typeSettings?.autoBrightnessEnabled ?? false,
+            screenOffLux: matrxDevice.settings?.typeSettings?.screenOffLux ?? 3,
+          },
+        },
+      }
+    }
+    console.error('Failed to toggle screen:', err)
   }
 }
 
-const handleSkip = async (mac: string) => {
-  try {
-    // TODO: Implement skip installation API call
-    console.info('Skip installation for', mac)
-  } catch (err) {
-    console.error('Failed to skip installation:', err)
-  }
-}
-
-const handleSendTouch = async (mac: string) => {
+const handleSendTouch = async (id: string) => {
   try {
     // TODO: Implement send touch API call
-    console.info('Send touch to', mac)
+    console.info('Send touch to', id)
   } catch (err) {
     console.error('Failed to send touch:', err)
   }
 }
 
-const openDevice = (mac: string) => {
-  const device = findDevice(mac)
+const openDevice = (id: string) => {
+  const device = findDevice(id)
   if (!device) return
 
-  const basePath = device.type === 'matrix' ? '/matrx' : '/lantern'
-  router.push(`${basePath}/${mac}`)
+  const basePath = device.type === 'MATRX' ? '/matrx' : '/lantern'
+  router.push(`${basePath}/${id}`)
 }
 
-const openSettings = (mac: string) => {
-  const device = findDevice(mac)
+const openSettings = (id: string) => {
+  const device = findDevice(id)
   if (!device) return
 
-  const basePath = device.type === 'matrix' ? '/matrx' : '/lantern'
-  router.push(`${basePath}/${mac}/settings`)
+  const basePath = device.type === 'MATRX' ? '/matrx' : '/lantern'
+  router.push(`${basePath}/${id}/settings`)
 }
 
 onMounted(() => {

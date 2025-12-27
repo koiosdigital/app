@@ -2,6 +2,7 @@ import '@/assets/css/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createHead } from '@unhead/vue/client'
 import { App as CapacitorApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 
@@ -11,10 +12,12 @@ import router from './router'
 import ui from '@nuxt/ui/vue-plugin'
 
 const app = createApp(App)
+const head = createHead()
 
 app.use(ui)
 app.use(createPinia())
 app.use(router)
+app.use(head)
 
 if (Capacitor.isNativePlatform()) {
     CapacitorApp.addListener('appUrlOpen', ({ url }) => {

@@ -47,11 +47,10 @@ import { computed, toRef } from 'vue'
 
 import GroupedDeviceItem from './GroupedDeviceItem.vue'
 
-type DeviceStatus = 'online' | 'offline'
 type GroupDevice = {
   id: string
   name: string
-  status: DeviceStatus
+  online: boolean
   location: string
 }
 
@@ -68,7 +67,7 @@ const emit = defineEmits<{ (e: 'open', id: string): void }>()
 const group = toRef(props, 'group')
 
 const onlineCount = computed(
-  () => group.value.devices.filter((device) => device.status === 'online').length
+  () => group.value.devices.filter((device) => device.online).length
 )
 const offlineCount = computed(() => group.value.devices.length - onlineCount.value)
 
