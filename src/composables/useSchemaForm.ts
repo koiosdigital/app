@@ -13,6 +13,7 @@ export function useSchemaForm(schema: Ref<AppSchemaField[] | undefined>) {
   const values = ref<Record<string, unknown>>({})
   const errors = ref<Record<string, string>>({})
   const generatedFieldTriggers = ref<Map<string, string[]>>(new Map())
+  const configLoaded = ref(false)
 
   /**
    * Initialize form values from schema defaults
@@ -47,10 +48,10 @@ export function useSchemaForm(schema: Ref<AppSchemaField[] | undefined>) {
 
   /**
    * Initialize form values from existing config (for edit mode)
-   * Merges with current values (schema defaults) so saved config takes precedence
    */
   function initializeFromConfig(config: Record<string, unknown>) {
-    values.value = { ...values.value, ...config }
+    configLoaded.value = true
+    values.value = { ...config }
   }
 
   /**
@@ -129,11 +130,13 @@ export function useSchemaForm(schema: Ref<AppSchemaField[] | undefined>) {
     initializeFromSchema()
   }
 
-  // Reinitialize when schema changes
+  // Initialize from schema defaults only if config wasn't already loaded
   watch(
     schema,
     () => {
-      initializeFromSchema()
+      if (!configLoaded.value) {
+        initializeFromSchema()
+      }
     },
     { immediate: true }
   )

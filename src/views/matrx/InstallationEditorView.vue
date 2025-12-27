@@ -347,6 +347,12 @@ async function loadData() {
         throw new Error('Installation not found')
       }
 
+      // Initialize form with saved config BEFORE setting schema
+      // This prevents the schema watcher from overwriting with defaults
+      if (installation.value.config.params) {
+        formState.initializeFromConfig(installation.value.config.params as Record<string, unknown>)
+      }
+
       // Load app and schema
       const [appData, schemaData] = await Promise.all([
         appsApi.getApp(installation.value.config.app_id),
@@ -355,11 +361,6 @@ async function loadData() {
 
       app.value = appData ?? null
       schema.value = schemaData ?? null
-
-      // Initialize form with existing config
-      if (installation.value.config.params) {
-        formState.initializeFromConfig(installation.value.config.params as Record<string, unknown>)
-      }
 
       // Initialize installation settings
       displayTime.value = installation.value.displayTime ?? 10
