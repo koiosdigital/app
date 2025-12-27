@@ -3,8 +3,11 @@ import type { paths } from '@/types/api'
 import { ENV } from '@/config/environment'
 import { useAuthStore } from '@/stores/auth/auth'
 
+// Track if we're currently refreshing to avoid loops
+let isRefreshing = false
+
 /**
- * Authentication middleware that adds Bearer token to requests
+ * Authentication middleware that adds Bearer token and retries on 401
  */
 const authMiddleware: Middleware = {
   async onRequest({ request }) {
@@ -21,6 +24,38 @@ const authMiddleware: Middleware = {
 
     return request
   },
+
+  async onResponse({ request, response }) {
+    // On 401, try to refresh token and retry once
+    if (response.status === 401 && !isRefreshing) {
+      isRefreshing = true
+      const authStore = useAuthStore()
+
+      try {
+        const newToken = await authStore.refreshAccessToken()
+        if (newToken) {
+          // Retry with new token
+          const retryRequest = new Request(request.url, {
+            method: request.method,
+            headers: new Headers(request.headers),
+            body: request.body,
+            credentials: request.credentials,
+          })
+          retryRequest.headers.set('Authorization', `Bearer ${newToken}`)
+
+          const retryResponse = await fetch(retryRequest)
+          isRefreshing = false
+          return retryResponse
+        }
+      } catch (error) {
+        console.error('Token refresh failed during 401 retry:', error)
+      }
+
+      isRefreshing = false
+    }
+
+    return response
+  },
 }
 
 /**
@@ -28,8 +63,8 @@ const authMiddleware: Middleware = {
  */
 const errorMiddleware: Middleware = {
   async onResponse({ response }) {
-    if (!response.ok) {
-      // Log error responses for debugging
+    if (!response.ok && response.status !== 401) {
+      // Log errors (skip 401 since auth middleware handles it)
       console.error('API Error:', {
         url: response.url,
         status: response.status,

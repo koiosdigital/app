@@ -131,6 +131,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/installations/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Bulk update sort order and display times for multiple installations */
+        patch: operations["InstallationsController_bulkUpdate_v1"];
+        trace?: never;
+    };
     "/v1/devices/{deviceId}/installations/{id}": {
         parameters: {
             query?: never;
@@ -148,23 +165,6 @@ export interface paths {
         head?: never;
         /** Update an installation */
         patch: operations["InstallationsController_update_v1"];
-        trace?: never;
-    };
-    "/v1/devices/{deviceId}/installations/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Bulk update sort order and display times for multiple installations */
-        patch: operations["InstallationsController_bulkUpdate_v1"];
         trace?: never;
     };
     "/v1/devices/{deviceId}/installations/{id}/skip": {
@@ -764,6 +764,11 @@ export interface components {
              */
             deviceId: string;
             /**
+             * @description App display name
+             * @example Weather
+             */
+            appName: string;
+            /**
              * @description Whether the installation is enabled
              * @example true
              */
@@ -818,6 +823,11 @@ export interface components {
              */
             appId: string;
             /**
+             * @description App display name
+             * @example Weather
+             */
+            appName: string;
+            /**
              * @description Whether the installation is enabled
              * @example true
              */
@@ -842,6 +852,34 @@ export interface components {
              * @example 0
              */
             sortOrder: number;
+        };
+        BulkUpdateInstallationItemDto: {
+            /**
+             * @description Installation UUID
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description New sort order for the installation
+             * @example 0
+             */
+            sortOrder?: number;
+            /**
+             * @description Display time in seconds (0 = use default)
+             * @example 30
+             */
+            displayTime?: number;
+        };
+        BulkUpdateInstallationsDto: {
+            /** @description List of installations to update */
+            installations: components["schemas"]["BulkUpdateInstallationItemDto"][];
+        };
+        BulkUpdateResultDto: {
+            /**
+             * @description Number of installations updated
+             * @example 5
+             */
+            updated: number;
         };
         UpdateInstallationDto: {
             /** @description Installation configuration */
@@ -871,34 +909,6 @@ export interface components {
              * @example 0
              */
             sortOrder?: number;
-        };
-        BulkUpdateInstallationItemDto: {
-            /**
-             * @description Installation UUID
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description New sort order for the installation
-             * @example 0
-             */
-            sortOrder?: number;
-            /**
-             * @description Display time in seconds (0 = use default)
-             * @example 30
-             */
-            displayTime?: number;
-        };
-        BulkUpdateInstallationsDto: {
-            /** @description List of installations to update */
-            installations: components["schemas"]["BulkUpdateInstallationItemDto"][];
-        };
-        BulkUpdateResultDto: {
-            /**
-             * @description Number of installations updated
-             * @example 5
-             */
-            updated: number;
         };
         SetSkipStateDto: {
             /**
@@ -937,7 +947,7 @@ export interface components {
              * @example 1.0.0
              */
             version: string;
-            /** @description List of configurable fields */
+            /** @description List of configurable fields (empty array if no configuration required) */
             schema: (components["schemas"]["AppSchemaColorFieldDto"] | components["schemas"]["AppSchemaDatetimeFieldDto"] | components["schemas"]["AppSchemaDropdownFieldDto"] | components["schemas"]["AppSchemaGeneratedFieldDto"] | components["schemas"]["AppSchemaLocationFieldDto"] | components["schemas"]["AppSchemaLocationBasedFieldDto"] | components["schemas"]["AppSchemaOnOffFieldDto"] | components["schemas"]["AppSchemaRadioFieldDto"] | components["schemas"]["AppSchemaTextFieldDto"] | components["schemas"]["AppSchemaTypeaheadFieldDto"] | components["schemas"]["AppSchemaOAuth2FieldDto"] | components["schemas"]["AppSchemaOAuth1FieldDto"] | components["schemas"]["AppSchemaPNGFieldDto"] | components["schemas"]["AppSchemaNotificationFieldDto"])[];
             /** @description Notification field definitions */
             notifications?: components["schemas"]["AppSchemaNotificationFieldDto"][];
@@ -2627,6 +2637,60 @@ export interface operations {
             };
         };
     };
+    InstallationsController_bulkUpdate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device ID */
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkUpdateInstallationsDto"];
+            };
+        };
+        responses: {
+            /** @description Number of installations updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkUpdateResultDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     InstallationsController_findOne_v1: {
         parameters: {
             query?: never;
@@ -2803,60 +2867,6 @@ export interface operations {
             };
             /** @description Validation failed */
             422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_bulkUpdate_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BulkUpdateInstallationsDto"];
-            };
-        };
-        responses: {
-            /** @description Number of installations updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BulkUpdateResultDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };

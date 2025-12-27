@@ -51,7 +51,7 @@
             :device-id="deviceId"
             :installation-id="currentInstallation.id"
             :app-id="currentInstallation.appId"
-            :app-name="''"
+            :app-name="currentInstallation.appName"
             :width="deviceWidth"
             :height="deviceHeight"
             :dot-size="4"
@@ -122,7 +122,7 @@
                 :device-id="deviceId"
                 :installation-id="installation.id"
                 :app-id="installation.appId"
-                :app-name="installation.appId"
+                :app-name="installation.appName"
                 :width="deviceWidth"
                 :height="deviceHeight"
                 :dot-size="2"
@@ -215,7 +215,7 @@ const currentInstallation = computed(() => {
   return installations.value.find((i) => i.id === device.value?.currentlyDisplayingInstallation)
 })
 
-const currentAppName = computed(() => currentInstallation.value?.appId || 'Unknown App')
+const currentAppName = computed(() => currentInstallation.value?.appName || 'Unknown App')
 
 const emptyPreviewStyle = computed(() => {
   const dotSize = 4
