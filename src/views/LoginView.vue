@@ -8,18 +8,18 @@
     <div class="absolute inset-0 bg-zinc-900/80"></div>
     <div class="relative z-10 text-center space-y-6 px-6">
       <div class="space-y-2">
-        <p class="text-sm uppercase tracking-[0.4em] text-white/70">Koios</p>
-        <h1 class="text-4xl font-semibold">Set up your smart devices</h1>
-        <p class="text-white/70">Use the app to connect lamps, speakers, sensors, and more.</p>
+        <p class="text-sm uppercase tracking-[0.4em] text-white/70">Koios Digital</p>
+        <h1 class="text-4xl font-semibold">Set up your devices</h1>
+        <p class="text-white/70">Connect smart matricies, lamps, speakers, sensors, and more.</p>
       </div>
       <UButton
         size="lg"
         color="primary"
-        trailing-icon="i-lucide-arrow-right"
+        trailing-icon="i-fa6-solid:arrow-right"
         :loading="isAuthorizing"
         @click="startLogin"
       >
-        Sign in to continue
+        Get Started
       </UButton>
     </div>
   </div>
@@ -31,6 +31,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/auth/constants'
+import loginBgImage from '@/assets/images/login-bg.jpg'
 
 useHead({
   title: 'Sign In | Koios',
@@ -41,8 +42,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
-const backgroundUrl =
-  'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80'
+const backgroundUrl = loginBgImage
 
 const isAuthorizing = ref(false)
 
@@ -76,6 +76,6 @@ watch(
       router.replace(redirectTarget.value)
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>

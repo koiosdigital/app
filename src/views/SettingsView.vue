@@ -1,12 +1,14 @@
 <template>
   <div class="flex min-h-screen flex-col bg-zinc-950">
     <!-- Header -->
-    <header class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4">
+    <header
+      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
+    >
       <div class="flex items-center gap-4">
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-arrow-left"
+          icon="i-fa6-solid:arrow-left"
           square
           @click="router.push('/')"
         />
@@ -26,16 +28,21 @@
             <UButton
               color="neutral"
               variant="soft"
-              icon="i-lucide-user-cog"
+              icon="i-fa6-solid:user-gear"
               @click="openAccountPortal"
             >
               Account settings
             </UButton>
-            <UButton color="neutral" variant="soft" icon="i-lucide-key-round" @click="openSecurity">
+            <UButton color="neutral" variant="soft" icon="i-fa6-solid:key" @click="openSecurity">
               Security
             </UButton>
           </div>
-          <UButton color="primary" variant="ghost" icon="i-lucide-log-out" @click="handleLogout">
+          <UButton
+            color="primary"
+            variant="ghost"
+            icon="i-fa6-solid:right-from-bracket"
+            @click="handleLogout"
+          >
             Log out
           </UButton>
         </div>
@@ -58,8 +65,12 @@
             </li>
           </ul>
           <div class="flex flex-wrap gap-2">
-            <UButton variant="soft" icon="i-lucide-info" @click="openDocs">Support</UButton>
-            <UButton variant="soft" icon="i-lucide-mail" @click="contactSupport">Contact</UButton>
+            <UButton variant="soft" icon="i-fa6-solid:circle-info" @click="openDocs"
+              >Support</UButton
+            >
+            <UButton variant="soft" icon="i-fa6-regular:envelope" @click="contactSupport"
+              >Contact</UButton
+            >
           </div>
         </div>
       </UCard>
@@ -83,7 +94,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const accountLabel = computed(() =>
-  authStore.isLoggedIn ? 'Signed in with Koios ID' : 'Not signed in'
+  authStore.isLoggedIn ? 'Signed in with Koios ID' : 'Not signed in',
 )
 
 const appVersion = ENV.appVersion

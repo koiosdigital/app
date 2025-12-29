@@ -22,7 +22,8 @@ export async function checkBleAvailability(): Promise<BleAvailabilityResult> {
       return {
         available: false,
         errorTitle: 'Browser Not Supported',
-        errorMessage: 'Bluetooth provisioning requires Chrome, Edge, or another Chromium-based browser.',
+        errorMessage:
+          'Bluetooth provisioning requires Chrome, Edge, or another Chromium-based browser.',
         instructions: [
           'Please open this page in Google Chrome or Microsoft Edge',
           'Alternatively, use the mobile app for the best experience',

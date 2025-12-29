@@ -138,7 +138,7 @@ export function useSchemaForm(schema: Ref<AppSchemaField[] | undefined>) {
         initializeFromSchema()
       }
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   return {

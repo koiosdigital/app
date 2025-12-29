@@ -59,7 +59,7 @@ export async function startScan() {
         if (!discoveredDevices.value.find((d) => d.deviceId === result.device.deviceId)) {
           discoveredDevices.value.push(result.device)
         }
-      }
+      },
     )
   }
 }
@@ -147,7 +147,7 @@ const MAX_CHUNK_SIZE = 509
  */
 export async function sendData(
   data: Uint8Array,
-  characteristicName: string
+  characteristicName: string,
 ): Promise<Uint8Array | undefined> {
   try {
     if (!connectedDevice.value || !connectedDeviceServiceMap.value.has(characteristicName)) {
@@ -163,13 +163,13 @@ export async function sendData(
         connectedDevice.value.deviceId,
         KOIOS_SERVICE_UUID,
         characteristic.uuid,
-        new DataView(data.buffer)
+        new DataView(data.buffer),
       )
 
       const response = await BleClient.read(
         connectedDevice.value.deviceId,
         KOIOS_SERVICE_UUID,
-        characteristic.uuid
+        characteristic.uuid,
       )
 
       return new Uint8Array(response.buffer)
@@ -196,14 +196,14 @@ export async function sendData(
         connectedDevice.value.deviceId,
         KOIOS_SERVICE_UUID,
         characteristic.uuid,
-        new DataView(packet.buffer)
+        new DataView(packet.buffer),
       )
 
       // Read acknowledgment before sending next chunk
       const ack = await BleClient.read(
         connectedDevice.value.deviceId,
         KOIOS_SERVICE_UUID,
-        characteristic.uuid
+        characteristic.uuid,
       )
 
       lastResponse = new Uint8Array(ack.buffer)

@@ -11,7 +11,7 @@ export interface PullToRefreshOptions {
 
 export function usePullToRefresh(
   containerRef: Ref<HTMLElement | null>,
-  options: PullToRefreshOptions
+  options: PullToRefreshOptions,
 ) {
   const { threshold = 80, maxPull = 120, onRefresh } = options
 
@@ -98,7 +98,5 @@ export function usePullToRefresh(
     isPulling,
     isRefreshing,
     pullDistance,
-    /** Progress from 0 to 1 based on threshold */
-    pullProgress: ref(0),
   }
 }

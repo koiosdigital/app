@@ -9,7 +9,7 @@
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-arrow-left"
+            icon="i-fa6-solid:arrow-left"
             square
             @click="router.push('/')"
           />
@@ -18,7 +18,7 @@
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-settings"
+          icon="i-fa6-solid:gear"
           square
           @click="router.push(`/matrx/${deviceId}/settings`)"
         />
@@ -27,14 +27,14 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-1 items-center justify-center">
-      <UIcon name="i-lucide-loader-2" class="h-8 w-8 animate-spin text-white/50" />
+      <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="flex flex-1 items-center justify-center p-5">
       <UCard class="w-full max-w-md border border-red-500/20 bg-red-500/10">
         <div class="space-y-4 text-center">
-          <UIcon name="i-lucide-alert-circle" class="h-12 w-12 text-red-400 mx-auto" />
+          <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-red-400 mx-auto" />
           <p class="text-red-400">{{ error }}</p>
           <UButton color="neutral" variant="soft" @click="loadDevice">Retry</UButton>
         </div>
@@ -68,7 +68,7 @@
               class="flex items-center justify-center bg-black rounded-sm"
               :style="emptyPreviewStyle"
             >
-              <UIcon name="i-lucide-image-off" class="h-6 w-6 text-white" />
+              <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white" />
             </div>
           </div>
           <p class="text-sm text-white/50">No app displaying</p>
@@ -84,7 +84,7 @@
             size="sm"
             color="neutral"
             variant="ghost"
-            :icon="isReordering ? 'i-lucide-check' : 'i-lucide-grip-vertical'"
+            :icon="isReordering ? 'i-fa6-solid:check' : 'i-fa6-solid:grip-vertical'"
             @click="toggleReorder"
           >
             {{ isReordering ? 'Done' : 'Reorder' }}
@@ -137,7 +137,7 @@
                 <UButton
                   color="neutral"
                   variant="ghost"
-                  icon="i-lucide-more-vertical"
+                  icon="i-fa6-solid:ellipsis-vertical"
                   size="xs"
                   class="bg-zinc-800/80 border border-white/10 hover:bg-zinc-700"
                   @click.stop
@@ -150,7 +150,7 @@
               v-if="isReordering"
               class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 border border-white/20"
             >
-              <UIcon name="i-lucide-grip-vertical" class="h-3 w-3 text-white/70" />
+              <UIcon name="i-fa6-solid:grip-vertical" class="h-3 w-3 text-white/70" />
             </div>
           </div>
 
@@ -160,7 +160,7 @@
             class="flex aspect-[2/1] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/20 p-3 transition hover:border-white/40 hover:bg-white/5"
             @click="addInstallation"
           >
-            <UIcon name="i-lucide-plus" class="h-8 w-8 text-white/40" />
+            <UIcon name="i-fa6-solid:plus" class="h-8 w-8 text-white/40" />
             <span class="text-xs text-white/50">Add App</span>
           </button>
         </div>
@@ -205,7 +205,7 @@ const dropIndex = ref<number | null>(null)
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
 const deviceName = computed(
-  () => device.value?.settings?.displayName || device.value?.id || 'Device'
+  () => device.value?.settings?.displayName || device.value?.id || 'Device',
 )
 const deviceWidth = computed(() => device.value?.settings?.width ?? 64)
 const deviceHeight = computed(() => device.value?.settings?.height ?? 32)
@@ -353,12 +353,12 @@ function getInstallationMenuItems(installation: InstallationListItem) {
     [
       {
         label: installation.pinnedByUser ? 'Unpin' : 'Pin',
-        icon: 'i-lucide-pin',
+        icon: 'i-fa6-solid:thumbtack',
         onSelect: () => togglePin(installation),
       },
       {
         label: installation.skippedByUser ? 'Show in rotation' : 'Skip in rotation',
-        icon: installation.skippedByUser ? 'i-lucide-eye' : 'i-lucide-eye-off',
+        icon: installation.skippedByUser ? 'i-fa6-regular:eye' : 'i-fa6-regular:eye-slash',
         onSelect: () => toggleSkip(installation),
       },
     ],

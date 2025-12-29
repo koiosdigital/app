@@ -3,20 +3,20 @@
     <div class="w-full max-w-md space-y-6 text-center">
       <!-- Loading -->
       <div v-if="processing" class="space-y-4">
-        <UIcon name="i-lucide-loader-2" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
+        <UIcon name="i-fa6-solid:spinner" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
         <p class="text-white/70">Processing authentication...</p>
       </div>
 
       <!-- Success -->
       <div v-else-if="success" class="space-y-4">
-        <UIcon name="i-lucide-check-circle" class="mx-auto h-12 w-12 text-green-400" />
+        <UIcon name="i-fa6-solid:circle-check" class="mx-auto h-12 w-12 text-green-400" />
         <p class="font-medium text-green-400">Connected successfully!</p>
         <p class="text-sm text-white/50">You can close this window.</p>
       </div>
 
       <!-- Error -->
       <div v-else-if="errorMessage" class="space-y-4">
-        <UIcon name="i-lucide-alert-circle" class="mx-auto h-12 w-12 text-red-400" />
+        <UIcon name="i-fa6-solid:circle-exclamation" class="mx-auto h-12 w-12 text-red-400" />
         <p class="font-medium text-red-400">Authentication failed</p>
         <p class="text-sm text-white/50">{{ errorMessage }}</p>
       </div>
@@ -120,7 +120,7 @@ onMounted(async () => {
           code,
           state: stateStr,
         },
-        window.location.origin
+        window.location.origin,
       )
 
       success.value = true

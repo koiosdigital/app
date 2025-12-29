@@ -8,7 +8,7 @@
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-arrow-left"
+          icon="i-fa6-solid:arrow-left"
           square
           @click="router.back()"
         />
@@ -22,7 +22,10 @@
         <!-- Scanning State -->
         <div v-if="bleStore.wifi.scanningForAPs" class="flex flex-1 items-center justify-center">
           <div class="space-y-3 text-center">
-            <UIcon name="i-lucide-loader-2" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
+            <UIcon
+              name="i-fa6-solid:spinner"
+              class="mx-auto h-12 w-12 animate-spin text-primary-400"
+            />
             <p class="text-sm text-white/70">Scanning for networks...</p>
           </div>
         </div>
@@ -46,7 +49,7 @@
             >
               <div class="flex items-center gap-3">
                 <UIcon
-                  :name="ap.auth === 0 ? 'i-lucide-wifi' : 'i-lucide-lock'"
+                  :name="ap.auth === 0 ? 'i-fa6-solid:wifi' : 'i-fa6-solid:lock'"
                   class="h-5 w-5"
                   :class="getSignalColor(ap.rssi)"
                 />
@@ -59,7 +62,7 @@
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs text-white/50">{{ getSignalStrength(ap.rssi) }}%</span>
-                <UIcon name="i-lucide-chevron-right" class="h-5 w-5 text-white/40" />
+                <UIcon name="i-fa6-solid:chevron-right" class="h-5 w-5 text-white/40" />
               </div>
             </button>
           </div>
@@ -79,7 +82,7 @@
           <div
             class="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/20 py-12 text-center"
           >
-            <UIcon name="i-lucide-wifi-off" class="h-12 w-12 text-white/40" />
+            <UIcon name="i-fa6-solid:wifi" class="h-12 w-12 text-white/40" />
             <p class="mt-4 text-sm text-white/70">No networks found</p>
             <p class="mt-1 text-xs text-white/50">Make sure WiFi is enabled on your device</p>
           </div>
@@ -98,7 +101,7 @@
         class="w-full max-w-md space-y-6 rounded-lg border border-white/10 bg-zinc-900 p-6 text-center"
       >
         <div class="flex flex-col items-center gap-4">
-          <UIcon name="i-lucide-loader-2" class="h-12 w-12 animate-spin text-primary-400" />
+          <UIcon name="i-fa6-solid:spinner" class="h-12 w-12 animate-spin text-primary-400" />
           <div>
             <h2 class="text-lg font-semibold">
               Connecting to {{ bleStore.wifi.connectingToAP.ssid }}
@@ -120,7 +123,7 @@
         class="w-full max-w-md space-y-6 rounded-lg border border-primary-500/20 bg-zinc-900 p-6"
       >
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-check-circle" class="h-8 w-8 text-primary-400" />
+          <UIcon name="i-fa6-solid:circle-check" class="h-8 w-8 text-primary-400" />
           <div>
             <h2 class="text-lg font-semibold text-primary-400">Connected!</h2>
             <p class="text-sm text-white/70">Device is online</p>
@@ -136,11 +139,9 @@
       v-if="bleStore.wifi.connectionError"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5"
     >
-      <div
-        class="w-full max-w-md space-y-6 rounded-lg border border-red-500/20 bg-zinc-900 p-6"
-      >
+      <div class="w-full max-w-md space-y-6 rounded-lg border border-red-500/20 bg-zinc-900 p-6">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-wifi-off" class="h-8 w-8 text-red-400" />
+          <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-red-400" />
           <div>
             <h2 class="text-lg font-semibold text-red-400">Connection Failed</h2>
             <p class="text-sm text-white/70">{{ bleStore.wifi.connectionError }}</p>
@@ -151,9 +152,7 @@
           <UButton color="neutral" variant="soft" class="flex-1" @click="dismissError">
             Try Different Network
           </UButton>
-          <UButton color="primary" class="flex-1" @click="retryConnection">
-            Retry
-          </UButton>
+          <UButton color="primary" class="flex-1" @click="retryConnection"> Retry </UButton>
         </div>
       </div>
     </div>
@@ -377,7 +376,7 @@ async function connectToOtherNetwork() {
 
     const success = await bleStore.wifi.connectToAP(
       manualAP,
-      otherNetworkPassword.value || undefined
+      otherNetworkPassword.value || undefined,
     )
 
     if (success) {
@@ -407,7 +406,7 @@ async function connectToNetwork() {
   try {
     const success = await bleStore.wifi.connectToAP(
       selectedAP.value,
-      selectedAP.value.auth === 0 ? undefined : password.value
+      selectedAP.value.auth === 0 ? undefined : password.value,
     )
 
     if (success) {

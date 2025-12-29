@@ -7,8 +7,8 @@ export enum KDCryptoStatus {
 }
 
 export interface KD_DSParams {
-  ds_key_id: number;
-  rsa_len: number;
-  cipher_c: string;
-  iv: string;
+  ds_key_id: number
+  rsa_len: number
+  cipher_c: string
+  iv: string
 }

@@ -19,7 +19,7 @@
       size="xs"
       color="neutral"
       variant="ghost"
-      icon="i-lucide-play"
+      icon="i-fa6-solid:play"
       @click="previewSound"
     >
       Preview

@@ -5,20 +5,18 @@
       v-if="isConnected"
       class="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 p-4"
     >
-      <UIcon name="i-lucide-check-circle" class="h-5 w-5 shrink-0 text-green-400" />
+      <UIcon name="i-fa6-solid:circle-check" class="h-5 w-5 shrink-0 text-green-400" />
       <div class="min-w-0 flex-1">
         <p class="font-medium text-green-400">Connected</p>
         <p v-if="connectionInfo" class="truncate text-xs text-white/60">{{ connectionInfo }}</p>
       </div>
-      <UButton color="neutral" variant="ghost" size="sm" @click="disconnect">
-        Disconnect
-      </UButton>
+      <UButton color="neutral" variant="ghost" size="sm" @click="disconnect"> Disconnect </UButton>
     </div>
 
     <!-- Not Connected State -->
     <div v-else class="rounded-lg border border-white/10 bg-white/5 p-4">
       <div class="flex items-center gap-3">
-        <UIcon name="i-lucide-key" class="h-8 w-8 shrink-0 text-white/40" />
+        <UIcon name="i-fa6-solid:key" class="h-8 w-8 shrink-0 text-white/40" />
         <div class="flex-1">
           <p class="font-medium">{{ field.name || 'Connect Account' }}</p>
           <p v-if="field.description" class="text-xs text-white/50">{{ field.description }}</p>
@@ -33,7 +31,7 @@
         :loading="oauthFlow.isConnecting.value"
         @click="startOAuth"
       >
-        <UIcon name="i-lucide-external-link" class="mr-2 h-4 w-4" />
+        <UIcon name="i-fa6-solid:arrow-up-right-from-square" class="mr-2 h-4 w-4" />
         Connect
       </UButton>
     </div>
@@ -105,7 +103,7 @@ const oauthFlow = useOAuthFlow({
           grant_type: 'authorization_code',
           client_id: props.field.client_id,
           redirect_uri: getRedirectUri(),
-        })
+        }),
       )
 
       if (result?.result) {

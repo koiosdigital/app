@@ -75,7 +75,7 @@ export function useAuthenticatedImage(url: Ref<string | null | undefined>) {
     () => {
       fetchImage()
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   // Cleanup on unmount

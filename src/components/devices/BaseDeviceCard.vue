@@ -2,7 +2,7 @@
   <UCard
     :class="[
       'border-white/10 backdrop-blur hover:border-primary-500/60 transition-all cursor-pointer',
-      cardBackgroundClass
+      cardBackgroundClass,
     ]"
     @click="$emit('click')"
   >

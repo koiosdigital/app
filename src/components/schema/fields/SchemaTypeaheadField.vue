@@ -9,7 +9,7 @@
       <span :class="value ? 'text-white' : 'text-white/50'">
         {{ displayValue || field.name || 'Search...' }}
       </span>
-      <UIcon name="i-lucide-search" class="h-4 w-4 text-white/50" />
+      <UIcon name="i-fa6-solid:magnifying-glass" class="h-4 w-4 text-white/50" />
     </button>
 
     <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
@@ -24,7 +24,7 @@
               <UButton
                 color="neutral"
                 variant="ghost"
-                icon="i-lucide-arrow-left"
+                icon="i-fa6-solid:arrow-left"
                 square
                 size="sm"
                 @click="isOpen = false"
@@ -34,7 +34,7 @@
                 v-model="searchQuery"
                 :placeholder="field.name || 'Search...'"
                 :loading="searching"
-                icon="i-lucide-search"
+                icon="i-fa6-solid:magnifying-glass"
                 autofocus
                 class="flex-1"
                 size="lg"
@@ -46,8 +46,11 @@
           <!-- Results list -->
           <div class="flex-1 overflow-y-auto">
             <!-- Loading state -->
-            <div v-if="searching && results.length === 0" class="flex items-center justify-center py-12">
-              <UIcon name="i-lucide-loader-2" class="h-6 w-6 animate-spin text-white/50" />
+            <div
+              v-if="searching && results.length === 0"
+              class="flex items-center justify-center py-12"
+            >
+              <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/50" />
             </div>
 
             <!-- Empty state -->
@@ -55,7 +58,7 @@
               v-else-if="!searching && searchQuery && results.length === 0"
               class="flex flex-col items-center justify-center py-12 text-center"
             >
-              <UIcon name="i-lucide-search-x" class="h-8 w-8 text-white/30" />
+              <UIcon name="i-fa6-solid:magnifying-glass-x" class="h-8 w-8 text-white/30" />
               <p class="mt-2 text-sm text-white/50">No results found</p>
             </div>
 
@@ -64,7 +67,7 @@
               v-else-if="!searchQuery && results.length === 0"
               class="flex flex-col items-center justify-center py-12 text-center"
             >
-              <UIcon name="i-lucide-search" class="h-8 w-8 text-white/30" />
+              <UIcon name="i-fa6-solid:magnifying-glass" class="h-8 w-8 text-white/30" />
               <p class="mt-2 text-sm text-white/50">Type to search</p>
             </div>
 
@@ -80,7 +83,7 @@
               >
                 <UIcon
                   v-if="result.value === value"
-                  name="i-lucide-check"
+                  name="i-fa6-solid:check"
                   class="h-4 w-4 text-primary-400"
                 />
                 <div :class="{ 'pl-7': result.value !== value }">
@@ -97,13 +100,7 @@
 
           <!-- Footer with clear option -->
           <div v-if="value" class="border-t border-white/10 p-3">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              block
-              @click="clearSelection"
-            >
+            <UButton color="neutral" variant="ghost" size="sm" block @click="clearSelection">
               Clear selection
             </UButton>
           </div>

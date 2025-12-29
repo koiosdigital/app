@@ -7,7 +7,7 @@
       :class="{ 'p-3 bg-zinc-800 rounded-lg': showFrame }"
     >
       <div class="flex items-center justify-center bg-black rounded-sm" :style="screenStyle">
-        <UIcon name="i-lucide-loader-2" class="h-4 w-4 animate-spin text-white/50" />
+        <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin text-white/50" />
       </div>
     </div>
 
@@ -32,7 +32,7 @@
         class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
         :style="screenStyle"
       >
-        <UIcon name="i-lucide-alert-circle" class="h-4 w-4 text-red-500" />
+        <UIcon name="i-fa6-solid:circle-exclamation" class="h-4 w-4 text-red-500" />
         <span class="text-[8px] text-red-500 text-center px-1">{{ error }}</span>
       </div>
     </div>
@@ -47,7 +47,7 @@
         class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
         :style="screenStyle"
       >
-        <UIcon name="i-lucide-image-off" class="h-4 w-4 text-white/50" />
+        <UIcon name="i-fa6-regular:image" class="h-4 w-4 text-white/50" />
         <span class="text-[8px] text-white/50 text-center px-1">Nothing to show</span>
       </div>
     </div>
@@ -59,7 +59,7 @@
       :class="{ 'p-3 bg-zinc-800 rounded-lg': showFrame }"
     >
       <div class="flex items-center justify-center bg-black rounded-sm" :style="screenStyle">
-        <UIcon name="i-lucide-image" class="h-4 w-4 text-white/30" />
+        <UIcon name="i-fa6-regular:image" class="h-4 w-4 text-white/30" />
       </div>
     </div>
 
@@ -92,7 +92,7 @@ const props = withDefaults(
     dotSize: 3,
     dotGap: 1,
     showFrame: true,
-  }
+  },
 )
 
 const previewUrl = computed(() => {

@@ -19,7 +19,7 @@ export interface SchemaPreviewOptions {
 export function useSchemaPreview(
   appId: Ref<string>,
   config: Ref<Record<string, unknown>>,
-  options: SchemaPreviewOptions
+  options: SchemaPreviewOptions,
 ) {
   const previewBase64 = ref<string | null>(null)
   const loading = ref(false)
@@ -128,19 +128,16 @@ export function useSchemaPreview(
       }
       debouncedFetch()
     },
-    { deep: true }
+    { deep: true },
   )
 
   // Watch enabled state - fetch immediately when enabled becomes true
   if (options.enabled) {
-    watch(
-      options.enabled,
-      (newEnabled) => {
-        if (newEnabled && appId.value) {
-          fetchPreview()
-        }
+    watch(options.enabled, (newEnabled) => {
+      if (newEnabled && appId.value) {
+        fetchPreview()
       }
-    )
+    })
   }
 
   // Initial fetch when app ID is available (only if enabled)
@@ -151,7 +148,7 @@ export function useSchemaPreview(
         fetchPreview()
       }
     },
-    { immediate: true }
+    { immediate: true },
   )
 
   // Cleanup on unmount

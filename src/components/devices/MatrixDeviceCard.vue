@@ -14,11 +14,11 @@
 
     <template #metadata>
       <span class="inline-flex items-center gap-2">
-        <UIcon name="i-lucide-monitor" class="h-4 w-4" />
+        <UIcon name="i-fa6-solid:desktop" class="h-4 w-4" />
         {{ resolutionLabel }}
       </span>
       <span class="inline-flex items-center gap-2">
-        <UIcon name="i-lucide-sparkles" class="h-4 w-4" />
+        <UIcon name="i-fa6-solid:wand-magic-sparkles" class="h-4 w-4" />
         Brightness {{ brightnessPercent }}%
       </span>
     </template>
@@ -40,12 +40,9 @@
           class="no-label"
         />
         <!-- Show empty/off state when no installation is displaying -->
-        <div
-          v-else
-          class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-        >
+        <div v-else class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
           <div class="flex items-center justify-center bg-black rounded-sm" :style="screenStyle">
-            <UIcon name="i-lucide-image-off" class="h-5 w-5 text-white" />
+            <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white" />
           </div>
         </div>
       </div>
@@ -56,7 +53,7 @@
         size="sm"
         :color="screenEnabled ? 'primary' : 'neutral'"
         variant="soft"
-        icon="i-lucide-power"
+        icon="i-fa6-solid:power-off"
         @click.stop="emit('toggle-screen', device.id)"
       >
         {{ screenEnabled ? 'On' : 'Off' }}
@@ -65,7 +62,7 @@
         size="sm"
         color="neutral"
         variant="ghost"
-        icon="i-lucide-settings-2"
+        icon="i-fa6-solid:gear"
         @click.stop="emit('open-settings', device.id)"
       >
         Settings

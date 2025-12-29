@@ -77,7 +77,7 @@ export function addBrowserFinishedListener(callback: BrowserCloseCallback): () =
 
   const listener = Browser.addListener('browserFinished', callback)
   return () => {
-    listener.then(l => l.remove())
+    listener.then((l) => l.remove())
   }
 }
 
@@ -91,7 +91,7 @@ export function addBrowserFinishedListener(callback: BrowserCloseCallback): () =
  */
 export async function openAuthFlow(
   getUrl: () => Promise<string>,
-  onComplete?: () => void
+  onComplete?: () => void,
 ): Promise<{ popup: Window | null; cleanup: () => void }> {
   let popup: Window | null = null
   let removeListener: () => void = () => {}

@@ -11,12 +11,12 @@ import SetupNetworkView from '@/views/setup/SetupNetworkView.vue'
 import SetupSuccessfulView from '@/views/setup/SetupSuccessfulView.vue'
 import SetupLicenseCallbackView from '@/views/setup/SetupLicenseCallbackView.vue'
 import OAuthCallbackView from '@/views/OAuthCallbackView.vue'
+import ShareAcceptView from '@/views/ShareAcceptView.vue'
 import MatrxDeviceView from '@/views/matrx/MatrxDeviceView.vue'
 import MatrxDeviceSettingsView from '@/views/matrx/MatrxDeviceSettingsView.vue'
 import MatrxAppsView from '@/views/matrx/MatrxAppsView.vue'
 import InstallationEditorView from '@/views/matrx/InstallationEditorView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -77,6 +77,11 @@ const router = createRouter({
       component: OAuthCallbackView,
     },
     {
+      path: '/share/accept',
+      name: 'share-accept',
+      component: ShareAcceptView,
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: SettingsView,
@@ -119,7 +124,12 @@ const router = createRouter({
   ],
 })
 
-const PUBLIC_PATHS = new Set(['/login', '/login/callback', '/setup/license_callback', '/oauth/callback'])
+const PUBLIC_PATHS = new Set([
+  '/login',
+  '/login/callback',
+  '/setup/license_callback',
+  '/oauth/callback',
+])
 let authInitialized = false
 
 router.beforeEach(async (to) => {
@@ -135,10 +145,9 @@ router.beforeEach(async (to) => {
   }
 
   if (!authStore.isLoggedIn) {
-    const redirectQuery = to.fullPath && to.fullPath !== '/' ? { redirect: to.fullPath } : undefined
     return {
       path: '/login',
-      ...(redirectQuery ? { query: redirectQuery } : {}),
+      query: to.fullPath && to.fullPath !== '/' ? { redirect: to.fullPath } : undefined,
     }
   }
 

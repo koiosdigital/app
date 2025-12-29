@@ -4,7 +4,7 @@
     <UButton
       color="neutral"
       variant="soft"
-      icon="i-lucide-locate"
+      icon="i-fa6-solid:location-dot"
       :loading="locating"
       @click="getLocation"
     >
@@ -108,10 +108,7 @@ async function getLocation() {
 
     emit(
       'update:value',
-      buildLocationValue(
-        position.coords.latitude.toFixed(6),
-        position.coords.longitude.toFixed(6)
-      )
+      buildLocationValue(position.coords.latitude.toFixed(6), position.coords.longitude.toFixed(6)),
     )
   } catch (err) {
     locationError.value =

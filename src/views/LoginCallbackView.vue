@@ -14,7 +14,9 @@
 
     <div v-if="errorMessage" class="space-y-4">
       <p class="text-sm text-rose-300">{{ errorMessage }}</p>
-      <UButton color="primary" icon="i-lucide-log-in" @click="retry">Try again</UButton>
+      <UButton color="primary" icon="i-fa6-solid:right-to-bracket" @click="retry"
+        >Try again</UButton
+      >
     </div>
 
     <USkeleton v-else class="h-1.5 w-48" animation="pulse" />
@@ -57,7 +59,7 @@ const consumeRedirectTarget = () => {
 const completeLogin = async () => {
   try {
     await authStore.completeAuthentication(
-      typeof window !== 'undefined' ? window.location.href : undefined
+      typeof window !== 'undefined' ? window.location.href : undefined,
     )
     const target = consumeRedirectTarget() ?? LOGIN_DEFAULT_REDIRECT
     await router.replace(target)

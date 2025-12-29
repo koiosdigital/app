@@ -9,7 +9,7 @@
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-arrow-left"
+            icon="i-fa6-solid:arrow-left"
             square
             @click="router.back()"
           />
@@ -19,7 +19,7 @@
           v-if="mode === 'edit'"
           color="error"
           variant="ghost"
-          icon="i-lucide-trash-2"
+          icon="i-fa6-solid:trash"
           square
           @click="showDeleteModal = true"
         />
@@ -27,41 +27,24 @@
     </header>
 
     <!-- Delete Confirmation Modal -->
-    <UModal v-model:open="showDeleteModal">
-      <template #header>
-        <div>
-          <h2 class="text-lg font-semibold">Delete Installation</h2>
-          <p class="mt-1 text-sm text-white/60">
-            Are you sure you want to remove "{{ appName }}" from this device?
-          </p>
-        </div>
-      </template>
-      <template #body>
-        <p class="text-sm text-white/70">
-          This action cannot be undone. The app configuration will be permanently deleted.
-        </p>
-      </template>
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <UButton color="neutral" variant="ghost" @click="showDeleteModal = false">
-            Cancel
-          </UButton>
-          <UButton color="error" :loading="deleting" @click="handleDelete">
-            Delete
-          </UButton>
-        </div>
-      </template>
-    </UModal>
+    <DangerConfirmModal
+      v-model="showDeleteModal"
+      title="Delete Installation"
+      :message="`Are you sure you want to remove '${appName}' from this device? This action cannot be undone.`"
+      confirm-text="Delete"
+      :loading="deleting"
+      @confirm="handleDelete"
+    />
 
     <!-- Loading State -->
     <div v-if="initialLoading" class="flex flex-1 items-center justify-center">
-      <UIcon name="i-lucide-loader-2" class="h-8 w-8 animate-spin text-white/50" />
+      <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
     </div>
 
     <!-- Error State -->
     <div v-else-if="loadError" class="flex flex-1 items-center justify-center p-5">
       <div class="text-center space-y-4">
-        <UIcon name="i-lucide-alert-circle" class="h-12 w-12 text-red-400 mx-auto" />
+        <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-red-400 mx-auto" />
         <p class="text-red-400">{{ loadError }}</p>
         <UButton color="neutral" variant="soft" @click="loadData">Retry</UButton>
       </div>
@@ -87,7 +70,7 @@
             v-if="previewLoading"
             class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg"
           >
-            <UIcon name="i-lucide-loader-2" class="h-6 w-6 animate-spin text-white/70" />
+            <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/70" />
           </div>
         </div>
 
@@ -100,7 +83,7 @@
             class="flex items-center justify-center bg-black rounded-sm"
             :style="previewPlaceholderStyle"
           >
-            <UIcon name="i-lucide-loader-2" class="h-6 w-6 animate-spin text-white/50" />
+            <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/50" />
           </div>
         </div>
 
@@ -113,7 +96,7 @@
             class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
             :style="previewPlaceholderStyle"
           >
-            <UIcon name="i-lucide-alert-circle" class="h-6 w-6 text-red-500" />
+            <UIcon name="i-fa6-solid:circle-exclamation" class="h-6 w-6 text-red-500" />
             <span class="text-xs text-red-500 text-center px-2">{{ previewError }}</span>
           </div>
         </div>
@@ -127,7 +110,7 @@
             class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
             :style="previewPlaceholderStyle"
           >
-            <UIcon name="i-lucide-settings" class="h-6 w-6 text-amber-500" />
+            <UIcon name="i-fa6-solid:gear" class="h-6 w-6 text-amber-500" />
             <span class="text-xs text-amber-500 text-center px-2">Complete setup below</span>
           </div>
         </div>
@@ -141,21 +124,18 @@
             class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
             :style="previewPlaceholderStyle"
           >
-            <UIcon name="i-lucide-image-off" class="h-6 w-6 text-white/50" />
+            <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/50" />
             <span class="text-xs text-white/50 text-center px-2">Nothing to show</span>
           </div>
         </div>
 
         <!-- Default placeholder -->
-        <div
-          v-else
-          class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-        >
+        <div v-else class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
           <div
             class="flex items-center justify-center bg-black rounded-sm"
             :style="previewPlaceholderStyle"
           >
-            <UIcon name="i-lucide-image" class="h-6 w-6 text-white/30" />
+            <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/30" />
           </div>
         </div>
       </section>
@@ -197,7 +177,10 @@
         </div>
 
         <!-- Skip Toggle (edit mode only) -->
-        <div v-if="mode === 'edit'" class="flex items-center justify-between pt-4 mt-4 border-t border-white/10">
+        <div
+          v-if="mode === 'edit'"
+          class="flex items-center justify-between pt-4 mt-4 border-t border-white/10"
+        >
           <div>
             <span class="text-sm font-medium text-white/70">Skip this app</span>
             <p class="text-xs text-white/50">App won't be shown in rotation</p>
@@ -211,7 +194,7 @@
         class="sticky bottom-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
       >
         <div v-if="saveError" class="mb-3">
-          <UAlert color="error" icon="i-lucide-alert-circle" :title="saveError" />
+          <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
         </div>
         <UButton
           color="primary"
@@ -235,6 +218,7 @@ import { useHead } from '@unhead/vue'
 import { Capacitor } from '@capacitor/core'
 import MatrixDevicePreview from '@/components/MatrixDevicePreview.vue'
 import SchemaForm from '@/components/schema/SchemaForm.vue'
+import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import { appsApi, type AppSchema, type AppManifest } from '@/lib/api/apps'
 import { devicesApi, type InstallationResponse } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
@@ -313,14 +297,18 @@ const {
   error: previewError,
   errorType: previewErrorType,
   refresh: refreshPreview,
-} = useSchemaPreview(toRef(() => resolvedAppId.value), formState.values, {
-  width: deviceWidth,
-  height: deviceHeight,
-  deviceId: toRef(() => props.deviceId),
-  debounceMs: 500,
-  useStaticPreviewUntilInteraction: props.mode === 'install',
-  enabled: dataLoaded,
-})
+} = useSchemaPreview(
+  toRef(() => resolvedAppId.value),
+  formState.values,
+  {
+    width: deviceWidth,
+    height: deviceHeight,
+    deviceId: toRef(() => props.deviceId),
+    debounceMs: 500,
+    useStaticPreviewUntilInteraction: props.mode === 'install',
+    enabled: dataLoaded,
+  },
+)
 
 useHead({
   title: computed(() => `${appName.value} | Koios`),
@@ -340,7 +328,10 @@ async function loadData() {
 
     if (props.mode === 'edit' && props.installationId) {
       // Edit mode: load installation first
-      const installationData = await devicesApi.getInstallation(props.deviceId, props.installationId)
+      const installationData = await devicesApi.getInstallation(
+        props.deviceId,
+        props.installationId,
+      )
       installation.value = installationData ?? null
 
       if (!installation.value?.config) {
@@ -417,7 +408,7 @@ async function triggerGeneratedHandler(fieldId: string) {
     const response = await appsApi.callHandler(
       resolvedAppId.value,
       field.handler,
-      JSON.stringify(sourceValue)
+      JSON.stringify(sourceValue),
     )
 
     if (response?.result) {
@@ -441,7 +432,7 @@ async function handleSave() {
     // Validate first
     const validationResult = await appsApi.validateConfig(
       resolvedAppId.value,
-      formState.values.value
+      formState.values.value,
     )
 
     if (!validationResult?.valid && validationResult?.errors) {
@@ -469,18 +460,14 @@ async function handleSave() {
       router.replace(`/matrx/${props.deviceId}`)
     } else {
       // Update existing installation
-      const result = await devicesApi.updateInstallation(
-        props.deviceId,
-        props.installationId!,
-        {
-          config: {
-            app_id: resolvedAppId.value,
-            params: formState.values.value,
-          },
-          displayTime: displayTime.value,
-          skippedByUser: skippedByUser.value,
-        }
-      )
+      const result = await devicesApi.updateInstallation(props.deviceId, props.installationId!, {
+        config: {
+          app_id: resolvedAppId.value,
+          params: formState.values.value,
+        },
+        displayTime: displayTime.value,
+        skippedByUser: skippedByUser.value,
+      })
 
       if (result.error) {
         throw new Error('Failed to update installation')
@@ -553,7 +540,7 @@ async function checkOAuthRestoration() {
             grant_type: 'authorization_code',
             client_id: (field as { client_id?: string }).client_id,
             redirect_uri: getRedirectUri(),
-          })
+          }),
         )
 
         if (result?.result) {

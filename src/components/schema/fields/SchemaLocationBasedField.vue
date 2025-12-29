@@ -5,7 +5,7 @@
       v-if="field.handler"
       color="neutral"
       variant="soft"
-      icon="i-lucide-locate"
+      icon="i-fa6-solid:location-dot"
       :loading="fetching"
       @click="fetchLocationOptions"
     >
@@ -35,12 +35,8 @@
       class="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2"
     >
       <span class="text-sm text-white/70">{{ displayValue }}</span>
-      <button
-        type="button"
-        class="p-1 rounded hover:bg-white/10"
-        @click="clearSelection"
-      >
-        <UIcon name="i-lucide-x" class="h-4 w-4 text-white/50" />
+      <button type="button" class="p-1 rounded hover:bg-white/10" @click="clearSelection">
+        <UIcon name="i-fa6-solid:xmark" class="h-4 w-4 text-white/50" />
       </button>
     </div>
 
@@ -112,7 +108,7 @@ async function fetchLocationOptions() {
     const response = await appsApi.callHandler(
       props.appId,
       props.field.handler,
-      JSON.stringify(locationData)
+      JSON.stringify(locationData),
     )
 
     if (response?.result) {

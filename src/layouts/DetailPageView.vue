@@ -4,7 +4,7 @@
       <UButton
         v-if="backEnabled"
         variant="ghost"
-        icon="i-lucide-chevron-left"
+        icon="i-fa6-solid:chevron-left"
         size="sm"
         @click="router.back()"
       >
@@ -38,7 +38,7 @@ const props = withDefaults(
     title: '',
     description: '',
     eyebrow: undefined,
-  }
+  },
 )
 
 const router = useRouter()

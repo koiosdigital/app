@@ -5,6 +5,7 @@ import { KDCryptoStatus, type KD_DSParams } from '../helpers/kd_console'
 import { create, toBinary, fromBinary } from '@bufbuild/protobuf'
 import {
   ConsoleMessageSchema,
+  type ConsoleMessage,
   CryptoStatusRequestSchema,
   GetCsrRequestSchema,
   GetDsParamsRequestSchema,
@@ -97,7 +98,7 @@ async function writeRaw(data: Uint8Array): Promise<void> {
     connectedDevice.value.deviceId,
     KOIOS_SERVICE_UUID,
     getCharacteristicUUID(),
-    new DataView(encrypted.buffer)
+    new DataView(encrypted.buffer),
   )
 }
 
@@ -112,7 +113,7 @@ async function readRaw(): Promise<Uint8Array> {
   const response = await BleClient.read(
     connectedDevice.value.deviceId,
     KOIOS_SERVICE_UUID,
-    getCharacteristicUUID()
+    getCharacteristicUUID(),
   )
 
   const encrypted = new Uint8Array(response.buffer)
@@ -140,7 +141,7 @@ async function resetStateMachine(): Promise<void> {
     throw new Error(
       `Reset failed: expected 0xFF, got ${Array.from(response)
         .map((b) => '0x' + b.toString(16).padStart(2, '0'))
-        .join(' ')}`
+        .join(' ')}`,
     )
   }
 }
@@ -327,7 +328,7 @@ async function sendKDConsoleCommand(payload: Uint8Array): Promise<Uint8Array> {
           // Device says "CRC error, retransmit" (0xCC)
           retransmitAttempts++
           console.warn(
-            `Device NAK: CRC error, retransmitting chunk ${chunkIdx} (attempt ${retransmitAttempts}/${MAX_RETRANSMIT_ATTEMPTS})`
+            `Device NAK: CRC error, retransmitting chunk ${chunkIdx} (attempt ${retransmitAttempts}/${MAX_RETRANSMIT_ATTEMPTS})`,
           )
           continue // Retry sending the same chunk
         } else {
@@ -346,7 +347,9 @@ async function sendKDConsoleCommand(payload: Uint8Array): Promise<Uint8Array> {
     }
 
     if (retransmitAttempts >= MAX_RETRANSMIT_ATTEMPTS) {
-      throw new Error(`Failed to send chunk ${chunkIdx} after ${MAX_RETRANSMIT_ATTEMPTS} retransmit attempts`)
+      throw new Error(
+        `Failed to send chunk ${chunkIdx} after ${MAX_RETRANSMIT_ATTEMPTS} retransmit attempts`,
+      )
     }
 
     chunkIdx++
@@ -389,150 +392,110 @@ async function sendKDConsoleCommand(payload: Uint8Array): Promise<Uint8Array> {
 }
 
 /**
- * Get device crypto status
+ * Send a console request and parse the response.
+ * Handles the common pattern of: create request -> send -> validate response case -> extract value
  */
-export async function getCryptoStatus(): Promise<KDCryptoStatus> {
+async function sendConsoleRequest<T>(
+  requestCase: string,
+  requestValue: object,
+  expectedResponseCase: string,
+  extractValue: (responseValue: unknown) => T,
+): Promise<T> {
   const request = create(ConsoleMessageSchema, {
-    payload: {
-      case: 'cryptoStatusRequest',
-      value: create(CryptoStatusRequestSchema),
-    },
+    payload: { case: requestCase, value: requestValue } as ConsoleMessage['payload'],
   })
 
   const requestBytes = toBinary(ConsoleMessageSchema, request)
   const responseBytes = await sendKDConsoleCommand(requestBytes)
   const response = fromBinary(ConsoleMessageSchema, responseBytes)
 
-  if (response.payload.case !== 'cryptoStatusResponse') {
+  if (response.payload.case !== expectedResponseCase) {
     throw new Error(`Unexpected response type: ${response.payload.case}`)
   }
 
-  return response.payload.value.status as KDCryptoStatus
+  return extractValue(response.payload.value)
+}
+
+/**
+ * Get device crypto status
+ */
+export async function getCryptoStatus(): Promise<KDCryptoStatus> {
+  return sendConsoleRequest(
+    'cryptoStatusRequest',
+    create(CryptoStatusRequestSchema),
+    'cryptoStatusResponse',
+    (value) => (value as { status: KDCryptoStatus }).status,
+  )
 }
 
 /**
  * Get Certificate Signing Request (CSR) from device
  */
 export async function getCSR(): Promise<string> {
-  const request = create(ConsoleMessageSchema, {
-    payload: {
-      case: 'getCsrRequest',
-      value: create(GetCsrRequestSchema),
-    },
-  })
-
-  const requestBytes = toBinary(ConsoleMessageSchema, request)
-  const responseBytes = await sendKDConsoleCommand(requestBytes)
-  const response = fromBinary(ConsoleMessageSchema, responseBytes)
-
-  if (response.payload.case !== 'getCsrResponse') {
-    throw new Error(`Unexpected response type: ${response.payload.case}`)
-  }
-
-  const csrBytes = response.payload.value.csrPem
-  return new TextDecoder().decode(csrBytes)
+  return sendConsoleRequest(
+    'getCsrRequest',
+    create(GetCsrRequestSchema),
+    'getCsrResponse',
+    (value) => new TextDecoder().decode((value as { csrPem: Uint8Array }).csrPem),
+  )
 }
 
 /**
  * Get Digital Signature parameters
  */
 export async function getDSParams(): Promise<KD_DSParams> {
-  const request = create(ConsoleMessageSchema, {
-    payload: {
-      case: 'getDsParamsRequest',
-      value: create(GetDsParamsRequestSchema),
-    },
-  })
-
-  const requestBytes = toBinary(ConsoleMessageSchema, request)
-  const responseBytes = await sendKDConsoleCommand(requestBytes)
-  const response = fromBinary(ConsoleMessageSchema, responseBytes)
-
-  if (response.payload.case !== 'getDsParamsResponse') {
-    throw new Error(`Unexpected response type: ${response.payload.case}`)
-  }
-
-  return JSON.parse(response.payload.value.dsParamsJson) as KD_DSParams
+  return sendConsoleRequest(
+    'getDsParamsRequest',
+    create(GetDsParamsRequestSchema),
+    'getDsParamsResponse',
+    (value) => JSON.parse((value as { dsParamsJson: string }).dsParamsJson) as KD_DSParams,
+  )
 }
 
 /**
  * Set Digital Signature parameters
  */
 export async function setDSParams(dsParams: KD_DSParams): Promise<void> {
-  const request = create(ConsoleMessageSchema, {
-    payload: {
-      case: 'setDsParamsRequest',
-      value: create(SetDsParamsRequestSchema, {
-        dsParamsJson: JSON.stringify(dsParams),
-      }),
+  return sendConsoleRequest(
+    'setDsParamsRequest',
+    create(SetDsParamsRequestSchema, { dsParamsJson: JSON.stringify(dsParams) }),
+    'setDsParamsResponse',
+    (value) => {
+      if ((value as { result?: { success?: boolean } }).result?.success !== true) {
+        throw new Error('Failed to set DS params')
+      }
     },
-  })
-
-  const requestBytes = toBinary(ConsoleMessageSchema, request)
-  const responseBytes = await sendKDConsoleCommand(requestBytes)
-  const response = fromBinary(ConsoleMessageSchema, responseBytes)
-
-  if (response.payload.case !== 'setDsParamsResponse') {
-    throw new Error(`Unexpected response type: ${response.payload.case}`)
-  }
-
-  if (response.payload.value.result?.success !== true) {
-    throw new Error('Failed to set DS params')
-  }
+  )
 }
 
 /**
  * Set claim token on device
  */
 export async function setClaimToken(claimToken: string): Promise<void> {
-  const claimTokenBytes = new TextEncoder().encode(claimToken)
-
-  const request = create(ConsoleMessageSchema, {
-    payload: {
-      case: 'setClaimTokenRequest',
-      value: create(SetClaimTokenRequestSchema, {
-        claimToken: claimTokenBytes,
-      }),
+  return sendConsoleRequest(
+    'setClaimTokenRequest',
+    create(SetClaimTokenRequestSchema, { claimToken: new TextEncoder().encode(claimToken) }),
+    'setClaimTokenResponse',
+    (value) => {
+      if ((value as { result?: { success?: boolean } }).result?.success !== true) {
+        throw new Error('Failed to set claim token')
+      }
     },
-  })
-
-  const requestBytes = toBinary(ConsoleMessageSchema, request)
-  const responseBytes = await sendKDConsoleCommand(requestBytes)
-  const response = fromBinary(ConsoleMessageSchema, responseBytes)
-
-  if (response.payload.case !== 'setClaimTokenResponse') {
-    throw new Error(`Unexpected response type: ${response.payload.case}`)
-  }
-
-  if (response.payload.value.result?.success !== true) {
-    throw new Error('Failed to set claim token')
-  }
+  )
 }
 
 /**
  * Set device certificate (PEM format)
  */
 export async function setDeviceCert(certPem: string): Promise<void> {
-  const certPemBytes = new TextEncoder().encode(certPem)
-
-  const request = create(ConsoleMessageSchema, {
-    payload: {
-      case: 'setDeviceCertRequest',
-      value: create(SetDeviceCertRequestSchema, {
-        certPem: certPemBytes,
-      }),
+  return sendConsoleRequest(
+    'setDeviceCertRequest',
+    create(SetDeviceCertRequestSchema, { certPem: new TextEncoder().encode(certPem) }),
+    'setDeviceCertResponse',
+    (value) => {
+      if ((value as { result?: { success?: boolean } }).result?.success !== true) {
+        throw new Error('Failed to set device certificate')
+      }
     },
-  })
-
-  const requestBytes = toBinary(ConsoleMessageSchema, request)
-  const responseBytes = await sendKDConsoleCommand(requestBytes)
-  const response = fromBinary(ConsoleMessageSchema, responseBytes)
-
-  if (response.payload.case !== 'setDeviceCertResponse') {
-    throw new Error(`Unexpected response type: ${response.payload.case}`)
-  }
-
-  if (response.payload.value.result?.success !== true) {
-    throw new Error('Failed to set device certificate')
-  }
+  )
 }

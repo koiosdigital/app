@@ -1,12 +1,10 @@
 <template>
-  <div class="inline-flex items-center justify-center" :class="{ 'p-3 bg-zinc-800 rounded-lg': showFrame }">
+  <div
+    class="inline-flex items-center justify-center"
+    :class="{ 'p-3 bg-zinc-800 rounded-lg': showFrame }"
+  >
     <div class="matrix-container rounded-sm bg-black" :style="containerStyle">
-      <img
-        :src="src"
-        :alt="alt"
-        class="matrix-image"
-        :style="imageStyle"
-      />
+      <img :src="src" :alt="alt" class="matrix-image" :style="imageStyle" />
     </div>
   </div>
 </template>
@@ -41,7 +39,7 @@ const props = withDefaults(
     dotGap: 1,
     showFrame: true,
     roundDots: true,
-  }
+  },
 )
 
 const cellSize = computed(() => props.dotSize + props.dotGap)

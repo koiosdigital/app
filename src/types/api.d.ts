@@ -4,3526 +4,4015 @@
  */
 
 export interface paths {
-    "/v1/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Readiness probe */
-        get: operations["HealthController_getHealth_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/user/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get current user information */
-        get: operations["UserController_getCurrentUser_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/devices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all devices owned by the current user */
-        get: operations["DevicesController_findAll_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/devices/get_claim_token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Generate a short-lived token for device claiming
-         * @description Generates a JWT token valid for 10 minutes that a device can use to claim itself to the authenticated user account
-         */
-        get: operations["DevicesController_getClaimToken_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/devices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a specific device (owner or shared access) */
-        get: operations["DevicesController_findOne_v1"];
-        put?: never;
-        post?: never;
-        /** Delete a device (owner only) */
-        delete: operations["DevicesController_remove_v1"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/devices/{id}/settings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Update device settings (owner only)
-         * @description Update display name and type-specific settings. The `type` field must match the device type.
-         */
-        patch: operations["DevicesController_updateSettings_v1"];
-        trace?: never;
-    };
-    "/v1/devices/{deviceId}/installations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all installations for a device */
-        get: operations["InstallationsController_findAll_v1"];
-        put?: never;
-        /** Create a new installation for a device */
-        post: operations["InstallationsController_create_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/devices/{deviceId}/installations/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Bulk update sort order and display times for multiple installations */
-        patch: operations["InstallationsController_bulkUpdate_v1"];
-        trace?: never;
-    };
-    "/v1/devices/{deviceId}/installations/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a specific installation with config */
-        get: operations["InstallationsController_findOne_v1"];
-        put?: never;
-        post?: never;
-        /** Delete an installation */
-        delete: operations["InstallationsController_remove_v1"];
-        options?: never;
-        head?: never;
-        /** Update an installation */
-        patch: operations["InstallationsController_update_v1"];
-        trace?: never;
-    };
-    "/v1/devices/{deviceId}/installations/{id}/skip": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Set skip state for an installation */
-        patch: operations["InstallationsController_setSkipState_v1"];
-        trace?: never;
-    };
-    "/v1/devices/{deviceId}/installations/{id}/pin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Set pin state for an installation (unpins any other pinned installation) */
-        patch: operations["InstallationsController_setPinState_v1"];
-        trace?: never;
-    };
-    "/v1/devices/{deviceId}/installations/{id}/render.webp": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Render installation as WebP using stored config and device dimensions */
-        get: operations["InstallationsController_renderWebp_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all available Pixlet apps with pagination and filtering */
-        get: operations["AppsController_listApps_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get details for a specific app */
-        get: operations["AppsController_getApp_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps/{id}/schema": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Fetch the schema definition for an app */
-        get: operations["AppsController_getSchema_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps/{id}/preview/{dimensions}.webp": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Generate a static WebP preview using schema defaults */
-        get: operations["AppsController_previewWebp_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps/{id}/preview/{dimensions}.gif": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Generate a static GIF preview using schema defaults */
-        get: operations["AppsController_previewGif_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps/{id}/render": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Render an app with the provided configuration */
-        post: operations["AppsController_renderApp_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps/{id}/validate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Validate a configuration object against the schema */
-        post: operations["AppsController_validateConfig_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/apps/{id}/call_handler": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Invoke a Pixlet schema handler */
-        post: operations["AppsController_callSchemaHandler_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+  '/v1/health': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Readiness probe */
+    get: operations['HealthController_getHealth_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/user/me': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get current user information */
+    get: operations['UserController_getCurrentUser_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List all devices owned by the current user */
+    get: operations['DevicesController_findAll_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/get_claim_token': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Generate a short-lived token for device claiming
+     * @description Generates a JWT token valid for 10 minutes that a device can use to claim itself to the authenticated user account
+     */
+    get: operations['DevicesController_getClaimToken_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a specific device (owner or shared access) */
+    get: operations['DevicesController_findOne_v1']
+    put?: never
+    post?: never
+    /** Delete a device (owner only) */
+    delete: operations['DevicesController_remove_v1']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/{id}/settings': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /**
+     * Update device settings (owner only)
+     * @description Update display name and type-specific settings. The `type` field must match the device type.
+     */
+    patch: operations['DevicesController_updateSettings_v1']
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/installations': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List all installations for a device */
+    get: operations['InstallationsController_findAll_v1']
+    put?: never
+    /** Create a new installation for a device */
+    post: operations['InstallationsController_create_v1']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/installations/bulk': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Bulk update sort order and display times for multiple installations */
+    patch: operations['InstallationsController_bulkUpdate_v1']
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/installations/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a specific installation with config */
+    get: operations['InstallationsController_findOne_v1']
+    put?: never
+    post?: never
+    /** Delete an installation */
+    delete: operations['InstallationsController_remove_v1']
+    options?: never
+    head?: never
+    /** Update an installation */
+    patch: operations['InstallationsController_update_v1']
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/installations/{id}/skip': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Set skip state for an installation */
+    patch: operations['InstallationsController_setSkipState_v1']
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/installations/{id}/pin': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Set pin state for an installation (unpins any other pinned installation) */
+    patch: operations['InstallationsController_setPinState_v1']
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/installations/{id}/render.webp': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Render installation as WebP using stored config and device dimensions */
+    get: operations['InstallationsController_renderWebp_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List all available Pixlet apps with pagination and filtering */
+    get: operations['AppsController_listApps_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get details for a specific app */
+    get: operations['AppsController_getApp_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps/{id}/schema': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Fetch the schema definition for an app */
+    get: operations['AppsController_getSchema_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps/{id}/preview/{dimensions}.webp': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Generate a static WebP preview using schema defaults */
+    get: operations['AppsController_previewWebp_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps/{id}/preview/{dimensions}.gif': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Generate a static GIF preview using schema defaults */
+    get: operations['AppsController_previewGif_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps/{id}/render': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Render an app with the provided configuration */
+    post: operations['AppsController_renderApp_v1']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps/{id}/validate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Validate a configuration object against the schema */
+    post: operations['AppsController_validateConfig_v1']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/apps/{id}/call_handler': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Invoke a Pixlet schema handler */
+    post: operations['AppsController_callSchemaHandler_v1']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/shares': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List all shares and pending invites for a device
+     * @description Returns a list of users with shared access and pending invites. Only device owners can view this.
+     */
+    get: operations['SharingController_getShares_v1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/shares/invite': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Create a share invite
+     * @description Sends an email invitation to share device access. Only device owners can create invites.
+     */
+    post: operations['SharingController_createInvite_v1']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/shares/invite/{inviteId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /**
+     * Cancel a pending invite
+     * @description Cancels a pending share invite. Only device owners can cancel invites.
+     */
+    delete: operations['SharingController_cancelInvite_v1']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/devices/{deviceId}/shares/user/{userId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /**
+     * Revoke shared access
+     * @description Removes shared access for a user. Device owners can revoke any share, shared users can only revoke their own access.
+     */
+    delete: operations['SharingController_revokeShare_v1']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/shares/accept': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Accept a share invite
+     * @description Accepts a share invitation using the token from the invite email. The authenticated user will be granted shared access to the device.
+     */
+    post: operations['ShareAcceptController_acceptInvite_v1']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
-export type webhooks = Record<string, never>;
+export type webhooks = Record<string, never>
 export interface components {
-    schemas: {
-        HealthResponseDto: {
-            /**
-             * @description Overall health status of the service
-             * @example ok
-             * @enum {string}
-             */
-            status: "ok" | "degraded";
-            /**
-             * Format: date-time
-             * @description ISO timestamp when the health check was performed
-             * @example 2025-12-24T22:00:00.000Z
-             */
-            timestamp: string;
-            /**
-             * @description Database connection status
-             * @example up
-             * @enum {string}
-             */
-            database: "up" | "error";
-        };
-        UserResponseDto: {
-            /**
-             * @description User subject identifier from the identity provider
-             * @example auth0|507f1f77bcf86cd799439011
-             */
-            sub: string;
-            /**
-             * @description Username or preferred username
-             * @example john.doe
-             */
-            username?: string;
-            /**
-             * @description Full name of the user
-             * @example John Doe
-             */
-            name?: string;
-            /**
-             * Format: email
-             * @description Email address of the user
-             * @example john.doe@example.com
-             */
-            email?: string;
-            /**
-             * @description Organization identifier the user belongs to
-             * @example org_12345
-             */
-            organizationId?: string;
-            /**
-             * @description List of user scopes/permissions
-             * @example [
-             *       "read:devices",
-             *       "write:devices"
-             *     ]
-             */
-            scopes: unknown[][];
-        };
-        ErrorResponseDto: {
-            /**
-             * @description HTTP status code
-             * @example 400
-             */
-            statusCode: number;
-            /**
-             * @description Error type/code
-             * @example BAD_REQUEST
-             */
-            error: string;
-            /**
-             * @description Human-readable error message
-             * @example Invalid request parameters
-             */
-            message: string;
-            /**
-             * @description Detailed validation errors or additional context
-             * @example [
-             *       "field must be a string",
-             *       "value is required"
-             *     ]
-             */
-            details?: string[];
-            /**
-             * @description Request path that caused the error
-             * @example /v1/devices/abc123
-             */
-            path?: string;
-            /**
-             * @description Timestamp when the error occurred
-             * @example 2025-12-26T12:00:00.000Z
-             */
-            timestamp?: string;
-        };
-        /**
-         * @description User access level to this device
-         * @enum {string}
-         */
-        ClaimType: "OWNER" | "SHARED";
-        LanternSettingsDto: {
-            /**
-             * @description LED brightness level (0-255)
-             * @example 255
-             */
-            brightness: number;
-            /**
-             * @description Hour when sleep mode starts (0-23)
-             * @example 22
-             */
-            sleep_start: number;
-            /**
-             * @description Hour when sleep mode ends (0-23)
-             * @example 7
-             */
-            sleep_end: number;
-        };
-        LanternDeviceSettingsDto: {
-            /**
-             * @description Display name for the device
-             * @example Living Room Matrx
-             */
-            displayName: string;
-            /** @description Device display width in pixels (read-only) */
-            width?: number;
-            /** @description Device display height in pixels (read-only) */
-            height?: number;
-            /** @description Whether device has a light sensor (read-only) */
-            hasLightSensor?: boolean;
-            /** @description Lantern-specific settings */
-            typeSettings?: components["schemas"]["LanternSettingsDto"] | null;
-        };
-        LanternDeviceResponseDto: {
-            /**
-             * @description Unique identifier for the device
-             * @example dev_123abc
-             */
-            id: string;
-            /**
-             * @description Whether the device is currently online
-             * @example true
-             */
-            online: boolean;
-            /**
-             * @description User access level to this device
-             * @example OWNER
-             */
-            accessLevel: components["schemas"]["ClaimType"];
-            /**
-             * @description UUID of the installation currently being displayed on the device
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            currentlyDisplayingInstallation?: string | null;
-            /**
-             * @description Number of installations configured on this device
-             * @example 5
-             */
-            installationCount: number;
-            /**
-             * Format: date-time
-             * @description Timestamp when the device was created
-             * @example 2025-12-24T22:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Timestamp when the device was last updated
-             * @example 2025-12-24T22:30:00.000Z
-             */
-            updatedAt: string;
-            /**
-             * @description Type of device (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "LANTERN";
-            /** @description Device settings including display name and Lantern-specific configuration */
-            settings?: components["schemas"]["LanternDeviceSettingsDto"] | null;
-        };
-        MatrxSettingsDto: {
-            /**
-             * @description Whether the screen is enabled
-             * @example true
-             */
-            screenEnabled: boolean;
-            /**
-             * @description Screen brightness level (0-255)
-             * @example 128
-             */
-            screenBrightness: number;
-            /**
-             * @description Whether automatic brightness adjustment is enabled
-             * @example false
-             */
-            autoBrightnessEnabled: boolean;
-            /**
-             * @description Lux threshold below which screen turns off
-             * @example 5
-             */
-            screenOffLux: number;
-        };
-        MatrxDeviceSettingsDto: {
-            /**
-             * @description Display name for the device
-             * @example Living Room Matrx
-             */
-            displayName: string;
-            /** @description Device display width in pixels (read-only) */
-            width?: number;
-            /** @description Device display height in pixels (read-only) */
-            height?: number;
-            /** @description Whether device has a light sensor (read-only) */
-            hasLightSensor?: boolean;
-            /** @description Matrx-specific settings */
-            typeSettings?: components["schemas"]["MatrxSettingsDto"] | null;
-        };
-        MatrxDeviceResponseDto: {
-            /**
-             * @description Unique identifier for the device
-             * @example dev_123abc
-             */
-            id: string;
-            /**
-             * @description Whether the device is currently online
-             * @example true
-             */
-            online: boolean;
-            /**
-             * @description User access level to this device
-             * @example OWNER
-             */
-            accessLevel: components["schemas"]["ClaimType"];
-            /**
-             * @description UUID of the installation currently being displayed on the device
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            currentlyDisplayingInstallation?: string | null;
-            /**
-             * @description Number of installations configured on this device
-             * @example 5
-             */
-            installationCount: number;
-            /**
-             * Format: date-time
-             * @description Timestamp when the device was created
-             * @example 2025-12-24T22:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Timestamp when the device was last updated
-             * @example 2025-12-24T22:30:00.000Z
-             */
-            updatedAt: string;
-            /**
-             * @description Type of device (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "MATRX";
-            /** @description Device settings including display name and Matrx-specific configuration */
-            settings?: components["schemas"]["MatrxDeviceSettingsDto"] | null;
-        };
-        ClaimTokenResponseDto: {
-            /**
-             * @description Short-lived JWT token for device claiming (valid for 10 minutes)
-             * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-             */
-            token: string;
-            /**
-             * @description Token expiration timestamp (Unix epoch in seconds)
-             * @example 1735161127
-             */
-            expiresAt: number;
-        };
-        LanternTypeSettingsDto: {
-            /**
-             * @description LED brightness level (0-255)
-             * @example 255
-             */
-            brightness?: number;
-            /**
-             * @description Hour when sleep mode starts (0-23)
-             * @example 22
-             */
-            sleep_start?: number;
-            /**
-             * @description Hour when sleep mode ends (0-23)
-             * @example 7
-             */
-            sleep_end?: number;
-        };
-        UpdateLanternSettingsDto: {
-            /**
-             * @description Device type discriminator
-             * @example LANTERN
-             * @enum {string}
-             */
-            type: "LANTERN";
-            /**
-             * @description Display name for the device
-             * @example Living Room Lantern
-             */
-            displayName?: string;
-            /** @description Lantern-specific settings */
-            typeSettings?: components["schemas"]["LanternTypeSettingsDto"];
-        };
-        MatrxTypeSettingsDto: {
-            /**
-             * @description Whether the screen is enabled
-             * @example true
-             */
-            screenEnabled?: boolean;
-            /**
-             * @description Screen brightness level (0-255)
-             * @example 128
-             */
-            screenBrightness?: number;
-            /**
-             * @description Whether automatic brightness adjustment is enabled
-             * @example false
-             */
-            autoBrightnessEnabled?: boolean;
-            /**
-             * @description Lux threshold below which screen turns off
-             * @example 5
-             */
-            screenOffLux?: number;
-        };
-        UpdateMatrxSettingsDto: {
-            /**
-             * @description Device type discriminator
-             * @example MATRX
-             * @enum {string}
-             */
-            type: "MATRX";
-            /**
-             * @description Display name for the device
-             * @example Living Room Matrx
-             */
-            displayName?: string;
-            /** @description Matrx-specific settings */
-            typeSettings?: components["schemas"]["MatrxTypeSettingsDto"];
-        };
-        InstallationConfigInputDto: {
-            /**
-             * @description App identifier
-             * @example weather
-             */
-            app_id: string;
-            /**
-             * @description App configuration parameters
-             * @example {
-             *       "city": "seattle",
-             *       "units": "imperial"
-             *     }
-             */
-            params: {
-                [key: string]: unknown;
-            };
-        };
-        CreateInstallationDto: {
-            /** @description Installation configuration */
-            config: components["schemas"]["InstallationConfigInputDto"];
-            /**
-             * @description Whether the installation is enabled
-             * @default true
-             * @example true
-             */
-            enabled: boolean;
-            /**
-             * @description Display time in seconds
-             * @default 0
-             * @example 15
-             */
-            displayTime: number;
-            /**
-             * @description Sort order for display rotation
-             * @default 0
-             * @example 0
-             */
-            sortOrder: number;
-        };
-        InstallationConfigDto: {
-            /**
-             * @description App identifier
-             * @example weather
-             */
-            app_id: string;
-            /**
-             * @description App configuration parameters
-             * @example {
-             *       "city": "seattle",
-             *       "units": "imperial"
-             *     }
-             */
-            params: {
-                [key: string]: unknown;
-            };
-        };
-        InstallationResponseDto: {
-            /**
-             * @description Installation unique identifier
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description Device identifier this installation belongs to
-             * @example dev_abc123
-             */
-            deviceId: string;
-            /**
-             * @description App display name
-             * @example Weather
-             */
-            appName: string;
-            /**
-             * @description Whether the installation is enabled
-             * @example true
-             */
-            enabled: boolean;
-            /**
-             * @description Whether the user skipped this installation
-             * @example false
-             */
-            skippedByUser: boolean;
-            /**
-             * @description Whether the server skipped this installation (e.g., render errors)
-             * @example false
-             */
-            skippedByServer: boolean;
-            /**
-             * @description Whether the user pinned this installation
-             * @example false
-             */
-            pinnedByUser: boolean;
-            /**
-             * @description Display time in seconds
-             * @example 15
-             */
-            displayTime: number;
-            /**
-             * @description Sort order for display rotation
-             * @example 0
-             */
-            sortOrder: number;
-            /**
-             * Format: date-time
-             * @description Timestamp when created
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Timestamp when last updated
-             */
-            updatedAt: string;
-            /** @description Installation configuration (only included in single GET) */
-            config?: components["schemas"]["InstallationConfigDto"];
-        };
-        InstallationListItemDto: {
-            /**
-             * @description Installation unique identifier
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description App identifier
-             * @example weather
-             */
-            appId: string;
-            /**
-             * @description App display name
-             * @example Weather
-             */
-            appName: string;
-            /**
-             * @description Whether the installation is enabled
-             * @example true
-             */
-            enabled: boolean;
-            /**
-             * @description Whether the installation is skipped by user
-             * @example false
-             */
-            skippedByUser: boolean;
-            /**
-             * @description Whether the installation is skipped by server (e.g., render errors)
-             * @example false
-             */
-            skippedByServer: boolean;
-            /**
-             * @description Whether the installation is pinned by user
-             * @example false
-             */
-            pinnedByUser: boolean;
-            /**
-             * @description Sort order for display rotation
-             * @example 0
-             */
-            sortOrder: number;
-        };
-        BulkUpdateInstallationItemDto: {
-            /**
-             * @description Installation UUID
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description New sort order for the installation
-             * @example 0
-             */
-            sortOrder?: number;
-            /**
-             * @description Display time in seconds (0 = use default)
-             * @example 30
-             */
-            displayTime?: number;
-        };
-        BulkUpdateInstallationsDto: {
-            /** @description List of installations to update */
-            installations: components["schemas"]["BulkUpdateInstallationItemDto"][];
-        };
-        BulkUpdateResultDto: {
-            /**
-             * @description Number of installations updated
-             * @example 5
-             */
-            updated: number;
-        };
-        UpdateInstallationDto: {
-            /** @description Installation configuration */
-            config?: components["schemas"]["InstallationConfigInputDto"];
-            /**
-             * @description Whether the installation is enabled
-             * @example true
-             */
-            enabled?: boolean;
-            /**
-             * @description Whether the user skipped this installation
-             * @example false
-             */
-            skippedByUser?: boolean;
-            /**
-             * @description Whether the user pinned this installation
-             * @example false
-             */
-            pinnedByUser?: boolean;
-            /**
-             * @description Display time in seconds
-             * @example 15
-             */
-            displayTime?: number;
-            /**
-             * @description Sort order for display rotation
-             * @example 0
-             */
-            sortOrder?: number;
-        };
-        SetSkipStateDto: {
-            /**
-             * @description Whether to skip this installation
-             * @example true
-             */
-            skipped: boolean;
-        };
-        InstallationStateResponseDto: {
-            /**
-             * @description Installation UUID
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description Whether this installation is skipped
-             * @example false
-             */
-            skippedByUser: boolean;
-            /**
-             * @description Whether this installation is pinned
-             * @example true
-             */
-            pinnedByUser: boolean;
-        };
-        SetPinStateDto: {
-            /**
-             * @description Whether to pin this installation (unpins any other pinned installation on the device)
-             * @example true
-             */
-            pinned: boolean;
-        };
-        AppSchemaDto: {
-            /**
-             * @description Schema version
-             * @example 1.0.0
-             */
-            version: string;
-            /** @description List of configurable fields (empty array if no configuration required) */
-            schema: (components["schemas"]["AppSchemaColorFieldDto"] | components["schemas"]["AppSchemaDatetimeFieldDto"] | components["schemas"]["AppSchemaDropdownFieldDto"] | components["schemas"]["AppSchemaGeneratedFieldDto"] | components["schemas"]["AppSchemaLocationFieldDto"] | components["schemas"]["AppSchemaLocationBasedFieldDto"] | components["schemas"]["AppSchemaOnOffFieldDto"] | components["schemas"]["AppSchemaRadioFieldDto"] | components["schemas"]["AppSchemaTextFieldDto"] | components["schemas"]["AppSchemaTypeaheadFieldDto"] | components["schemas"]["AppSchemaOAuth2FieldDto"] | components["schemas"]["AppSchemaOAuth1FieldDto"] | components["schemas"]["AppSchemaPNGFieldDto"] | components["schemas"]["AppSchemaNotificationFieldDto"])[];
-            /** @description Notification field definitions */
-            notifications?: components["schemas"]["AppSchemaNotificationFieldDto"][];
-        };
-        AppSchemaVisibilityDto: {
-            /**
-             * @description Visibility behavior
-             * @example invisible
-             * @enum {string}
-             */
-            type: "invisible" | "disabled";
-            /**
-             * @description Comparison mode
-             * @example equal
-             * @enum {string}
-             */
-            condition: "equal" | "not_equal";
-            /**
-             * @description Source variable used for comparison
-             * @example unit
-             */
-            variable: string;
-            /**
-             * @description Value used for comparison
-             * @example metric
-             */
-            value?: string;
-        };
-        AppSchemaOptionDto: {
-            /**
-             * @description Optional display label
-             * @example Seattle
-             */
-            display?: string;
-            /**
-             * @description Primary option label
-             * @example Seattle, WA
-             */
-            text: string;
-            /**
-             * @description Underlying value used in config
-             * @example seattle
-             */
-            value: string;
-        };
-        AppSchemaSoundDto: {
-            /**
-             * @description Unique sound identifier
-             * @example alert
-             */
-            id: string;
-            /**
-             * @description Display title
-             * @example Alert Tone
-             */
-            title: string;
-            /**
-             * @description Relative file path
-             * @example sounds/alert.wav
-             */
-            path: string;
-        };
-        AppSchemaFieldBaseDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-        };
-        AppManifestDto: {
-            /**
-             * @description Unique app identifier
-             * @example weather
-             */
-            id: string;
-            /**
-             * @description Display name shown in the catalog
-             * @example Weather
-             */
-            name: string;
-            /**
-             * @description Short summary of the app
-             * @example Local weather on your Matrx
-             */
-            summary: string;
-            /**
-             * @description Long form description
-             * @example Displays the current forecast, highs, lows, and alerts.
-             */
-            description: string;
-            /**
-             * @description App author
-             * @example Koios Labs
-             */
-            author: string;
-            /**
-             * @description Primary .star filename
-             * @example weather.star
-             */
-            fileName: string;
-            /**
-             * @description Internal package name
-             * @example com.koios.weather
-             */
-            packageName: string;
-            /**
-             * @description Absolute path to the app directory
-             * @example /apps/weather
-             */
-            directoryPath?: string;
-            /**
-             * @description Absolute path to the entry .star file
-             * @example /apps/weather/weather.star
-             */
-            starFilePath?: string;
-        };
-        RenderResultDto: {
-            /**
-             * @description Renderer result type identifier
-             * @example render
-             */
-            type: string;
-            /**
-             * @description Render job UUID
-             * @example 4f252578-6f18-4ffd-8a69-2d4eb46c29ea
-             */
-            uuid: string;
-            /**
-             * @description Optional device identifier used for logging
-             * @example device_123
-             */
-            device_id?: string;
-            /**
-             * @description App identifier that produced the render
-             * @example weather
-             */
-            app_id: string;
-            /**
-             * @description Base64 encoded WebP payload
-             * @example UklGRjYAAABXRUJQVlA4WAoAAAAQAAAAMgAA...
-             */
-            render_output: string;
-            /**
-             * @description Timestamp when rendering completed
-             * @example 2024-01-01T12:00:00.000Z
-             */
-            processed_at: string;
-        };
-        RenderResponseDto: {
-            /** @description Renderer output metadata */
-            result: components["schemas"]["RenderResultDto"];
-            /**
-             * @description Normalized configuration returned by the renderer
-             * @example {
-             *       "city": "seattle",
-             *       "units": "imperial"
-             *     }
-             */
-            normalized_config: {
-                [key: string]: unknown;
-            };
-        };
-        ValidationErrorDto: {
-            /**
-             * @description Field identifier that failed validation
-             * @example city
-             */
-            field: string;
-            /**
-             * @description Human readable error message
-             * @example City is required
-             */
-            message: string;
-            /**
-             * @description Machine readable error code
-             * @example required
-             */
-            code: string;
-        };
-        ValidateSchemaResponseDto: {
-            /**
-             * @description Whether the configuration passed validation
-             * @example true
-             */
-            valid: boolean;
-            /** @description List of validation errors, if any */
-            errors?: components["schemas"]["ValidationErrorDto"][];
-            /**
-             * @description Normalized configuration returned by the renderer
-             * @example {
-             *       "city": "seattle",
-             *       "units": "imperial"
-             *     }
-             */
-            normalized_config: {
-                [key: string]: unknown;
-            };
-        };
-        CallSchemaHandlerRequestDto: {
-            /**
-             * @description Handler to invoke
-             * @example search_locations
-             */
-            handler_name: string;
-            /**
-             * @description Serialized payload passed to the handler
-             * @example {"query":"Seattle"}
-             */
-            data?: string;
-        };
-        CallSchemaHandlerResponseDto: {
-            /**
-             * @description Raw handler response payload
-             * @example {"results":["Seattle","Portland"]}
-             */
-            result: string;
-        };
-        PaginationMetaDto: {
-            /**
-             * @description Current page number
-             * @example 1
-             */
-            page: number;
-            /**
-             * @description Number of items per page
-             * @example 20
-             */
-            limit: number;
-            /**
-             * @description Total number of items
-             * @example 45
-             */
-            total: number;
-            /**
-             * @description Total number of pages
-             * @example 3
-             */
-            totalPages: number;
-            /**
-             * @description Whether there is a previous page
-             * @example false
-             */
-            hasPrevious: boolean;
-            /**
-             * @description Whether there is a next page
-             * @example true
-             */
-            hasNext: boolean;
-        };
-        PaginatedAppsResponseDto: {
-            /** @description Array of app manifests for current page */
-            data: components["schemas"]["AppManifestDto"][];
-            /** @description Pagination metadata */
-            meta: components["schemas"]["PaginationMetaDto"];
-        };
-        AppSchemaColorFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for color field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "color";
-        };
-        AppSchemaDatetimeFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for datetime field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "datetime";
-        };
-        AppSchemaDropdownFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for dropdown field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "dropdown";
-        };
-        AppSchemaGeneratedFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for generated field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "generated";
-        };
-        AppSchemaLocationFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for location field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "location";
-        };
-        AppSchemaLocationBasedFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for location based field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "locationbased";
-        };
-        AppSchemaOnOffFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for on/off field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "onoff";
-        };
-        AppSchemaRadioFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for radio field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "radio";
-        };
-        AppSchemaTextFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for text field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "text";
-        };
-        AppSchemaTypeaheadFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for typeahead field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "typeahead";
-        };
-        AppSchemaOAuth2FieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for OAuth2 field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "oauth2";
-        };
-        AppSchemaOAuth1FieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for OAuth1 field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "oauth1";
-        };
-        AppSchemaPNGFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for PNG upload field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "png";
-        };
-        AppSchemaNotificationFieldDto: {
-            /**
-             * @description Field identifier
-             * @example city
-             */
-            id: string;
-            /**
-             * @description Human readable label
-             * @example City
-             */
-            name?: string;
-            /**
-             * @description Helper text for the field
-             * @example Pick the city to display
-             */
-            description?: string;
-            /**
-             * @description Optional icon name
-             * @example weather
-             */
-            icon?: string;
-            /** @description Conditional visibility definition */
-            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
-            /**
-             * @description Default value serialized as text
-             * @example seattle
-             */
-            default?: string;
-            /** @description Selectable options for dropdown style fields */
-            options?: components["schemas"]["AppSchemaOptionDto"][];
-            /** @description Palette of colors for selection fields */
-            palette?: string[];
-            /** @description Available notification sounds */
-            sounds?: components["schemas"]["AppSchemaSoundDto"][];
-            /**
-             * @description Field ID used as a source for generated fields
-             * @example city
-             */
-            source?: string;
-            /**
-             * @description Pixlet handler invoked for dynamic data
-             * @example fetch_cities
-             */
-            handler?: string;
-            /**
-             * @description OAuth client identifier
-             * @example pixlet-google
-             */
-            client_id?: string;
-            /**
-             * @description OAuth authorization endpoint
-             * @example https://accounts.google.com/o/oauth2/v2/auth
-             */
-            authorization_endpoint?: string;
-            /**
-             * @description OAuth scopes requested for the flow
-             * @example [
-             *       "profile",
-             *       "email"
-             *     ]
-             */
-            scopes?: string[];
-            /**
-             * @description Discriminator for notification field (enum property replaced by openapi-typescript)
-             * @enum {string}
-             */
-            type: "notification";
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: {
+    HealthResponseDto: {
+      /**
+       * @description Overall health status of the service
+       * @example ok
+       * @enum {string}
+       */
+      status: 'ok' | 'degraded'
+      /**
+       * Format: date-time
+       * @description ISO timestamp when the health check was performed
+       * @example 2025-12-24T22:00:00.000Z
+       */
+      timestamp: string
+      /**
+       * @description Database connection status
+       * @example up
+       * @enum {string}
+       */
+      database: 'up' | 'error'
+    }
+    UserResponseDto: {
+      /**
+       * @description User subject identifier from the identity provider
+       * @example auth0|507f1f77bcf86cd799439011
+       */
+      sub: string
+      /**
+       * @description Username or preferred username
+       * @example john.doe
+       */
+      username?: string
+      /**
+       * @description Full name of the user
+       * @example John Doe
+       */
+      name?: string
+      /**
+       * Format: email
+       * @description Email address of the user
+       * @example john.doe@example.com
+       */
+      email?: string
+      /**
+       * @description Organization identifier the user belongs to
+       * @example org_12345
+       */
+      organizationId?: string
+      /**
+       * @description List of user scopes/permissions
+       * @example [
+       *       "read:devices",
+       *       "write:devices"
+       *     ]
+       */
+      scopes: unknown[][]
+    }
+    ErrorResponseDto: {
+      /**
+       * @description HTTP status code
+       * @example 400
+       */
+      statusCode: number
+      /**
+       * @description Error type/code
+       * @example BAD_REQUEST
+       */
+      error: string
+      /**
+       * @description Human-readable error message
+       * @example Invalid request parameters
+       */
+      message: string
+      /**
+       * @description Detailed validation errors or additional context
+       * @example [
+       *       "field must be a string",
+       *       "value is required"
+       *     ]
+       */
+      details?: string[]
+      /**
+       * @description Request path that caused the error
+       * @example /v1/devices/abc123
+       */
+      path?: string
+      /**
+       * @description Timestamp when the error occurred
+       * @example 2025-12-26T12:00:00.000Z
+       */
+      timestamp?: string
+    }
+    /**
+     * @description User access level to this device
+     * @enum {string}
+     */
+    ClaimType: 'OWNER' | 'SHARED'
+    LanternSettingsDto: {
+      /**
+       * @description LED brightness level (0-255)
+       * @example 255
+       */
+      brightness: number
+      /**
+       * @description Hour when sleep mode starts (0-23)
+       * @example 22
+       */
+      sleep_start: number
+      /**
+       * @description Hour when sleep mode ends (0-23)
+       * @example 7
+       */
+      sleep_end: number
+    }
+    LanternDeviceSettingsDto: {
+      /**
+       * @description Display name for the device
+       * @example Living Room Matrx
+       */
+      displayName: string
+      /** @description Device display width in pixels (read-only) */
+      width?: number
+      /** @description Device display height in pixels (read-only) */
+      height?: number
+      /** @description Whether device has a light sensor (read-only) */
+      hasLightSensor?: boolean
+      /** @description Lantern-specific settings */
+      typeSettings?: components['schemas']['LanternSettingsDto'] | null
+    }
+    LanternDeviceResponseDto: {
+      /**
+       * @description Unique identifier for the device
+       * @example dev_123abc
+       */
+      id: string
+      /**
+       * @description Whether the device is currently online
+       * @example true
+       */
+      online: boolean
+      /**
+       * @description User access level to this device
+       * @example OWNER
+       */
+      accessLevel: components['schemas']['ClaimType']
+      /**
+       * @description UUID of the installation currently being displayed on the device
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      currentlyDisplayingInstallation?: string | null
+      /**
+       * @description Number of installations configured on this device
+       * @example 5
+       */
+      installationCount: number
+      /**
+       * Format: date-time
+       * @description Timestamp when the device was created
+       * @example 2025-12-24T22:00:00.000Z
+       */
+      createdAt: string
+      /**
+       * Format: date-time
+       * @description Timestamp when the device was last updated
+       * @example 2025-12-24T22:30:00.000Z
+       */
+      updatedAt: string
+      /**
+       * @description Type of device (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'LANTERN'
+      /** @description Device settings including display name and Lantern-specific configuration */
+      settings?: components['schemas']['LanternDeviceSettingsDto'] | null
+    }
+    MatrxSettingsDto: {
+      /**
+       * @description Whether the screen is enabled
+       * @example true
+       */
+      screenEnabled: boolean
+      /**
+       * @description Screen brightness level (0-255)
+       * @example 128
+       */
+      screenBrightness: number
+      /**
+       * @description Whether automatic brightness adjustment is enabled
+       * @example false
+       */
+      autoBrightnessEnabled: boolean
+      /**
+       * @description Lux threshold below which screen turns off
+       * @example 5
+       */
+      screenOffLux: number
+    }
+    MatrxDeviceSettingsDto: {
+      /**
+       * @description Display name for the device
+       * @example Living Room Matrx
+       */
+      displayName: string
+      /** @description Device display width in pixels (read-only) */
+      width?: number
+      /** @description Device display height in pixels (read-only) */
+      height?: number
+      /** @description Whether device has a light sensor (read-only) */
+      hasLightSensor?: boolean
+      /** @description Matrx-specific settings */
+      typeSettings?: components['schemas']['MatrxSettingsDto'] | null
+    }
+    MatrxDeviceResponseDto: {
+      /**
+       * @description Unique identifier for the device
+       * @example dev_123abc
+       */
+      id: string
+      /**
+       * @description Whether the device is currently online
+       * @example true
+       */
+      online: boolean
+      /**
+       * @description User access level to this device
+       * @example OWNER
+       */
+      accessLevel: components['schemas']['ClaimType']
+      /**
+       * @description UUID of the installation currently being displayed on the device
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      currentlyDisplayingInstallation?: string | null
+      /**
+       * @description Number of installations configured on this device
+       * @example 5
+       */
+      installationCount: number
+      /**
+       * Format: date-time
+       * @description Timestamp when the device was created
+       * @example 2025-12-24T22:00:00.000Z
+       */
+      createdAt: string
+      /**
+       * Format: date-time
+       * @description Timestamp when the device was last updated
+       * @example 2025-12-24T22:30:00.000Z
+       */
+      updatedAt: string
+      /**
+       * @description Type of device (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'MATRX'
+      /** @description Device settings including display name and Matrx-specific configuration */
+      settings?: components['schemas']['MatrxDeviceSettingsDto'] | null
+    }
+    ClaimTokenResponseDto: {
+      /**
+       * @description Short-lived JWT token for device claiming (valid for 10 minutes)
+       * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+       */
+      token: string
+      /**
+       * @description Token expiration timestamp (Unix epoch in seconds)
+       * @example 1735161127
+       */
+      expiresAt: number
+    }
+    LanternTypeSettingsDto: {
+      /**
+       * @description LED brightness level (0-255)
+       * @example 255
+       */
+      brightness?: number
+      /**
+       * @description Hour when sleep mode starts (0-23)
+       * @example 22
+       */
+      sleep_start?: number
+      /**
+       * @description Hour when sleep mode ends (0-23)
+       * @example 7
+       */
+      sleep_end?: number
+    }
+    UpdateLanternSettingsDto: {
+      /**
+       * @description Device type discriminator
+       * @example LANTERN
+       * @enum {string}
+       */
+      type: 'LANTERN'
+      /**
+       * @description Display name for the device
+       * @example Living Room Lantern
+       */
+      displayName?: string
+      /** @description Lantern-specific settings */
+      typeSettings?: components['schemas']['LanternTypeSettingsDto']
+    }
+    MatrxTypeSettingsDto: {
+      /**
+       * @description Whether the screen is enabled
+       * @example true
+       */
+      screenEnabled?: boolean
+      /**
+       * @description Screen brightness level (0-255)
+       * @example 128
+       */
+      screenBrightness?: number
+      /**
+       * @description Whether automatic brightness adjustment is enabled
+       * @example false
+       */
+      autoBrightnessEnabled?: boolean
+      /**
+       * @description Lux threshold below which screen turns off
+       * @example 5
+       */
+      screenOffLux?: number
+    }
+    UpdateMatrxSettingsDto: {
+      /**
+       * @description Device type discriminator
+       * @example MATRX
+       * @enum {string}
+       */
+      type: 'MATRX'
+      /**
+       * @description Display name for the device
+       * @example Living Room Matrx
+       */
+      displayName?: string
+      /** @description Matrx-specific settings */
+      typeSettings?: components['schemas']['MatrxTypeSettingsDto']
+    }
+    InstallationConfigInputDto: {
+      /**
+       * @description App identifier
+       * @example weather
+       */
+      app_id: string
+      /**
+       * @description App configuration parameters
+       * @example {
+       *       "city": "seattle",
+       *       "units": "imperial"
+       *     }
+       */
+      params: {
+        [key: string]: unknown
+      }
+    }
+    CreateInstallationDto: {
+      /** @description Installation configuration */
+      config: components['schemas']['InstallationConfigInputDto']
+      /**
+       * @description Whether the installation is enabled
+       * @default true
+       * @example true
+       */
+      enabled: boolean
+      /**
+       * @description Display time in seconds
+       * @default 0
+       * @example 15
+       */
+      displayTime: number
+      /**
+       * @description Sort order for display rotation
+       * @default 0
+       * @example 0
+       */
+      sortOrder: number
+    }
+    InstallationConfigDto: {
+      /**
+       * @description App identifier
+       * @example weather
+       */
+      app_id: string
+      /**
+       * @description App configuration parameters
+       * @example {
+       *       "city": "seattle",
+       *       "units": "imperial"
+       *     }
+       */
+      params: {
+        [key: string]: unknown
+      }
+    }
+    InstallationResponseDto: {
+      /**
+       * @description Installation unique identifier
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      id: string
+      /**
+       * @description Device identifier this installation belongs to
+       * @example dev_abc123
+       */
+      deviceId: string
+      /**
+       * @description App display name
+       * @example Weather
+       */
+      appName: string
+      /**
+       * @description Whether the installation is enabled
+       * @example true
+       */
+      enabled: boolean
+      /**
+       * @description Whether the user skipped this installation
+       * @example false
+       */
+      skippedByUser: boolean
+      /**
+       * @description Whether the server skipped this installation (e.g., render errors)
+       * @example false
+       */
+      skippedByServer: boolean
+      /**
+       * @description Whether the user pinned this installation
+       * @example false
+       */
+      pinnedByUser: boolean
+      /**
+       * @description Display time in seconds
+       * @example 15
+       */
+      displayTime: number
+      /**
+       * @description Sort order for display rotation
+       * @example 0
+       */
+      sortOrder: number
+      /**
+       * Format: date-time
+       * @description Timestamp when created
+       */
+      createdAt: string
+      /**
+       * Format: date-time
+       * @description Timestamp when last updated
+       */
+      updatedAt: string
+      /** @description Installation configuration (only included in single GET) */
+      config?: components['schemas']['InstallationConfigDto']
+    }
+    InstallationListItemDto: {
+      /**
+       * @description Installation unique identifier
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      id: string
+      /**
+       * @description App identifier
+       * @example weather
+       */
+      appId: string
+      /**
+       * @description App display name
+       * @example Weather
+       */
+      appName: string
+      /**
+       * @description Whether the installation is enabled
+       * @example true
+       */
+      enabled: boolean
+      /**
+       * @description Whether the installation is skipped by user
+       * @example false
+       */
+      skippedByUser: boolean
+      /**
+       * @description Whether the installation is skipped by server (e.g., render errors)
+       * @example false
+       */
+      skippedByServer: boolean
+      /**
+       * @description Whether the installation is pinned by user
+       * @example false
+       */
+      pinnedByUser: boolean
+      /**
+       * @description Sort order for display rotation
+       * @example 0
+       */
+      sortOrder: number
+    }
+    BulkUpdateInstallationItemDto: {
+      /**
+       * @description Installation UUID
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      id: string
+      /**
+       * @description New sort order for the installation
+       * @example 0
+       */
+      sortOrder?: number
+      /**
+       * @description Display time in seconds (0 = use default)
+       * @example 30
+       */
+      displayTime?: number
+    }
+    BulkUpdateInstallationsDto: {
+      /** @description List of installations to update */
+      installations: components['schemas']['BulkUpdateInstallationItemDto'][]
+    }
+    BulkUpdateResultDto: {
+      /**
+       * @description Number of installations updated
+       * @example 5
+       */
+      updated: number
+    }
+    UpdateInstallationDto: {
+      /** @description Installation configuration */
+      config?: components['schemas']['InstallationConfigInputDto']
+      /**
+       * @description Whether the installation is enabled
+       * @example true
+       */
+      enabled?: boolean
+      /**
+       * @description Whether the user skipped this installation
+       * @example false
+       */
+      skippedByUser?: boolean
+      /**
+       * @description Whether the user pinned this installation
+       * @example false
+       */
+      pinnedByUser?: boolean
+      /**
+       * @description Display time in seconds
+       * @example 15
+       */
+      displayTime?: number
+      /**
+       * @description Sort order for display rotation
+       * @example 0
+       */
+      sortOrder?: number
+    }
+    SetSkipStateDto: {
+      /**
+       * @description Whether to skip this installation
+       * @example true
+       */
+      skipped: boolean
+    }
+    InstallationStateResponseDto: {
+      /**
+       * @description Installation UUID
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      id: string
+      /**
+       * @description Whether this installation is skipped
+       * @example false
+       */
+      skippedByUser: boolean
+      /**
+       * @description Whether this installation is pinned
+       * @example true
+       */
+      pinnedByUser: boolean
+    }
+    SetPinStateDto: {
+      /**
+       * @description Whether to pin this installation (unpins any other pinned installation on the device)
+       * @example true
+       */
+      pinned: boolean
+    }
+    AppSchemaDto: {
+      /**
+       * @description Schema version
+       * @example 1.0.0
+       */
+      version: string
+      /** @description List of configurable fields (empty array if no configuration required) */
+      schema: (
+        | components['schemas']['AppSchemaColorFieldDto']
+        | components['schemas']['AppSchemaDatetimeFieldDto']
+        | components['schemas']['AppSchemaDropdownFieldDto']
+        | components['schemas']['AppSchemaGeneratedFieldDto']
+        | components['schemas']['AppSchemaLocationFieldDto']
+        | components['schemas']['AppSchemaLocationBasedFieldDto']
+        | components['schemas']['AppSchemaOnOffFieldDto']
+        | components['schemas']['AppSchemaRadioFieldDto']
+        | components['schemas']['AppSchemaTextFieldDto']
+        | components['schemas']['AppSchemaTypeaheadFieldDto']
+        | components['schemas']['AppSchemaOAuth2FieldDto']
+        | components['schemas']['AppSchemaOAuth1FieldDto']
+        | components['schemas']['AppSchemaPNGFieldDto']
+        | components['schemas']['AppSchemaNotificationFieldDto']
+      )[]
+      /** @description Notification field definitions */
+      notifications?: components['schemas']['AppSchemaNotificationFieldDto'][]
+    }
+    AppSchemaVisibilityDto: {
+      /**
+       * @description Visibility behavior
+       * @example invisible
+       * @enum {string}
+       */
+      type: 'invisible' | 'disabled'
+      /**
+       * @description Comparison mode
+       * @example equal
+       * @enum {string}
+       */
+      condition: 'equal' | 'not_equal'
+      /**
+       * @description Source variable used for comparison
+       * @example unit
+       */
+      variable: string
+      /**
+       * @description Value used for comparison
+       * @example metric
+       */
+      value?: string
+    }
+    AppSchemaOptionDto: {
+      /**
+       * @description Optional display label
+       * @example Seattle
+       */
+      display?: string
+      /**
+       * @description Primary option label
+       * @example Seattle, WA
+       */
+      text: string
+      /**
+       * @description Underlying value used in config
+       * @example seattle
+       */
+      value: string
+    }
+    AppSchemaSoundDto: {
+      /**
+       * @description Unique sound identifier
+       * @example alert
+       */
+      id: string
+      /**
+       * @description Display title
+       * @example Alert Tone
+       */
+      title: string
+      /**
+       * @description Relative file path
+       * @example sounds/alert.wav
+       */
+      path: string
+    }
+    AppSchemaFieldBaseDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+    }
+    AppManifestDto: {
+      /**
+       * @description Unique app identifier
+       * @example weather
+       */
+      id: string
+      /**
+       * @description Display name shown in the catalog
+       * @example Weather
+       */
+      name: string
+      /**
+       * @description Short summary of the app
+       * @example Local weather on your Matrx
+       */
+      summary: string
+      /**
+       * @description Long form description
+       * @example Displays the current forecast, highs, lows, and alerts.
+       */
+      description: string
+      /**
+       * @description App author
+       * @example Koios Labs
+       */
+      author: string
+      /**
+       * @description Primary .star filename
+       * @example weather.star
+       */
+      fileName: string
+      /**
+       * @description Internal package name
+       * @example com.koios.weather
+       */
+      packageName: string
+      /**
+       * @description Absolute path to the app directory
+       * @example /apps/weather
+       */
+      directoryPath?: string
+      /**
+       * @description Absolute path to the entry .star file
+       * @example /apps/weather/weather.star
+       */
+      starFilePath?: string
+    }
+    RenderResultDto: {
+      /**
+       * @description Renderer result type identifier
+       * @example render
+       */
+      type: string
+      /**
+       * @description Render job UUID
+       * @example 4f252578-6f18-4ffd-8a69-2d4eb46c29ea
+       */
+      uuid: string
+      /**
+       * @description Optional device identifier used for logging
+       * @example device_123
+       */
+      device_id?: string
+      /**
+       * @description App identifier that produced the render
+       * @example weather
+       */
+      app_id: string
+      /**
+       * @description Base64 encoded WebP payload
+       * @example UklGRjYAAABXRUJQVlA4WAoAAAAQAAAAMgAA...
+       */
+      render_output: string
+      /**
+       * @description Timestamp when rendering completed
+       * @example 2024-01-01T12:00:00.000Z
+       */
+      processed_at: string
+    }
+    RenderResponseDto: {
+      /** @description Renderer output metadata */
+      result: components['schemas']['RenderResultDto']
+      /**
+       * @description Normalized configuration returned by the renderer
+       * @example {
+       *       "city": "seattle",
+       *       "units": "imperial"
+       *     }
+       */
+      normalized_config: {
+        [key: string]: unknown
+      }
+    }
+    ValidationErrorDto: {
+      /**
+       * @description Field identifier that failed validation
+       * @example city
+       */
+      field: string
+      /**
+       * @description Human readable error message
+       * @example City is required
+       */
+      message: string
+      /**
+       * @description Machine readable error code
+       * @example required
+       */
+      code: string
+    }
+    ValidateSchemaResponseDto: {
+      /**
+       * @description Whether the configuration passed validation
+       * @example true
+       */
+      valid: boolean
+      /** @description List of validation errors, if any */
+      errors?: components['schemas']['ValidationErrorDto'][]
+      /**
+       * @description Normalized configuration returned by the renderer
+       * @example {
+       *       "city": "seattle",
+       *       "units": "imperial"
+       *     }
+       */
+      normalized_config: {
+        [key: string]: unknown
+      }
+    }
+    CallSchemaHandlerRequestDto: {
+      /**
+       * @description Handler to invoke
+       * @example search_locations
+       */
+      handler_name: string
+      /**
+       * @description Serialized payload passed to the handler
+       * @example {"query":"Seattle"}
+       */
+      data?: string
+    }
+    CallSchemaHandlerResponseDto: {
+      /**
+       * @description Raw handler response payload
+       * @example {"results":["Seattle","Portland"]}
+       */
+      result: string
+    }
+    PaginationMetaDto: {
+      /**
+       * @description Current page number
+       * @example 1
+       */
+      page: number
+      /**
+       * @description Number of items per page
+       * @example 20
+       */
+      limit: number
+      /**
+       * @description Total number of items
+       * @example 45
+       */
+      total: number
+      /**
+       * @description Total number of pages
+       * @example 3
+       */
+      totalPages: number
+      /**
+       * @description Whether there is a previous page
+       * @example false
+       */
+      hasPrevious: boolean
+      /**
+       * @description Whether there is a next page
+       * @example true
+       */
+      hasNext: boolean
+    }
+    PaginatedAppsResponseDto: {
+      /** @description Array of app manifests for current page */
+      data: components['schemas']['AppManifestDto'][]
+      /** @description Pagination metadata */
+      meta: components['schemas']['PaginationMetaDto']
+    }
+    AppSchemaColorFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for color field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'color'
+    }
+    AppSchemaDatetimeFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for datetime field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'datetime'
+    }
+    AppSchemaDropdownFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for dropdown field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'dropdown'
+    }
+    AppSchemaGeneratedFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for generated field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'generated'
+    }
+    AppSchemaLocationFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for location field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'location'
+    }
+    AppSchemaLocationBasedFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for location based field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'locationbased'
+    }
+    AppSchemaOnOffFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for on/off field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'onoff'
+    }
+    AppSchemaRadioFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for radio field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'radio'
+    }
+    AppSchemaTextFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for text field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'text'
+    }
+    AppSchemaTypeaheadFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for typeahead field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'typeahead'
+    }
+    AppSchemaOAuth2FieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for OAuth2 field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'oauth2'
+    }
+    AppSchemaOAuth1FieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for OAuth1 field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'oauth1'
+    }
+    AppSchemaPNGFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for PNG upload field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'png'
+    }
+    AppSchemaNotificationFieldDto: {
+      /**
+       * @description Field identifier
+       * @example city
+       */
+      id: string
+      /**
+       * @description Human readable label
+       * @example City
+       */
+      name?: string
+      /**
+       * @description Helper text for the field
+       * @example Pick the city to display
+       */
+      description?: string
+      /**
+       * @description Optional icon name
+       * @example weather
+       */
+      icon?: string
+      /** @description Conditional visibility definition */
+      visibility?: components['schemas']['AppSchemaVisibilityDto']
+      /**
+       * @description Default value serialized as text
+       * @example seattle
+       */
+      default?: string
+      /** @description Selectable options for dropdown style fields */
+      options?: components['schemas']['AppSchemaOptionDto'][]
+      /** @description Palette of colors for selection fields */
+      palette?: string[]
+      /** @description Available notification sounds */
+      sounds?: components['schemas']['AppSchemaSoundDto'][]
+      /**
+       * @description Field ID used as a source for generated fields
+       * @example city
+       */
+      source?: string
+      /**
+       * @description Pixlet handler invoked for dynamic data
+       * @example fetch_cities
+       */
+      handler?: string
+      /**
+       * @description OAuth client identifier
+       * @example pixlet-google
+       */
+      client_id?: string
+      /**
+       * @description OAuth authorization endpoint
+       * @example https://accounts.google.com/o/oauth2/v2/auth
+       */
+      authorization_endpoint?: string
+      /**
+       * @description OAuth scopes requested for the flow
+       * @example [
+       *       "profile",
+       *       "email"
+       *     ]
+       */
+      scopes?: string[]
+      /**
+       * @description Discriminator for notification field (enum property replaced by openapi-typescript)
+       * @enum {string}
+       */
+      type: 'notification'
+    }
+    ShareUserDto: {
+      /** @description User ID of the shared user */
+      userId: string
+      /** @description When the share was created */
+      sharedAt: string
+    }
+    ShareInviteDto: {
+      /** @description Invite ID */
+      id: string
+      /** @description Email address the invite was sent to */
+      email: string
+      /** @description Whether the invite has been accepted */
+      accepted: boolean
+      /** @description When the invite was accepted (if accepted) */
+      acceptedAt?: Record<string, never>
+      /** @description When the invite expires */
+      expiresAt: string
+      /** @description When the invite was created */
+      createdAt: string
+    }
+    DeviceSharesResponseDto: {
+      /** @description Device ID */
+      deviceId: string
+      /** @description List of users with shared access */
+      sharedUsers: components['schemas']['ShareUserDto'][]
+      /** @description List of pending invites */
+      pendingInvites: components['schemas']['ShareInviteDto'][]
+    }
+    CreateShareInviteDto: {
+      /**
+       * @description Email address of the user to invite
+       * @example user@example.com
+       */
+      email: string
+    }
+    ShareInviteCreatedDto: {
+      /** @description Invite ID */
+      id: string
+      /** @description Email address the invite was sent to */
+      email: string
+      /** @description When the invite expires */
+      expiresAt: string
+    }
+    AcceptShareInviteDto: {
+      /**
+       * @description The invite token received in the email
+       * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+       */
+      token: string
+    }
+    AcceptShareResultDto: {
+      /** @description Device ID that was shared */
+      deviceId: string
+      /** @description Device display name */
+      deviceName: string
+      /** @description Success message */
+      message: string
+    }
+  }
+  responses: never
+  parameters: never
+  requestBodies: never
+  headers: never
+  pathItems: never
 }
-export type $defs = Record<string, never>;
+export type $defs = Record<string, never>
 export interface operations {
-    HealthController_getHealth_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Health check successful */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HealthResponseDto"];
-                };
-            };
-        };
-    };
-    UserController_getCurrentUser_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns the authenticated user information */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponseDto"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    DevicesController_findAll_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description List of devices */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": (components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"])[];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    DevicesController_getClaimToken_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Claim token generated successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimTokenResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    DevicesController_findOne_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Device details */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Device not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    DevicesController_remove_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Device deleted successfully */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Only device owners can delete */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Device not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    DevicesController_updateSettings_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Updated device */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"];
-                };
-            };
-            /** @description Device type mismatch */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Only device owners can update settings */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Device not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_findAll_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description List of installations (without config) */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InstallationListItemDto"][];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_create_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateInstallationDto"];
-            };
-        };
-        responses: {
-            /** @description Installation created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InstallationResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Validation failed */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_bulkUpdate_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BulkUpdateInstallationsDto"];
-            };
-        };
-        responses: {
-            /** @description Number of installations updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BulkUpdateResultDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_findOne_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-                /** @description Installation ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Installation details */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InstallationResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Installation not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_remove_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-                /** @description Installation ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Installation deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Installation not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_update_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-                /** @description Installation ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateInstallationDto"];
-            };
-        };
-        responses: {
-            /** @description Installation updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InstallationResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Installation not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Validation failed */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_setSkipState_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-                /** @description Installation ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SetSkipStateDto"];
-            };
-        };
-        responses: {
-            /** @description Installation state updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InstallationStateResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Installation not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_setPinState_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-                /** @description Installation ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SetPinStateDto"];
-            };
-        };
-        responses: {
-            /** @description Installation state updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InstallationStateResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Installation not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    InstallationsController_renderWebp_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Device ID */
-                deviceId: string;
-                /** @description Installation ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Binary WebP render */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/webp": string;
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/webp": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Installation or device dimensions not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/webp": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_listApps_v1: {
-        parameters: {
-            query?: {
-                /** @description Search query for app name, summary, or author */
-                search?: string;
-                /** @description Page number (1-based) */
-                page?: number;
-                /** @description Number of items per page */
-                limit?: number;
-                /** @description Field to sort by */
-                sortBy?: "name" | "author";
-                /** @description Sort order */
-                order?: "asc" | "desc";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Paginated list of apps */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedAppsResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_getApp_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description App details */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AppManifestDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description App not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_getSchema_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description App schema */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AppSchemaDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description App not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_previewWebp_v1: {
-        parameters: {
-            query?: {
-                /** @description Optional device identifier */
-                device_id?: unknown;
-            };
-            header?: never;
-            path: {
-                id: string;
-                dimensions: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Binary WebP preview */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/webp": string;
-                };
-            };
-            /** @description Invalid dimensions */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/webp": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description App not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/webp": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_previewGif_v1: {
-        parameters: {
-            query?: {
-                /** @description Optional device identifier */
-                device_id?: unknown;
-            };
-            header?: never;
-            path: {
-                id: string;
-                dimensions: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Binary GIF preview */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/gif": string;
-                };
-            };
-            /** @description Invalid dimensions */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/gif": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description App not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "image/gif": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_renderApp_v1: {
-        parameters: {
-            query?: {
-                /** @description Device width in pixels */
-                width?: string;
-                /** @description Device height in pixels */
-                height?: string;
-                /** @description Optional device identifier */
-                device_id?: string;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    [key: string]: unknown;
-                };
-            };
-        };
-        responses: {
-            /** @description Render result */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RenderResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description App not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Validation failed */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_validateConfig_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    [key: string]: unknown;
-                };
-            };
-        };
-        responses: {
-            /** @description Validation result */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidateSchemaResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description App not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
-    AppsController_callSchemaHandler_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CallSchemaHandlerRequestDto"];
-            };
-        };
-        responses: {
-            /** @description Handler result */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CallSchemaHandlerResponseDto"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description App or handler not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponseDto"];
-                };
-            };
-        };
-    };
+  HealthController_getHealth_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Health check successful */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HealthResponseDto']
+        }
+      }
+    }
+  }
+  UserController_getCurrentUser_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Returns the authenticated user information */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['UserResponseDto']
+        }
+      }
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  DevicesController_findAll_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description List of devices */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': (
+            | components['schemas']['LanternDeviceResponseDto']
+            | components['schemas']['MatrxDeviceResponseDto']
+          )[]
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  DevicesController_getClaimToken_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Claim token generated successfully */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ClaimTokenResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  DevicesController_findOne_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Device details */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json':
+            | components['schemas']['LanternDeviceResponseDto']
+            | components['schemas']['MatrxDeviceResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Device not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  DevicesController_remove_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Device deleted successfully */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Only device owners can delete */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Device not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  DevicesController_updateSettings_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Updated device */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json':
+            | components['schemas']['LanternDeviceResponseDto']
+            | components['schemas']['MatrxDeviceResponseDto']
+        }
+      }
+      /** @description Device type mismatch */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Only device owners can update settings */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Device not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_findAll_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description List of installations (without config) */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InstallationListItemDto'][]
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_create_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateInstallationDto']
+      }
+    }
+    responses: {
+      /** @description Installation created */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InstallationResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_bulkUpdate_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BulkUpdateInstallationsDto']
+      }
+    }
+    responses: {
+      /** @description Number of installations updated */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['BulkUpdateResultDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_findOne_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description Installation ID */
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Installation details */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InstallationResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Installation not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_remove_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description Installation ID */
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Installation deleted */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Installation not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_update_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description Installation ID */
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateInstallationDto']
+      }
+    }
+    responses: {
+      /** @description Installation updated */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InstallationResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Installation not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_setSkipState_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description Installation ID */
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetSkipStateDto']
+      }
+    }
+    responses: {
+      /** @description Installation state updated */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InstallationStateResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Installation not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_setPinState_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description Installation ID */
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetPinStateDto']
+      }
+    }
+    responses: {
+      /** @description Installation state updated */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InstallationStateResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Installation not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  InstallationsController_renderWebp_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description Installation ID */
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Binary WebP render */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/webp': string
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Access denied */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/webp': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Installation or device dimensions not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/webp': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_listApps_v1: {
+    parameters: {
+      query?: {
+        /** @description Search query for app name, summary, or author */
+        search?: string
+        /** @description Page number (1-based) */
+        page?: number
+        /** @description Number of items per page */
+        limit?: number
+        /** @description Field to sort by */
+        sortBy?: 'name' | 'author'
+        /** @description Sort order */
+        order?: 'asc' | 'desc'
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Paginated list of apps */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PaginatedAppsResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_getApp_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description App details */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AppManifestDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description App not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_getSchema_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description App schema */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AppSchemaDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description App not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_previewWebp_v1: {
+    parameters: {
+      query?: {
+        /** @description Optional device identifier */
+        device_id?: unknown
+      }
+      header?: never
+      path: {
+        id: string
+        dimensions: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Binary WebP preview */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/webp': string
+        }
+      }
+      /** @description Invalid dimensions */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/webp': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description App not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/webp': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_previewGif_v1: {
+    parameters: {
+      query?: {
+        /** @description Optional device identifier */
+        device_id?: unknown
+      }
+      header?: never
+      path: {
+        id: string
+        dimensions: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Binary GIF preview */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/gif': string
+        }
+      }
+      /** @description Invalid dimensions */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/gif': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description App not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'image/gif': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_renderApp_v1: {
+    parameters: {
+      query?: {
+        /** @description Device width in pixels */
+        width?: string
+        /** @description Device height in pixels */
+        height?: string
+        /** @description Optional device identifier */
+        device_id?: string
+      }
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          [key: string]: unknown
+        }
+      }
+    }
+    responses: {
+      /** @description Render result */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['RenderResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description App not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Validation failed */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_validateConfig_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': {
+          [key: string]: unknown
+        }
+      }
+    }
+    responses: {
+      /** @description Validation result */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ValidateSchemaResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description App not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  AppsController_callSchemaHandler_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CallSchemaHandlerRequestDto']
+      }
+    }
+    responses: {
+      /** @description Handler result */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CallSchemaHandlerResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description App or handler not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  SharingController_getShares_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Device shares */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeviceSharesResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Only device owners can view shares */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Device not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  SharingController_createInvite_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateShareInviteDto']
+      }
+    }
+    responses: {
+      /** @description Invite created */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ShareInviteCreatedDto']
+        }
+      }
+      /** @description Invalid email or failed to send invite */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Only device owners can create invites */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Device not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  SharingController_cancelInvite_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description Invite ID */
+        inviteId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Invite cancelled */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Only device owners can cancel invites */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Invite not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  SharingController_revokeShare_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description Device ID */
+        deviceId: string
+        /** @description User ID to revoke access for */
+        userId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Share revoked */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Only device owners can revoke shares for other users */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Share not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
+  ShareAcceptController_acceptInvite_v1: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AcceptShareInviteDto']
+      }
+    }
+    responses: {
+      /** @description Share accepted */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AcceptShareResultDto']
+        }
+      }
+      /** @description Invalid or expired token */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Unauthorized - invalid or missing token */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Invite not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponseDto']
+        }
+      }
+    }
+  }
 }

@@ -32,7 +32,7 @@
           size="sm"
           color="primary"
           variant="ghost"
-          icon="i-lucide-external-link"
+          icon="i-fa6-solid:arrow-up-right-from-square"
           @click="emit('open', group.id)"
         >
           View group
@@ -66,12 +66,10 @@ const emit = defineEmits<{ (e: 'open', id: string): void }>()
 
 const group = toRef(props, 'group')
 
-const onlineCount = computed(
-  () => group.value.devices.filter((device) => device.online).length
-)
+const onlineCount = computed(() => group.value.devices.filter((device) => device.online).length)
 const offlineCount = computed(() => group.value.devices.length - onlineCount.value)
 
 const onlineLabel = computed(() => `${onlineCount.value} online`)
 const offlineLabel = computed(() => `${offlineCount.value} offline`)
-const groupIcon = computed(() => group.value.icon || 'i-lucide-circuit-board')
+const groupIcon = computed(() => group.value.icon || 'i-fa6-solid:microchip')
 </script>

@@ -3,7 +3,7 @@
     <div class="flex items-center gap-3">
       <UAvatar
         :alt="device.name"
-        icon="i-lucide-cpu"
+        icon="i-fa6-solid:microchip"
         size="lg"
         :class="statusColor === 'primary' ? 'ring-2 ring-primary-500/50' : ''"
       />
@@ -18,7 +18,7 @@
         size="sm"
         color="neutral"
         variant="soft"
-        icon="i-lucide-settings"
+        icon="i-fa6-solid:gear"
         @click="emit('settings', device.id)"
       >
         Configure

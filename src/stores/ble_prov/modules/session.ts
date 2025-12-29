@@ -38,7 +38,10 @@ export async function establishSession(pop: string = '') {
 
     return sessionEstablished.value
   } catch (error) {
-    console.error('Session establishment failed:', error instanceof Error ? error.message : String(error))
+    console.error(
+      'Session establishment failed:',
+      error instanceof Error ? error.message : String(error),
+    )
     throw error
   }
 }

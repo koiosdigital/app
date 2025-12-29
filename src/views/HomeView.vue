@@ -5,29 +5,34 @@
       class="flex items-center justify-center overflow-hidden transition-all duration-200"
       :style="{ height: `${pullDistance}px` }"
     >
-      <div
-        v-if="pullDistance > 0"
-        class="flex items-center gap-2 text-white/70"
-      >
+      <div v-if="pullDistance > 0" class="flex items-center gap-2 text-white/70">
         <UIcon
-          :name="isRefreshing ? 'i-lucide-loader-2' : 'i-lucide-arrow-down'"
+          :name="isRefreshing ? 'i-fa6-solid:spinner' : 'i-fa6-solid:arrow-down'"
           class="h-5 w-5"
           :class="{ 'animate-spin': isRefreshing }"
         />
         <span class="text-sm">
-          {{ isRefreshing ? 'Refreshing...' : pullDistance >= 80 ? 'Release to refresh' : 'Pull to refresh' }}
+          {{
+            isRefreshing
+              ? 'Refreshing...'
+              : pullDistance >= 80
+                ? 'Release to refresh'
+                : 'Pull to refresh'
+          }}
         </span>
       </div>
     </div>
 
     <!-- Top Header -->
-    <header class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4">
+    <header
+      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
+    >
       <div class="flex items-center justify-between">
         <h1 class="text-xl font-semibold">Koios Digital</h1>
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-settings"
+          icon="i-fa6-solid:gear"
           square
           @click="router.push('/settings')"
         />
@@ -38,7 +43,12 @@
     <section class="flex flex-col gap-6 px-5 py-6">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <h2 class="text-lg font-medium text-white/90">Devices</h2>
-        <UButton color="primary" icon="i-lucide-plus" size="sm" @click="router.push('/setup/new')">
+        <UButton
+          color="primary"
+          icon="i-fa6-solid:plus"
+          size="sm"
+          @click="router.push('/setup/new')"
+        >
           Add device
         </UButton>
       </div>
@@ -49,11 +59,12 @@
         </UCard>
       </div>
 
-      <div v-else-if="error" class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center">
+      <div
+        v-else-if="error"
+        class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center"
+      >
         <p class="text-red-400">{{ error }}</p>
-        <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices">
-          Retry
-        </UButton>
+        <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices"> Retry </UButton>
       </div>
 
       <div v-else-if="sortedDevices.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -201,7 +212,8 @@ const toggleScreen = async (id: string) => {
             ...matrxDevice.settings?.typeSettings,
             screenEnabled: currentEnabled,
             screenBrightness: matrxDevice.settings?.typeSettings?.screenBrightness ?? 200,
-            autoBrightnessEnabled: matrxDevice.settings?.typeSettings?.autoBrightnessEnabled ?? false,
+            autoBrightnessEnabled:
+              matrxDevice.settings?.typeSettings?.autoBrightnessEnabled ?? false,
             screenOffLux: matrxDevice.settings?.typeSettings?.screenOffLux ?? 3,
           },
         },

@@ -85,7 +85,7 @@ export const appsApi = {
    */
   async getPreview(
     id: string,
-    options?: { width?: number; height?: number }
+    options?: { width?: number; height?: number },
   ): Promise<string | null> {
     const dimensions = `${options?.width ?? 64}x${options?.height ?? 32}`
     const { data, error } = await apiClient.GET('/v1/apps/{id}/preview/{dimensions}.webp', {
@@ -114,7 +114,7 @@ export const appsApi = {
   async renderApp(
     id: string,
     config: Record<string, unknown>,
-    options?: { width?: number; height?: number; deviceId?: string }
+    options?: { width?: number; height?: number; deviceId?: string },
   ) {
     const { data, error } = await apiClient.POST('/v1/apps/{id}/render', {
       params: {

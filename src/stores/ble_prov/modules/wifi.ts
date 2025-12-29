@@ -44,38 +44,44 @@ export const lastWifiStatus = ref<WifiStatusResult | undefined>(undefined)
 let connCheckInterval: ReturnType<typeof setInterval> | undefined = undefined
 
 /**
+ * Send an encrypted command over BLE and decrypt the response.
+ */
+async function sendEncryptedCommand<T>(
+  characteristic: string,
+  payload: Uint8Array,
+  parseResponse: (data: Uint8Array) => T,
+): Promise<T> {
+  const encrypted = await sec1.value!.encryptData(payload)
+  const response = await sendData(encrypted, characteristic)
+  const decrypted = await sec1.value!.decryptData(response!)
+  return parseResponse(decrypted)
+}
+
+/**
  * Start WiFi AP scan
  */
 async function startAPScan() {
   // Use default parameters: blocking=true, passive=false, group_channels=5, period_ms=120
   // Setting group_channels to 0 can cause firmware crashes
-  const payload = createScanStartRequest()
-  const encrypted = await sec1.value!.encryptData(payload)
-  const response = await sendData(encrypted, 'prov-scan')
-  const decrypted = await sec1.value!.decryptData(response!)
-  return parseScanStartResponse(decrypted)
+  return sendEncryptedCommand('prov-scan', createScanStartRequest(), parseScanStartResponse)
 }
 
 /**
  * Get scan status
  */
 async function getScanStatus() {
-  const payload = createScanStatusRequest()
-  const encrypted = await sec1.value!.encryptData(payload)
-  const response = await sendData(encrypted, 'prov-scan')
-  const decrypted = await sec1.value!.decryptData(response!)
-  return parseScanStatusResponse(decrypted)
+  return sendEncryptedCommand('prov-scan', createScanStatusRequest(), parseScanStatusResponse)
 }
 
 /**
  * Get scan results
  */
 async function getScanResult(n: number, start: number) {
-  const payload = createScanResultRequest(n, start)
-  const encrypted = await sec1.value!.encryptData(payload)
-  const response = await sendData(encrypted, 'prov-scan')
-  const decrypted = await sec1.value!.decryptData(response!)
-  return parseScanResultResponse(decrypted)
+  return sendEncryptedCommand(
+    'prov-scan',
+    createScanResultRequest(n, start),
+    parseScanResultResponse,
+  )
 }
 
 /**
@@ -120,11 +126,11 @@ async function checkWiFiConnection() {
   if (!sec1.value) return
 
   try {
-    const payload = createGetStatusRequest()
-    const encrypted = await sec1.value.encryptData(payload)
-    const response = await sendData(encrypted, 'prov-config')
-    const decrypted = await sec1.value.decryptData(response!)
-    const status = parseGetStatusResponse(decrypted)
+    const status = await sendEncryptedCommand(
+      'prov-config',
+      createGetStatusRequest(),
+      parseGetStatusResponse,
+    )
 
     // Store last status for debugging
     lastWifiStatus.value = status
@@ -189,18 +195,18 @@ export async function connectToAP(ap: WifiAP, password?: string) {
   connectedToAP.value = false
   connectingToAP.value = ap
 
-  const payload = createSetConfigRequest(ap.ssid, password || '')
-  const encrypted = await sec1.value.encryptData(payload)
-  const response = await sendData(encrypted, 'prov-config')
-  const decrypted = await sec1.value.decryptData(response!)
-  const resp = parseSetConfigResponse(decrypted)
+  const resp = await sendEncryptedCommand(
+    'prov-config',
+    createSetConfigRequest(ap.ssid, password || ''),
+    parseSetConfigResponse,
+  )
 
   if (resp === 0) {
-    const applyPayload = createApplyConfigRequest()
-    const applyEncrypted = await sec1.value.encryptData(applyPayload)
-    const applyResponse = await sendData(applyEncrypted, 'prov-config')
-    const applyDecrypted = await sec1.value.decryptData(applyResponse!)
-    const applyResp = parseApplyConfigResponse(applyDecrypted)
+    const applyResp = await sendEncryptedCommand(
+      'prov-config',
+      createApplyConfigRequest(),
+      parseApplyConfigResponse,
+    )
 
     if (applyResp === 0) {
       // Start polling for connection status

@@ -7,6 +7,13 @@ export type UpdateInstallationDto = components['schemas']['UpdateInstallationDto
 export type InstallationResponse = components['schemas']['InstallationResponseDto']
 export type BulkUpdateInstallationItemDto = components['schemas']['BulkUpdateInstallationItemDto']
 
+// Sharing types
+export type DeviceSharesResponse = components['schemas']['DeviceSharesResponseDto']
+export type ShareUser = components['schemas']['ShareUserDto']
+export type ShareInvite = components['schemas']['ShareInviteDto']
+export type ShareInviteCreated = components['schemas']['ShareInviteCreatedDto']
+export type AcceptShareResult = components['schemas']['AcceptShareResultDto']
+
 /**
  * Device API service
  */
@@ -54,7 +61,7 @@ export const devicesApi = {
         autoBrightnessEnabled?: boolean
         screenOffLux?: number
       }
-    }
+    },
   ) {
     const { data, error } = await apiClient.PATCH('/v1/devices/{id}/settings', {
       params: {
@@ -62,33 +69,6 @@ export const devicesApi = {
       },
       // @ts-expect-error - API types may not be regenerated yet
       body: { type: 'MATRX', ...settings },
-    })
-
-    if (error) {
-      throw new Error(getErrorMessage(error, 'Failed to update device settings'))
-    }
-
-    return data
-  },
-
-  /**
-   * Update Lantern device settings
-   */
-  async updateLanternSettings(
-    id: string,
-    settings: {
-      displayName?: string
-      typeSettings?: {
-        brightness?: number
-      }
-    }
-  ) {
-    const { data, error } = await apiClient.PATCH('/v1/devices/{id}/settings', {
-      params: {
-        path: { id },
-      },
-      // @ts-expect-error - API types may not be regenerated yet
-      body: { type: 'LANTERN', ...settings },
     })
 
     if (error) {
@@ -170,7 +150,7 @@ export const devicesApi = {
   async updateInstallation(
     deviceId: string,
     installationId: string,
-    updates: UpdateInstallationDto
+    updates: UpdateInstallationDto,
   ) {
     const { data, error } = await apiClient.PATCH('/v1/devices/{deviceId}/installations/{id}', {
       params: {
@@ -242,15 +222,100 @@ export const devicesApi = {
    * Set skip state for an installation
    */
   async setSkipState(deviceId: string, installationId: string, skipped: boolean) {
-    const { data, error } = await apiClient.PATCH('/v1/devices/{deviceId}/installations/{id}/skip', {
-      params: {
-        path: { deviceId, id: installationId },
+    const { data, error } = await apiClient.PATCH(
+      '/v1/devices/{deviceId}/installations/{id}/skip',
+      {
+        params: {
+          path: { deviceId, id: installationId },
+        },
+        body: { skipped },
       },
-      body: { skipped },
-    })
+    )
 
     if (error) {
       throw new Error(getErrorMessage(error, 'Failed to update skip state'))
+    }
+
+    return data
+  },
+
+  // ==================== Sharing ====================
+
+  /**
+   * Get all shares and pending invites for a device
+   */
+  async getShares(deviceId: string) {
+    const { data, error } = await apiClient.GET('/v1/devices/{deviceId}/shares', {
+      params: {
+        path: { deviceId },
+      },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to fetch shares'))
+    }
+
+    return data
+  },
+
+  /**
+   * Create a share invite (sends email invitation)
+   */
+  async createShareInvite(deviceId: string, email: string) {
+    const { data, error } = await apiClient.POST('/v1/devices/{deviceId}/shares/invite', {
+      params: {
+        path: { deviceId },
+      },
+      body: { email },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to send invite'))
+    }
+
+    return data
+  },
+
+  /**
+   * Cancel a pending invite
+   */
+  async cancelShareInvite(deviceId: string, inviteId: string) {
+    const { error } = await apiClient.DELETE('/v1/devices/{deviceId}/shares/invite/{inviteId}', {
+      params: {
+        path: { deviceId, inviteId },
+      },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to cancel invite'))
+    }
+  },
+
+  /**
+   * Revoke shared access for a user
+   */
+  async revokeShare(deviceId: string, userId: string) {
+    const { error } = await apiClient.DELETE('/v1/devices/{deviceId}/shares/user/{userId}', {
+      params: {
+        path: { deviceId, userId },
+      },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to revoke access'))
+    }
+  },
+
+  /**
+   * Accept a share invite using token from email
+   */
+  async acceptShareInvite(token: string) {
+    const { data, error } = await apiClient.POST('/v1/shares/accept', {
+      body: { token },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to accept invite'))
     }
 
     return data

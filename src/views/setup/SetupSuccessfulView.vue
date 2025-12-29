@@ -6,16 +6,14 @@
         <div
           class="flex h-24 w-24 items-center justify-center rounded-full border-4 border-primary-400/20 bg-primary-400/10"
         >
-          <UIcon name="i-lucide-check" class="h-12 w-12 text-primary-400" />
+          <UIcon name="i-fa6-solid:check" class="h-12 w-12 text-primary-400" />
         </div>
       </div>
 
       <!-- Success Message -->
       <div class="space-y-3">
         <h1 class="text-3xl font-semibold">Setup Complete!</h1>
-        <p class="text-white/70">
-          Your device has been successfully configured and is now online.
-        </p>
+        <p class="text-white/70">Your device has been successfully configured and is now online.</p>
       </div>
 
       <!-- Next Steps -->
@@ -23,15 +21,15 @@
         <h2 class="text-sm font-semibold uppercase tracking-wider text-white/50">Next Steps</h2>
         <ul class="space-y-2 text-sm text-white/70">
           <li class="flex items-start gap-3">
-            <UIcon name="i-lucide-check" class="h-5 w-5 flex-shrink-0 text-primary-400" />
+            <UIcon name="i-fa6-solid:check" class="h-5 w-5 flex-shrink-0 text-primary-400" />
             <span>Your device will appear in your device list within a few seconds</span>
           </li>
           <li class="flex items-start gap-3">
-            <UIcon name="i-lucide-check" class="h-5 w-5 flex-shrink-0 text-primary-400" />
+            <UIcon name="i-fa6-solid:check" class="h-5 w-5 flex-shrink-0 text-primary-400" />
             <span>You can customize settings and manage your device from the home screen</span>
           </li>
           <li class="flex items-start gap-3">
-            <UIcon name="i-lucide-check" class="h-5 w-5 flex-shrink-0 text-primary-400" />
+            <UIcon name="i-fa6-solid:check" class="h-5 w-5 flex-shrink-0 text-primary-400" />
             <span>Explore available apps and features in the device menu</span>
           </li>
         </ul>
@@ -39,9 +37,7 @@
 
       <!-- Actions -->
       <div class="space-y-3">
-        <UButton color="primary" size="lg" block @click="goToHome">
-          View My Devices
-        </UButton>
+        <UButton color="primary" size="lg" block @click="goToHome"> View My Devices </UButton>
         <UButton color="neutral" variant="ghost" block @click="addAnother">
           Add Another Device
         </UButton>

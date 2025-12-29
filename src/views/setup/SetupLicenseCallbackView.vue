@@ -7,7 +7,7 @@
           <div
             class="flex h-24 w-24 items-center justify-center rounded-full border-4 border-primary-400/20 bg-primary-400/10"
           >
-            <UIcon name="i-lucide-check" class="h-12 w-12 text-primary-400" />
+            <UIcon name="i-fa6-solid:check" class="h-12 w-12 text-primary-400" />
           </div>
         </div>
         <div class="space-y-3">
@@ -24,7 +24,7 @@
           <div
             class="flex h-24 w-24 items-center justify-center rounded-full border-4 border-red-400/20 bg-red-400/10"
           >
-            <UIcon name="i-lucide-x" class="h-12 w-12 text-red-400" />
+            <UIcon name="i-fa6-solid:xmark" class="h-12 w-12 text-red-400" />
           </div>
         </div>
         <div class="space-y-3">
@@ -99,7 +99,7 @@ onMounted(() => {
           type: 'LICENSE_CALLBACK',
           licenseKey: licenseKey.value,
         },
-        window.location.origin
+        window.location.origin,
       )
 
       // Close popup after a short delay to show success message

@@ -4,400 +4,400 @@
  */
 
 export interface paths {
-    "/v1/factory/provision": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Sign a CSR for a factory device */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "multipart/form-data": {
-                        /** @description PEM encoded certificate signing request */
-                        csr: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Signed certificate */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/x-x509-ca-cert": string;
-                    };
-                };
-                /** @description Invalid input */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Authentication failed */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Unauthorized role */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Upstream signing error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/ds_params": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Fetch deterministic secure parameters for a device */
-        get: {
-            parameters: {
-                query?: never;
-                header: {
-                    "x-device-id": string;
-                };
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Device found */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DsParams"];
-                    };
-                };
-                /** @description Missing device header */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Device not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        /** Persist deterministic secure parameters for a device */
-        post: {
-            parameters: {
-                query?: never;
-                header: {
-                    "x-device-id": string;
-                };
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["DsParams"];
-                };
-            };
-            responses: {
-                /** @description Parameters stored */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Validation error */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/license/checkout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Initiate Stripe checkout session for license purchase */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CheckoutRequest"];
-                };
-            };
-            responses: {
-                /** @description Checkout session created */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["CheckoutResponse"];
-                    };
-                };
-                /** @description Invalid key_type or return_url */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Authentication failed */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Failed to create checkout session */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/license/checkout/callback": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Stripe checkout callback (internal use)
-         * @description Handles Stripe redirect after payment. Validates payment and generates license key.
-         */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Stripe checkout session ID */
-                    session_id: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Redirect to return_url with license_key parameter */
-                302: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Missing session_id or payment not completed */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Failed to process callback */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/license/redeem": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Redeem license key to sign a CSR
-         * @description Validates license key, signs the provided CSR, and marks key as used. License keys can only be redeemed once.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["RedeemRequest"];
-                };
-            };
-            responses: {
-                /** @description Signed certificate */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/x-x509-ca-cert": string;
-                    };
-                };
-                /** @description Invalid CSR or license key already used */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Invalid license key */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Unable to generate provisioning token */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Error signing CSR */
-                502: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+  '/v1/factory/provision': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Sign a CSR for a factory device */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'multipart/form-data': {
+            /** @description PEM encoded certificate signing request */
+            csr: string
+          }
+        }
+      }
+      responses: {
+        /** @description Signed certificate */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/x-x509-ca-cert': string
+          }
+        }
+        /** @description Invalid input */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Authentication failed */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Unauthorized role */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Upstream signing error */
+        500: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/ds_params': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Fetch deterministic secure parameters for a device */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          'x-device-id': string
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Device found */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['DsParams']
+          }
+        }
+        /** @description Missing device header */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Device not found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /** Persist deterministic secure parameters for a device */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          'x-device-id': string
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['DsParams']
+        }
+      }
+      responses: {
+        /** @description Parameters stored */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Validation error */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/license/checkout': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Initiate Stripe checkout session for license purchase */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CheckoutRequest']
+        }
+      }
+      responses: {
+        /** @description Checkout session created */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CheckoutResponse']
+          }
+        }
+        /** @description Invalid key_type or return_url */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Authentication failed */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Failed to create checkout session */
+        500: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/license/checkout/callback': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Stripe checkout callback (internal use)
+     * @description Handles Stripe redirect after payment. Validates payment and generates license key.
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Stripe checkout session ID */
+          session_id: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Redirect to return_url with license_key parameter */
+        302: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Missing session_id or payment not completed */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Failed to process callback */
+        500: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/license/redeem': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Redeem license key to sign a CSR
+     * @description Validates license key, signs the provided CSR, and marks key as used. License keys can only be redeemed once.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['RedeemRequest']
+        }
+      }
+      responses: {
+        /** @description Signed certificate */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/x-x509-ca-cert': string
+          }
+        }
+        /** @description Invalid CSR or license key already used */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid license key */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Unable to generate provisioning token */
+        500: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Error signing CSR */
+        502: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
-export type webhooks = Record<string, never>;
+export type webhooks = Record<string, never>
 export interface components {
-    schemas: {
-        DsParams: {
-            ds_key_id: number;
-            rsa_len: number;
-            /** @description Base64 encoded cipher text */
-            cipher_c: string;
-            /** @description Base64 encoded initialization vector */
-            iv: string;
-        };
-        CheckoutRequest: {
-            /**
-             * @description Type of license key to purchase
-             * @example matrx
-             * @enum {string}
-             */
-            key_type: "matrx" | "lantern";
-            /**
-             * Format: uri
-             * @description URL to redirect after successful payment (must be whitelisted)
-             * @example https://app.koiosdigital.net/success
-             */
-            return_url: string;
-        };
-        CheckoutResponse: {
-            /**
-             * Format: uri
-             * @description Stripe checkout session URL
-             * @example https://checkout.stripe.com/c/pay/cs_xxxxxxxxxxxxx
-             */
-            url?: string;
-        };
-        RedeemRequest: {
-            /**
-             * @description License key obtained from checkout
-             * @example A1B2-C3D4-E5F6-G7H8-I9J0-K1L2-M3N4-O5P6
-             */
-            license_key: string;
-            /**
-             * @description PEM encoded certificate signing request
-             * @example -----BEGIN CERTIFICATE REQUEST-----
-             *     ...
-             *     -----END CERTIFICATE REQUEST-----
-             */
-            csr: string;
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: {
+    DsParams: {
+      ds_key_id: number
+      rsa_len: number
+      /** @description Base64 encoded cipher text */
+      cipher_c: string
+      /** @description Base64 encoded initialization vector */
+      iv: string
+    }
+    CheckoutRequest: {
+      /**
+       * @description Type of license key to purchase
+       * @example matrx
+       * @enum {string}
+       */
+      key_type: 'matrx' | 'lantern'
+      /**
+       * Format: uri
+       * @description URL to redirect after successful payment (must be whitelisted)
+       * @example https://app.koiosdigital.net/success
+       */
+      return_url: string
+    }
+    CheckoutResponse: {
+      /**
+       * Format: uri
+       * @description Stripe checkout session URL
+       * @example https://checkout.stripe.com/c/pay/cs_xxxxxxxxxxxxx
+       */
+      url?: string
+    }
+    RedeemRequest: {
+      /**
+       * @description License key obtained from checkout
+       * @example A1B2-C3D4-E5F6-G7H8-I9J0-K1L2-M3N4-O5P6
+       */
+      license_key: string
+      /**
+       * @description PEM encoded certificate signing request
+       * @example -----BEGIN CERTIFICATE REQUEST-----
+       *     ...
+       *     -----END CERTIFICATE REQUEST-----
+       */
+      csr: string
+    }
+  }
+  responses: never
+  parameters: never
+  requestBodies: never
+  headers: never
+  pathItems: never
 }
-export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export type $defs = Record<string, never>
+export type operations = Record<string, never>

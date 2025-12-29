@@ -2,9 +2,21 @@ import createClient, { type Middleware } from 'openapi-fetch'
 import type { paths } from '@/types/api'
 import { ENV } from '@/config/environment'
 import { useAuthStore } from '@/stores/auth/auth'
+import router from '@/router'
 
 // Track if we're currently refreshing to avoid loops
 let isRefreshing = false
+
+/**
+ * Redirect to login with current path preserved
+ */
+function redirectToLogin() {
+  const currentPath = window.location.pathname + window.location.search
+  router.replace({
+    path: '/login',
+    query: currentPath !== '/' ? { redirect: currentPath } : undefined,
+  })
+}
 
 /**
  * Authentication middleware that adds Bearer token and retries on 401
@@ -46,9 +58,13 @@ const authMiddleware: Middleware = {
           const retryResponse = await fetch(retryRequest)
           isRefreshing = false
           return retryResponse
+        } else {
+          // Refresh failed, redirect to login
+          redirectToLogin()
         }
       } catch (error) {
         console.error('Token refresh failed during 401 retry:', error)
+        redirectToLogin()
       }
 
       isRefreshing = false
@@ -86,13 +102,3 @@ export const apiClient = createClient<paths>({
 // Register middleware
 apiClient.use(authMiddleware)
 apiClient.use(errorMiddleware)
-
-/**
- * Create a custom API client instance (for testing or different base URLs)
- */
-export function createApiClient(baseUrl: string) {
-  const client = createClient<paths>({ baseUrl })
-  client.use(authMiddleware)
-  client.use(errorMiddleware)
-  return client
-}

@@ -8,7 +8,7 @@
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-arrow-left"
+          icon="i-fa6-solid:arrow-left"
           square
           @click="router.back()"
         />
@@ -22,7 +22,7 @@
         <!-- Error Alert -->
         <UAlert
           v-if="error"
-          icon="i-lucide-alert-circle"
+          icon="i-fa6-solid:circle-exclamation"
           color="error"
           :title="error.title"
           :description="error.description"
@@ -279,7 +279,7 @@ watch(
       bleStore.setGattError(new Error('Device disconnected during pairing'))
       router.replace('/setup/new')
     }
-  }
+  },
 )
 
 onMounted(() => {

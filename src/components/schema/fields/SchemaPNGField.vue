@@ -12,7 +12,7 @@
         class="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 hover:bg-red-600"
         @click="clearImage"
       >
-        <UIcon name="i-lucide-x" class="h-3 w-3 text-white" />
+        <UIcon name="i-fa6-solid:xmark" class="h-3 w-3 text-white" />
       </button>
     </div>
 
@@ -25,12 +25,7 @@
         class="hidden"
         @change="handleFileSelect"
       />
-      <UButton
-        color="neutral"
-        variant="soft"
-        icon="i-lucide-upload"
-        @click="fileInput?.click()"
-      >
+      <UButton color="neutral" variant="soft" icon="i-fa6-solid:upload" @click="fileInput?.click()">
         Upload PNG
       </UButton>
     </div>

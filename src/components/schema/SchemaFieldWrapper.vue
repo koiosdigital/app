@@ -6,11 +6,7 @@
   >
     <!-- Label row -->
     <div v-if="field.name" class="flex items-center gap-2">
-      <UIcon
-        v-if="field.icon"
-        :name="`i-lucide-${field.icon}`"
-        class="h-4 w-4 text-white/60"
-      />
+      <UIcon v-if="iconName" :name="iconName" class="h-4 w-4 text-white/60" />
       <label class="text-sm font-medium text-white/90">{{ field.name }}</label>
     </div>
 
@@ -25,12 +21,16 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { components } from '@/types/api'
+import { getSchemaIconName } from '@/utils/schemaIcons'
 
 type AppSchemaField = components['schemas']['AppSchemaDto']['schema'][number]
 
-defineProps<{
+const props = defineProps<{
   field: AppSchemaField
   visibilityState: { visible: boolean; disabled: boolean }
 }>()
+
+const iconName = computed(() => getSchemaIconName(props.field.icon))
 </script>

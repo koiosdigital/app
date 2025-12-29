@@ -12,15 +12,15 @@
 
     <div class="mt-4 grid gap-4 md:grid-cols-3 text-sm text-white/70">
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-radar" class="h-4 w-4" />
+        <UIcon name="i-fa6-solid:satellite-dish" class="h-4 w-4" />
         <span>{{ signalLabel }}</span>
       </div>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-wifi" class="h-4 w-4" />
+        <UIcon name="i-fa6-solid:wifi" class="h-4 w-4" />
         <span>{{ ap.bssid }}</span>
       </div>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-shield" class="h-4 w-4" />
+        <UIcon name="i-fa6-solid:shield" class="h-4 w-4" />
         <span>{{ requiresPassword ? 'Secured' : 'Open' }}</span>
       </div>
     </div>
@@ -41,7 +41,7 @@
             color="primary"
             :loading="connecting"
             :disabled="connected"
-            icon="i-lucide-link-2"
+            icon="i-fa6-solid:link"
             @click="emitConnect"
           >
             {{ connected ? 'Connected' : 'Connect' }}
@@ -49,7 +49,7 @@
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-copy"
+            icon="i-fa6-regular:copy"
             :disabled="!ap.ssid"
             @click="copySsid"
           >
@@ -63,7 +63,11 @@
 
 <script setup lang="ts">
 import { computed, ref, toRefs, watch } from 'vue'
-import { getSecurityLabel, requiresPassword as requiresPasswordFn, getSignalStrength } from '@/utils/wifi'
+import {
+  getSecurityLabel,
+  requiresPassword as requiresPasswordFn,
+  getSignalStrength,
+} from '@/utils/wifi'
 import type { WifiAP } from '@/stores/ble_prov'
 
 const props = defineProps<{

@@ -7,19 +7,16 @@
     @click="handleOpen"
   >
     <template #header-end>
-      <span
-        class="h-10 w-10 rounded-full border border-white/20 bg-amber-500"
-        aria-hidden="true"
-      />
+      <span class="h-10 w-10 rounded-full border border-white/20 bg-amber-500" aria-hidden="true" />
     </template>
 
     <template #metadata>
       <span class="inline-flex items-center gap-2">
-        <UIcon name="i-lucide-sun" class="h-4 w-4" />
+        <UIcon name="i-fa6-solid:sun" class="h-4 w-4" />
         Brightness {{ brightnessPercent }}%
       </span>
       <span class="inline-flex items-center gap-2">
-        <UIcon name="i-lucide-wifi" class="h-4 w-4" />
+        <UIcon name="i-fa6-solid:wifi" class="h-4 w-4" />
         {{ statusLabel }}
       </span>
     </template>
@@ -31,7 +28,7 @@
           class="group relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-white/20 bg-amber-500 transition-all hover:border-white/40 hover:scale-105 active:scale-95"
           @click.stop="emit('send-touch', device.id)"
         >
-          <UIcon name="i-lucide-hand" class="h-8 w-8 text-white/90 group-hover:text-white" />
+          <UIcon name="i-fa6-solid:hand" class="h-8 w-8 text-white/90 group-hover:text-white" />
           <span class="sr-only">Send touch</span>
         </button>
       </div>
@@ -42,7 +39,7 @@
         size="sm"
         :color="device.online ? 'primary' : 'neutral'"
         variant="soft"
-        icon="i-lucide-power"
+        icon="i-fa6-solid:power-off"
         @click.stop="emit('toggle-power', device.id)"
       >
         {{ powerLabel }}
@@ -51,7 +48,7 @@
         size="sm"
         color="neutral"
         variant="ghost"
-        icon="i-lucide-settings-2"
+        icon="i-fa6-solid:gear"
         @click.stop="emit('open-settings', device.id)"
       >
         Settings

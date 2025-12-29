@@ -8,7 +8,7 @@
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-arrow-left"
+          icon="i-fa6-solid:arrow-left"
           square
           @click="router.back()"
         />
@@ -23,7 +23,7 @@
         <div v-if="isLoading && !error" class="flex flex-1 items-center justify-center">
           <div class="space-y-3 text-center">
             <UIcon
-              name="i-lucide-loader-2"
+              name="i-fa6-solid:spinner"
               class="mx-auto h-12 w-12 animate-spin text-primary-400"
             />
             <p class="text-sm text-white/70">{{ loadingMessage }}</p>
@@ -35,7 +35,7 @@
           <div
             class="flex items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/10 p-4"
           >
-            <UIcon name="i-lucide-shield-x" class="h-6 w-6 shrink-0 text-red-400" />
+            <UIcon name="i-fa6-solid:shield" class="h-6 w-6 shrink-0 text-red-400" />
             <div>
               <h2 class="font-semibold text-red-400">{{ error.title }}</h2>
               <p class="text-sm text-white/70">{{ error.description }}</p>
@@ -51,7 +51,7 @@
             <div
               class="flex items-center gap-2 rounded-lg border border-primary-500/20 bg-primary-500/10 p-3"
             >
-              <UIcon name="i-lucide-life-buoy" class="h-5 w-5 text-primary-400" />
+              <UIcon name="i-fa6-regular:life-ring" class="h-5 w-5 text-primary-400" />
               <div class="flex-1">
                 <p class="text-sm font-medium text-primary-400">Need assistance?</p>
                 <a
@@ -97,7 +97,7 @@ const bleStore = useBleProvStore()
 const isLoading = ref(false)
 const loadingMessage = ref('Checking device status...')
 const error = ref<{ title: string; description: string; retryAction?: () => void } | undefined>(
-  undefined
+  undefined,
 )
 
 async function checkCryptoStatus() {
@@ -175,7 +175,11 @@ async function restoreFromBackup() {
     }
 
     // Fetch backup from provisioning server
-    const { data: params, error: fetchError, response } = await provisioningClient.GET('/v1/ds_params', {
+    const {
+      data: params,
+      error: fetchError,
+      response,
+    } = await provisioningClient.GET('/v1/ds_params', {
       params: { header: { 'x-device-id': deviceId } },
     })
 
@@ -211,12 +215,7 @@ async function restoreFromBackup() {
     router.push('/setup/crypto')
   } catch (err) {
     console.error('Restore error:', err)
-    handleError(
-      err,
-      'Restore Failed',
-      'Failed to restore security credentials.',
-      restoreFromBackup
-    )
+    handleError(err, 'Restore Failed', 'Failed to restore security credentials.', restoreFromBackup)
   }
 }
 
@@ -224,7 +223,7 @@ function handleError(
   err: unknown,
   title: string,
   defaultMessage: string,
-  retryAction?: () => void
+  retryAction?: () => void,
 ) {
   // Check if it's a GATT error
   if (bleStore.isGattError(err)) {

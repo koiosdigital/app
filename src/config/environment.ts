@@ -7,7 +7,9 @@ export const ENV = {
   /** App URLs */
   appUrl: import.meta.env.VITE_APP_URL ?? 'https://app.koiosdigital.net',
   appNativeUrl:
-    import.meta.env.VITE_APP_NATIVE_URL ?? import.meta.env.VITE_APP_URL ?? 'https://app.koiosdigital.net',
+    import.meta.env.VITE_APP_NATIVE_URL ??
+    import.meta.env.VITE_APP_URL ??
+    'https://app.koiosdigital.net',
 
   /** API Configuration */
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? 'https://api.koiosdigital.net',

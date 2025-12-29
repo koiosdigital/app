@@ -1,6 +1,11 @@
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
-import { UserManager, WebStorageStateStore, type UserManagerSettings, type User } from 'oidc-client-ts'
+import {
+  UserManager,
+  WebStorageStateStore,
+  type UserManagerSettings,
+  type User,
+} from 'oidc-client-ts'
 import { ENV } from '@/config/environment'
 
 type TokenResponse = {
@@ -33,7 +38,8 @@ const resolveBrowserBaseUrl = () => {
 /**
  * Resolves the base URL for the current platform (native or web)
  */
-const resolveBaseUrl = () => (Capacitor.isNativePlatform() ? ENV.appNativeUrl : resolveBrowserBaseUrl())
+const resolveBaseUrl = () =>
+  Capacitor.isNativePlatform() ? ENV.appNativeUrl : resolveBrowserBaseUrl()
 
 /**
  * Builds OIDC UserManager settings with proper PKCE configuration
@@ -260,7 +266,9 @@ export class KoiosOidcClient {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
         idToken: tokens.id_token,
-        expiresAt: tokens.expires_in ? Math.floor(Date.now() / 1000) + tokens.expires_in : undefined,
+        expiresAt: tokens.expires_in
+          ? Math.floor(Date.now() / 1000) + tokens.expires_in
+          : undefined,
         scope: tokens.scope,
       }
     } else {
@@ -290,7 +298,10 @@ export class KoiosOidcClient {
 
       const logoutUrl = new URL(`${oauth.authority}/protocol/openid-connect/logout`)
       logoutUrl.searchParams.set('client_id', oauth.clientId)
-      logoutUrl.searchParams.set('post_logout_redirect_uri', `${baseUrl}${oauth.postLogoutRedirectPath}`)
+      logoutUrl.searchParams.set(
+        'post_logout_redirect_uri',
+        `${baseUrl}${oauth.postLogoutRedirectPath}`,
+      )
 
       await Browser.open({ url: logoutUrl.toString() })
       // User state is cleared by the auth store after this call

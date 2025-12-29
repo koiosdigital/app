@@ -7,7 +7,7 @@
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-arrow-left"
+            icon="i-fa6-solid:arrow-left"
             square
             @click="router.push(`/matrx/${deviceId}`)"
           />
@@ -17,14 +17,14 @@
           <UButton
             color="neutral"
             variant="ghost"
-            :icon="isSearchOpen ? 'i-lucide-x' : 'i-lucide-search'"
+            :icon="isSearchOpen ? 'i-fa6-solid:xmark' : 'i-fa6-solid:magnifying-glass'"
             square
             @click="toggleSearch"
           />
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-sliders-horizontal"
+            icon="i-fa6-solid:sliders"
             square
             @click="isFilterOpen = !isFilterOpen"
           />
@@ -46,7 +46,7 @@
               ref="searchInputRef"
               v-model="searchQuery"
               placeholder="Search apps..."
-              icon="i-lucide-search"
+              icon="i-fa6-solid:magnifying-glass"
               size="lg"
             />
             <button
@@ -55,7 +55,7 @@
               class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded text-white/50 hover:text-white/80"
               @click="searchQuery = ''"
             >
-              <UIcon name="i-lucide-x" class="h-4 w-4" />
+              <UIcon name="i-fa6-solid:xmark" class="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -99,7 +99,7 @@
                 size="xs"
                 :color="sortOrder === 'asc' ? 'primary' : 'neutral'"
                 :variant="sortOrder === 'asc' ? 'soft' : 'ghost'"
-                icon="i-lucide-arrow-up-a-z"
+                icon="i-fa6-solid:arrow-up-a-z"
                 @click="sortOrder = 'asc'"
               >
                 A-Z
@@ -108,7 +108,7 @@
                 size="xs"
                 :color="sortOrder === 'desc' ? 'primary' : 'neutral'"
                 :variant="sortOrder === 'desc' ? 'soft' : 'ghost'"
-                icon="i-lucide-arrow-down-z-a"
+                icon="i-fa6-solid:arrow-down-z-a"
                 @click="sortOrder = 'desc'"
               >
                 Z-A
@@ -121,13 +121,13 @@
 
     <!-- Loading State (initial) -->
     <div v-if="initialLoading" class="flex flex-1 items-center justify-center">
-      <UIcon name="i-lucide-loader-2" class="h-8 w-8 animate-spin text-white/50" />
+      <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
     </div>
 
     <!-- Error State -->
     <div v-else-if="error && apps.length === 0" class="flex flex-1 items-center justify-center p-5">
       <div class="text-center space-y-4">
-        <UIcon name="i-lucide-alert-circle" class="h-12 w-12 text-red-400 mx-auto" />
+        <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-red-400 mx-auto" />
         <p class="text-red-400">{{ error }}</p>
         <UButton color="neutral" variant="soft" @click="loadApps(true)">Retry</UButton>
       </div>
@@ -140,7 +140,7 @@
         v-if="apps.length === 0 && !loading"
         class="flex flex-1 flex-col items-center justify-center p-8 text-center"
       >
-        <UIcon name="i-lucide-package-search" class="h-16 w-16 text-white/30" />
+        <UIcon name="i-fa6-solid:box-open" class="h-16 w-16 text-white/30" />
         <p class="mt-4 text-white/70">
           {{ searchQuery ? 'No apps found matching your search' : 'No apps available' }}
         </p>
@@ -167,14 +167,10 @@
         />
 
         <!-- Loading more indicator -->
-        <div
-          v-if="hasMore"
-          ref="loadMoreTrigger"
-          class="col-span-full flex justify-center py-4"
-        >
+        <div v-if="hasMore" ref="loadMoreTrigger" class="col-span-full flex justify-center py-4">
           <UIcon
             v-if="loading"
-            name="i-lucide-loader-2"
+            name="i-fa6-solid:spinner"
             class="h-6 w-6 animate-spin text-white/50"
           />
         </div>
@@ -331,7 +327,7 @@ function setupIntersectionObserver() {
     },
     {
       rootMargin: '100px',
-    }
+    },
   )
 }
 

@@ -8,7 +8,7 @@
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-arrow-left"
+          icon="i-fa6-solid:arrow-left"
           square
           @click="router.back()"
         />
@@ -22,7 +22,7 @@
         <!-- Error Alert -->
         <UAlert
           v-if="error"
-          icon="i-lucide-alert-circle"
+          icon="i-fa6-solid:circle-exclamation"
           color="error"
           :title="error.title"
           :description="error.description"
@@ -31,7 +31,10 @@
         <!-- Checking Crypto Status -->
         <div v-if="isCheckingStatus" class="flex flex-1 items-center justify-center">
           <div class="space-y-3 text-center">
-            <UIcon name="i-lucide-loader-2" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
+            <UIcon
+              name="i-fa6-solid:spinner"
+              class="mx-auto h-12 w-12 animate-spin text-primary-400"
+            />
             <p class="text-sm text-white/70">{{ statusMessage }}</p>
           </div>
         </div>
@@ -41,7 +44,10 @@
           <div
             class="flex items-center gap-3 rounded-lg border border-primary-500/20 bg-primary-500/10 p-4"
           >
-            <UIcon name="i-lucide-shield-check" class="h-6 w-6 flex-shrink-0 text-primary-400" />
+            <UIcon
+              name="i-fa6-solid:shield-halved"
+              class="h-6 w-6 flex-shrink-0 text-primary-400"
+            />
             <div>
               <h2 class="font-semibold text-primary-400">Device Verified</h2>
               <p class="text-sm text-white/70">Device has a valid certificate</p>
@@ -50,7 +56,10 @@
 
           <div v-if="isGettingClaimToken" class="flex flex-1 items-center justify-center">
             <div class="space-y-3 text-center">
-              <UIcon name="i-lucide-loader-2" class="mx-auto h-12 w-12 animate-spin text-primary-400" />
+              <UIcon
+                name="i-fa6-solid:spinner"
+                class="mx-auto h-12 w-12 animate-spin text-primary-400"
+              />
               <p class="text-sm text-white/70">Getting claim token...</p>
             </div>
           </div>
@@ -78,7 +87,7 @@
           <div
             class="flex items-center gap-3 rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4"
           >
-            <UIcon name="i-lucide-clock" class="h-6 w-6 flex-shrink-0 text-yellow-400" />
+            <UIcon name="i-fa6-regular:clock" class="h-6 w-6 flex-shrink-0 text-yellow-400" />
             <div>
               <h2 class="font-semibold text-yellow-400">Device Initializing</h2>
               <p class="text-sm text-white/70">
@@ -102,7 +111,7 @@
           <div
             class="flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/10 p-4"
           >
-            <UIcon name="i-lucide-key" class="h-6 w-6 shrink-0 text-orange-400" />
+            <UIcon name="i-fa6-solid:key" class="h-6 w-6 shrink-0 text-orange-400" />
             <div>
               <h2 class="font-semibold text-orange-400">License Required</h2>
               <p class="text-sm text-white/70">
@@ -125,7 +134,7 @@
               :disabled="isStartingCheckout"
               @click="startCheckout"
             >
-              <UIcon name="i-lucide-credit-card" class="mr-2 h-5 w-5" />
+              <UIcon name="i-fa6-regular:credit-card" class="mr-2 h-5 w-5" />
               Purchase License
             </UButton>
 
@@ -199,7 +208,10 @@ async function storePendingLicense(licenseKey: string, deviceId: string) {
 /**
  * Get pending license key and device ID from storage
  */
-async function getPendingLicense(): Promise<{ licenseKey: string | null; deviceId: string | null }> {
+async function getPendingLicense(): Promise<{
+  licenseKey: string | null
+  deviceId: string | null
+}> {
   const [licenseResult, deviceResult] = await Promise.all([
     Preferences.get({ key: PENDING_LICENSE_KEY }),
     Preferences.get({ key: PENDING_DEVICE_ID }),
@@ -382,7 +394,6 @@ function setupMessageListener() {
   }
 }
 
-
 /**
  * Provision certificate using license key
  */
@@ -401,7 +412,11 @@ async function provisionWithLicenseKey() {
 
     // Step 2: Redeem license key to sign CSR
     statusMessage.value = 'Signing certificate...'
-    const { data: certPem, error: redeemError, response } = await provisioningClient.POST('/v1/license/redeem', {
+    const {
+      data: certPem,
+      error: redeemError,
+      response,
+    } = await provisioningClient.POST('/v1/license/redeem', {
       body: {
         license_key: licenseKey.value,
         csr: csr,
