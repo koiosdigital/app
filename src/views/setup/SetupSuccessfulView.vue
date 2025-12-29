@@ -53,8 +53,10 @@ import { useHead } from '@unhead/vue'
 import { useBleProvStore } from '@/stores/ble_prov'
 
 useHead({
-  title: 'Setup Complete | Koios',
-  meta: [{ name: 'description', content: 'Your Koios device has been successfully configured' }],
+  title: 'Setup Complete | Koios Digital',
+  meta: [
+    { name: 'description', content: 'Your Koios Digital device has been successfully configured' },
+  ],
 })
 
 const router = useRouter()

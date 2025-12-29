@@ -136,8 +136,8 @@ import { useBleProvStore } from '@/stores/ble_prov'
 import { checkBleAvailability, type BleAvailabilityResult } from '@/utils/ble'
 
 useHead({
-  title: 'Add Device | Koios',
-  meta: [{ name: 'description', content: 'Add a new Koios device' }],
+  title: 'Add Device | Koios Digital',
+  meta: [{ name: 'description', content: 'Add a new Koios Digital device' }],
 })
 
 const router = useRouter()

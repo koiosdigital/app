@@ -187,8 +187,8 @@ import { ENV } from '@/config/environment'
 import { isNativePlatform, openPopupSync, addBrowserFinishedListener } from '@/utils/browser'
 
 useHead({
-  title: 'Device Security | Koios',
-  meta: [{ name: 'description', content: 'Configure security for your Koios device' }],
+  title: 'Device Security | Koios Digital',
+  meta: [{ name: 'description', content: 'Configure security for your Koios Digital device' }],
 })
 
 // Storage keys for license checkout recovery

@@ -275,8 +275,8 @@ import { useBleProvStore, type WifiAP } from '@/stores/ble_prov'
 import { getSignalStrength, WIFI_SECURITY_LABELS } from '@/utils/wifi'
 
 useHead({
-  title: 'WiFi Setup | Koios',
-  meta: [{ name: 'description', content: 'Connect your Koios device to WiFi' }],
+  title: 'WiFi Setup | Koios Digital',
+  meta: [{ name: 'description', content: 'Connect your Koios Digital device to WiFi' }],
 })
 
 const router = useRouter()

@@ -29,7 +29,7 @@ function isWebPlatform(): boolean {
 }
 
 /**
- * Start scanning for Koios devices
+ * Start scanning for Koios Digital devices
  */
 export async function startScan() {
   isScanning.value = true

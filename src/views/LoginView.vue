@@ -34,8 +34,8 @@ import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/aut
 import loginBgImage from '@/assets/images/login-bg.jpg'
 
 useHead({
-  title: 'Sign In | Koios',
-  meta: [{ name: 'description', content: 'Sign in to manage your Koios devices' }],
+  title: 'Sign In | Koios Digital',
+  meta: [{ name: 'description', content: 'Sign in to manage your Koios Digital devices' }],
 })
 
 const authStore = useAuthStore()

@@ -60,7 +60,7 @@ export async function checkBleAvailability(): Promise<BleAvailabilityResult> {
         errorMessage: 'This app needs Bluetooth access to set up your devices.',
         instructions: [
           'Open the Settings app',
-          'Scroll down and tap "Koios"',
+          'Scroll down and tap "Koios Digital"',
           'Enable Bluetooth permission',
           'Return to this app and try again',
         ],
@@ -80,7 +80,7 @@ export async function checkBleAvailability(): Promise<BleAvailabilityResult> {
         errorMessage: 'This app needs Bluetooth and location access to set up your devices.',
         instructions: [
           'Open your device Settings',
-          'Go to Apps > Koios > Permissions',
+          'Go to Apps > Koios Digital > Permissions',
           'Enable "Nearby devices" or "Bluetooth" permission',
           'Enable "Location" permission (required for Bluetooth scanning on Android)',
           'Return to this app and try again',

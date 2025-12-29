@@ -156,7 +156,7 @@
       </div>
 
       <!-- Apps Grid -->
-      <div v-else class="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3 lg:grid-cols-4">
+      <div v-else class="grid grid-cols-2 gap-3 p-5 lg:grid-cols-3">
         <AppCard
           v-for="app in apps"
           :key="app.id"
@@ -188,7 +188,6 @@ import { appsApi, type AppManifest, type PaginationMeta } from '@/lib/api/apps'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import type { MatrxDevice } from '@/lib/api/mappers/deviceMapper'
-
 const router = useRouter()
 const route = useRoute()
 
@@ -229,7 +228,7 @@ const hasMore = computed(() => {
 const currentPage = computed(() => pagination.value?.page ?? 1)
 
 useHead({
-  title: 'Apps | Koios',
+  title: 'Apps | Koios Digital',
   meta: [{ name: 'description', content: 'Browse and install apps for your Matrx device' }],
 })
 

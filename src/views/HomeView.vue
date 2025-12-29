@@ -91,7 +91,7 @@
         v-else
         class="rounded-lg border border-dashed border-white/20 p-6 text-center text-white/70"
       >
-        No devices yet. Add your first Koios screen or lantern to get started.
+        No devices yet. Add your first Koios Digital product to get started.
       </div>
     </section>
   </div>
@@ -109,8 +109,8 @@ import { type ApiDevice, isMatrxDevice } from '@/lib/api/mappers/deviceMapper'
 import { usePullToRefresh } from '@/composables/usePullToRefresh'
 
 useHead({
-  title: 'Devices | Koios',
-  meta: [{ name: 'description', content: 'Manage your Koios devices' }],
+  title: 'Devices | Koios Digital',
+  meta: [{ name: 'description', content: 'Manage your Koios Digital devices' }],
 })
 
 const router = useRouter()

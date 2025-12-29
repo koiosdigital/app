@@ -3,8 +3,8 @@ import type { CapacitorConfig } from '@capacitor/cli'
 const UNIVERSAL_LINK_HOST = process.env.KOIOS_UNIVERSAL_LINK_HOST ?? 'app.koiosdigital.net'
 
 const config: CapacitorConfig = {
-  appId: 'net.koiosdigital.koiosapp',
-  appName: 'Koios App',
+  appId: 'net.koiosdigital.app',
+  appName: 'Koios Digital',
   webDir: 'dist',
   server: {
     hostname: 'localhost',

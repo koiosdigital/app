@@ -25,6 +25,16 @@
       </div>
     </header>
 
+    <!-- Delete Confirmation Modal -->
+    <DangerConfirmModal
+      v-model="showDeleteModal"
+      title="Delete Installation"
+      :message="`Are you sure you want to remove '${deleteTarget?.appName}' from this device? This action cannot be undone.`"
+      confirm-text="Delete"
+      :loading="deleting"
+      @confirm="handleDelete"
+    />
+
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-1 items-center justify-center">
       <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
@@ -43,44 +53,80 @@
 
     <!-- Main Content -->
     <div v-else-if="device" class="flex flex-1 flex-col">
-      <!-- Current Display Preview -->
+      <!-- Current Display Preview / Pinned App -->
       <section class="flex flex-col items-center gap-4 px-5 py-8 border-b border-white/10">
-        <p class="text-xs uppercase tracking-widest text-white/50">Now Playing</p>
-        <div v-if="currentInstallation" class="flex flex-col items-center gap-3">
-          <InstallationPreview
-            :device-id="deviceId"
-            :installation-id="currentInstallation.id"
-            :app-id="currentInstallation.appId"
-            :app-name="currentInstallation.appName"
-            :width="deviceWidth"
-            :height="deviceHeight"
-            :dot-size="4"
-            :dot-gap="1"
-            :show-frame="true"
-            class="no-label"
-          />
-          <p class="text-sm text-white/70">{{ currentAppName }}</p>
-        </div>
-        <div v-else class="flex flex-col items-center gap-3">
-          <!-- Empty state with frame -->
-          <div class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
-            <div
-              class="flex items-center justify-center bg-black rounded-sm"
-              :style="emptyPreviewStyle"
-            >
-              <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white" />
-            </div>
+        <!-- Pinned App State -->
+        <template v-if="pinnedInstallation">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-fa6-solid:thumbtack" class="h-3 w-3 text-primary-400" />
+            <p class="text-xs uppercase tracking-widest text-primary-400">Pinned App</p>
           </div>
-          <p class="text-sm text-white/50">No app displaying</p>
-        </div>
+          <div class="flex flex-col items-center gap-3">
+            <InstallationPreview
+              :device-id="deviceId"
+              :installation-id="pinnedInstallation.id"
+              :app-id="pinnedInstallation.appId"
+              :app-name="pinnedInstallation.appName"
+              :width="deviceWidth"
+              :height="deviceHeight"
+              :dot-size="4"
+              :dot-gap="1"
+              :show-frame="true"
+              class="no-label"
+            />
+            <p class="text-sm text-white/70">{{ pinnedInstallation.appName }}</p>
+          </div>
+          <UButton
+            size="sm"
+            color="neutral"
+            variant="soft"
+            icon="i-fa6-solid:thumbtack"
+            :loading="unpinning"
+            @click="unpinPinnedInstallation"
+          >
+            Unpin
+          </UButton>
+        </template>
+
+        <!-- Normal Now Playing State -->
+        <template v-else>
+          <p class="text-xs uppercase tracking-widest text-white/50">Now Playing</p>
+          <div v-if="currentInstallation" class="flex flex-col items-center gap-3">
+            <InstallationPreview
+              :device-id="deviceId"
+              :installation-id="currentInstallation.id"
+              :app-id="currentInstallation.appId"
+              :app-name="currentInstallation.appName"
+              :width="deviceWidth"
+              :height="deviceHeight"
+              :dot-size="4"
+              :dot-gap="1"
+              :show-frame="true"
+              class="no-label"
+            />
+            <p class="text-sm text-white/70">{{ currentAppName }}</p>
+          </div>
+          <div v-else class="flex flex-col items-center gap-3">
+            <!-- Empty state with frame -->
+            <div class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
+              <div
+                class="flex items-center justify-center bg-black rounded-sm"
+                :style="emptyPreviewStyle"
+              >
+                <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <p class="text-sm text-white/50">No app displaying</p>
+          </div>
+        </template>
       </section>
 
       <!-- Installations Section -->
-      <section class="flex-1 px-5 py-6">
+      <section class="relative flex-1 px-5 py-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-medium text-white/90">Apps</h2>
           <UButton
-            v-if="installations.length > 1"
+            v-if="installations.length > 1 && !pinnedInstallation"
             size="sm"
             color="neutral"
             variant="ghost"
@@ -94,7 +140,7 @@
         <!-- Installations Grid -->
         <div
           ref="installationsContainer"
-          class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
+          class="grid grid-cols-2 gap-4 md:grid-cols-3"
         >
           <div
             v-for="(installation, index) in installations"
@@ -113,19 +159,34 @@
                 'ring-2 ring-primary-500':
                   device.currentlyDisplayingInstallation === installation.id,
                 'cursor-grab': isReordering,
-                'opacity-50': dragIndex === index,
+                'opacity-50': dragIndex === index || installation.skippedByUser,
                 'opacity-40': installation.skippedByServer,
               }"
               @click="!isReordering && openInstallation(installation.id)"
             >
+              <!-- Skipped state placeholder -->
+              <div v-if="installation.skippedByUser" class="flex flex-col items-center gap-2">
+                <div
+                  class="flex items-center justify-center rounded-sm bg-black"
+                  :style="addButtonPreviewStyle"
+                >
+                  <UIcon name="i-fa6-regular:eye-slash" class="h-5 w-5 text-white/30" />
+                </div>
+                <span class="text-sm text-white/50 text-center truncate max-w-full">{{
+                  installation.appName
+                }}</span>
+              </div>
+
+              <!-- Normal preview -->
               <InstallationPreview
+                v-else
                 :device-id="deviceId"
                 :installation-id="installation.id"
                 :app-id="installation.appId"
                 :app-name="installation.appName"
                 :width="deviceWidth"
                 :height="deviceHeight"
-                :dot-size="2"
+                :dot-size="3"
                 :dot-gap="1"
                 :show-frame="false"
               />
@@ -157,11 +218,18 @@
           <!-- Add New Installation Button -->
           <button
             type="button"
-            class="flex aspect-[2/1] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/20 p-3 transition hover:border-white/40 hover:bg-white/5"
+            class="w-full rounded-lg border-2 border-dashed border-white/20 p-3 transition hover:border-white/40 hover:bg-white/5"
             @click="addInstallation"
           >
-            <UIcon name="i-fa6-solid:plus" class="h-8 w-8 text-white/40" />
-            <span class="text-xs text-white/50">Add App</span>
+            <div class="flex flex-col items-center gap-2">
+              <div
+                class="flex items-center justify-center rounded-sm bg-zinc-800/50"
+                :style="addButtonPreviewStyle"
+              >
+                <UIcon name="i-fa6-solid:plus" class="h-6 w-6 text-white/40" />
+              </div>
+              <span class="text-sm text-white/50">Add App</span>
+            </div>
           </button>
         </div>
 
@@ -179,6 +247,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import InstallationPreview from '@/components/installations/InstallationPreview.vue'
+import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import type { MatrxDevice } from '@/lib/api/mappers/deviceMapper'
@@ -201,6 +270,9 @@ const isReordering = ref(false)
 const dragIndex = ref<number | null>(null)
 const dropIndex = ref<number | null>(null)
 
+// Pinned state
+const unpinning = ref(false)
+
 // Polling interval
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
@@ -217,6 +289,10 @@ const currentInstallation = computed(() => {
 
 const currentAppName = computed(() => currentInstallation.value?.appName || 'Unknown App')
 
+const pinnedInstallation = computed(() => {
+  return installations.value.find((i) => i.pinnedByUser)
+})
+
 const emptyPreviewStyle = computed(() => {
   const dotSize = 4
   const dotGap = 1
@@ -228,8 +304,20 @@ const emptyPreviewStyle = computed(() => {
   }
 })
 
+// Match the grid item preview sizing (dotSize=3, dotGap=1)
+const addButtonPreviewStyle = computed(() => {
+  const dotSize = 3
+  const dotGap = 1
+  const displayWidth = deviceWidth.value * (dotSize + dotGap) - dotGap
+  const displayHeight = deviceHeight.value * (dotSize + dotGap) - dotGap
+  return {
+    width: `${displayWidth}px`,
+    height: `${displayHeight}px`,
+  }
+})
+
 useHead({
-  title: computed(() => `${deviceName.value} | Koios`),
+  title: computed(() => `${deviceName.value} | Koios Digital`),
   meta: [{ name: 'description', content: 'Manage your Matrx device' }],
 })
 
@@ -348,6 +436,48 @@ async function toggleSkip(installation: InstallationListItem) {
   }
 }
 
+async function unpinPinnedInstallation() {
+  if (!pinnedInstallation.value) return
+  unpinning.value = true
+  try {
+    await devicesApi.setPinState(deviceId.value, pinnedInstallation.value.id, false)
+    const installation = installations.value.find((i) => i.id === pinnedInstallation.value?.id)
+    if (installation) {
+      installation.pinnedByUser = false
+    }
+  } catch (err) {
+    console.error('Failed to unpin installation:', err)
+  } finally {
+    unpinning.value = false
+  }
+}
+
+// Delete installation
+const deleteTarget = ref<InstallationListItem | null>(null)
+const showDeleteModal = ref(false)
+const deleting = ref(false)
+
+function confirmDelete(installation: InstallationListItem) {
+  deleteTarget.value = installation
+  showDeleteModal.value = true
+}
+
+async function handleDelete() {
+  if (!deleteTarget.value) return
+
+  deleting.value = true
+  try {
+    await devicesApi.deleteInstallation(deviceId.value, deleteTarget.value.id)
+    installations.value = installations.value.filter((i) => i.id !== deleteTarget.value?.id)
+    showDeleteModal.value = false
+    deleteTarget.value = null
+  } catch (err) {
+    console.error('Failed to delete installation:', err)
+  } finally {
+    deleting.value = false
+  }
+}
+
 function getInstallationMenuItems(installation: InstallationListItem) {
   return [
     [
@@ -360,6 +490,14 @@ function getInstallationMenuItems(installation: InstallationListItem) {
         label: installation.skippedByUser ? 'Show in rotation' : 'Skip in rotation',
         icon: installation.skippedByUser ? 'i-fa6-regular:eye' : 'i-fa6-regular:eye-slash',
         onSelect: () => toggleSkip(installation),
+      },
+    ],
+    [
+      {
+        label: 'Delete',
+        icon: 'i-fa6-solid:trash',
+        color: 'error' as const,
+        onSelect: () => confirmDelete(installation),
       },
     ],
   ]

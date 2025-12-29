@@ -5,7 +5,7 @@
         <div class="flex items-center gap-3">
           <UIcon :name="groupIcon" class="h-6 w-6 text-white/80" />
           <div>
-            <p class="text-xs uppercase tracking-[0.3em] text-white/60">Koios group</p>
+            <p class="text-xs uppercase tracking-[0.3em] text-white/60">Koios Digital group</p>
             <h2 class="text-xl font-semibold">{{ group.name }}</h2>
           </div>
         </div>

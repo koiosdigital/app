@@ -87,7 +87,7 @@ import { useBleProvStore, KDCryptoStatus } from '@/stores/ble_prov'
 import { provisioningClient } from '@/lib/api/provisioning'
 
 useHead({
-  title: 'Device Security | Koios',
+  title: 'Device Security | Koios Digital',
   meta: [{ name: 'description', content: 'Verifying device security credentials' }],
 })
 

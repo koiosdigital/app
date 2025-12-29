@@ -22,7 +22,7 @@
         :src="previewBlobUrl"
         :width="width"
         :height="height"
-        :dot-size="2"
+        :dot-size="3"
         :dot-gap="1"
         :show-frame="true"
       />
@@ -108,7 +108,7 @@ const {
 } = useAuthenticatedImage(previewUrl)
 
 const screenStyle = computed(() => {
-  const dotSize = 2
+  const dotSize = 3
   const dotGap = 1
   const cellSize = dotSize + dotGap
   const displayWidth = props.width * cellSize - dotGap

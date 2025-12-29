@@ -1,7 +1,7 @@
 <template>
   <section class="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
     <div class="space-y-2">
-      <p class="text-xs uppercase tracking-[0.35em] text-white/60">Koios login</p>
+      <p class="text-xs uppercase tracking-[0.35em] text-white/60">KDID login</p>
       <h1 class="text-2xl font-semibold">Finishing sign-in…</h1>
       <p class="text-sm text-white/70">
         {{
@@ -31,7 +31,7 @@ import { useAuthStore } from '@/stores/auth/auth'
 import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/auth/constants'
 
 useHead({
-  title: 'Signing In... | Koios',
+  title: 'Signing In... | Koios Digital',
   meta: [{ name: 'robots', content: 'noindex' }],
 })
 
@@ -56,7 +56,33 @@ const consumeRedirectTarget = () => {
   return typeof fallback === 'string' && fallback.length ? fallback : null
 }
 
+/**
+ * Check if this callback is from a Keycloak account action (password change, profile update)
+ */
+const handleKeycloakAction = (): boolean => {
+  const kcAction = route.query.kc_action as string | undefined
+  const kcActionStatus = route.query.kc_action_status as string | undefined
+
+  if (kcAction && kcActionStatus) {
+    // Redirect to settings with action result
+    router.replace({
+      path: '/settings',
+      query: {
+        kc_action: kcAction,
+        kc_action_status: kcActionStatus,
+      },
+    })
+    return true
+  }
+  return false
+}
+
 const completeLogin = async () => {
+  // Handle Keycloak account actions (password change, profile update)
+  if (handleKeycloakAction()) {
+    return
+  }
+
   try {
     await authStore.completeAuthentication(
       typeof window !== 'undefined' ? window.location.href : undefined,
@@ -66,7 +92,7 @@ const completeLogin = async () => {
   } catch (error) {
     console.error('OIDC callback failed', error)
     errorMessage.value =
-      'Please relaunch the sign-in flow. If this keeps happening, contact Koios support.'
+      'Please relaunch the sign-in flow. If this keeps happening, contact Koios Digital support.'
   }
 }
 

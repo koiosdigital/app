@@ -56,7 +56,7 @@ import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
 
 useHead({
-  title: 'License Callback | Koios',
+  title: 'License Callback | Koios Digital',
   meta: [{ name: 'description', content: 'Processing license purchase' }],
 })
 

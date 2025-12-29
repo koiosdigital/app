@@ -15,14 +15,24 @@
           />
           <h1 class="text-xl font-semibold truncate">{{ appName }}</h1>
         </div>
-        <UButton
-          v-if="mode === 'edit'"
-          color="error"
-          variant="ghost"
-          icon="i-fa6-solid:trash"
-          square
-          @click="showDeleteModal = true"
-        />
+        <div v-if="mode === 'edit'" class="flex items-center gap-1">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :icon="pinnedByUser ? 'i-fa6-solid:thumbtack' : 'i-fa6-regular:thumbtack'"
+            square
+            :loading="pinning"
+            :class="{ 'text-primary-400': pinnedByUser }"
+            @click="togglePin"
+          />
+          <UButton
+            color="error"
+            variant="ghost"
+            icon="i-fa6-solid:trash"
+            square
+            @click="showDeleteModal = true"
+          />
+        </div>
       </div>
     </header>
 
@@ -259,6 +269,8 @@ const dataLoaded = ref(false)
 // Installation settings
 const displayTime = ref(10)
 const skippedByUser = ref(false)
+const pinnedByUser = ref(false)
+const pinning = ref(false)
 
 // Display time options
 const displayTimeItems = [
@@ -311,7 +323,7 @@ const {
 )
 
 useHead({
-  title: computed(() => `${appName.value} | Koios`),
+  title: computed(() => `${appName.value} | Koios Digital`),
 })
 
 async function loadData() {
@@ -356,6 +368,7 @@ async function loadData() {
       // Initialize installation settings
       displayTime.value = installation.value.displayTime ?? 10
       skippedByUser.value = installation.value.skippedByUser ?? false
+      pinnedByUser.value = installation.value.pinnedByUser ?? false
     } else if (props.mode === 'install' && props.appId) {
       // Install mode: load app, schema, and existing installations to get max sortOrder
       const [appData, schemaData, installationsData] = await Promise.all([
@@ -495,6 +508,21 @@ async function handleDelete() {
     console.error('Delete error:', err)
   } finally {
     deleting.value = false
+  }
+}
+
+async function togglePin() {
+  if (!props.installationId) return
+
+  pinning.value = true
+  try {
+    const newPinState = !pinnedByUser.value
+    await devicesApi.setPinState(props.deviceId, props.installationId, newPinState)
+    pinnedByUser.value = newPinState
+  } catch (err) {
+    console.error('Pin toggle error:', err)
+  } finally {
+    pinning.value = false
   }
 }
 

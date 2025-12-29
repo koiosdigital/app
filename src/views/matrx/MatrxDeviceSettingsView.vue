@@ -391,7 +391,7 @@ const hasChanges = computed(() => {
 })
 
 useHead({
-  title: 'Device Settings | Koios',
+  title: 'Device Settings | Koios Digital',
   meta: [{ name: 'description', content: 'Configure your Matrix device settings' }],
 })
 
