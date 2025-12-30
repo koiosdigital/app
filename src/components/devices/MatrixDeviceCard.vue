@@ -12,17 +12,6 @@
       <UBadge :color="statusColor" variant="soft">{{ statusLabel }}</UBadge>
     </template>
 
-    <template #metadata>
-      <span class="inline-flex items-center gap-2">
-        <UIcon name="i-fa6-solid:desktop" class="h-4 w-4" />
-        {{ resolutionLabel }}
-      </span>
-      <span class="inline-flex items-center gap-2">
-        <UIcon name="i-fa6-solid:wand-magic-sparkles" class="h-4 w-4" />
-        Brightness {{ brightnessPercent }}%
-      </span>
-    </template>
-
     <template #preview>
       <div class="mt-4 flex justify-center">
         <!-- Show installation preview if one is currently displaying -->
@@ -49,24 +38,26 @@
     </template>
 
     <template #actions>
-      <UButton
-        size="sm"
-        :color="screenEnabled ? 'primary' : 'neutral'"
-        variant="soft"
-        icon="i-fa6-solid:power-off"
-        @click.stop="emit('toggle-screen', device.id)"
-      >
-        {{ screenEnabled ? 'On' : 'Off' }}
-      </UButton>
-      <UButton
-        size="sm"
-        color="neutral"
-        variant="ghost"
-        icon="i-fa6-solid:gear"
-        @click.stop="emit('open-settings', device.id)"
-      >
-        Settings
-      </UButton>
+      <div class="flex w-full justify-between items-center">
+        <UButton
+          size="sm"
+          :color="screenEnabled ? 'primary' : 'neutral'"
+          variant="soft"
+          icon="i-fa6-solid:power-off"
+          @click.stop="emit('toggle-screen', device.id)"
+        >
+          {{ screenEnabled ? 'On' : 'Off' }}
+        </UButton>
+        <UButton
+          size="sm"
+          color="neutral"
+          variant="ghost"
+          icon="i-fa6-solid:gear"
+          @click.stop="emit('open-settings', device.id)"
+        >
+          Settings
+        </UButton>
+      </div>
     </template>
   </BaseDeviceCard>
 </template>

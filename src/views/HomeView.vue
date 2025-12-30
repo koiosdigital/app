@@ -1,99 +1,63 @@
 <template>
-  <div ref="scrollContainer" class="flex min-h-screen flex-col bg-zinc-950 overflow-auto">
-    <!-- Pull to Refresh Indicator -->
-    <div
-      class="flex items-center justify-center overflow-hidden transition-all duration-200"
-      :style="{ height: `${pullDistance}px` }"
-    >
-      <div v-if="pullDistance > 0" class="flex items-center gap-2 text-white/70">
-        <UIcon
-          :name="isRefreshing ? 'i-fa6-solid:spinner' : 'i-fa6-solid:arrow-down'"
-          class="h-5 w-5"
-          :class="{ 'animate-spin': isRefreshing }"
-        />
-        <span class="text-sm">
-          {{
-            isRefreshing
-              ? 'Refreshing...'
-              : pullDistance >= 80
-                ? 'Release to refresh'
-                : 'Pull to refresh'
-          }}
-        </span>
-      </div>
-    </div>
+  <div class="home-view flex flex-col bg-zinc-950">
+    <main class="flex-1 overflow-auto">
+      <section class="flex flex-col gap-6 px-5 py-6 pb-24">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <h1 class="text-xl font-semibold">Devices</h1>
+          <UButton
+            color="primary"
+            icon="i-fa6-solid:plus"
+            size="sm"
+            @click="router.push('/setup/new')"
+          >
+            Add device
+          </UButton>
+        </div>
 
-    <!-- Top Header -->
-    <header
-      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
-    >
-      <div class="flex items-center justify-between">
-        <h1 class="text-xl font-semibold">Koios Digital</h1>
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-fa6-solid:gear"
-          square
-          @click="router.push('/settings')"
-        />
-      </div>
-    </header>
+        <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <UCard v-for="i in 3" :key="i" class="bg-white/5">
+            <USkeleton class="h-32 w-full" />
+          </UCard>
+        </div>
 
-    <!-- Main Content -->
-    <section class="flex flex-col gap-6 px-5 py-6">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <h2 class="text-lg font-medium text-white/90">Devices</h2>
-        <UButton
-          color="primary"
-          icon="i-fa6-solid:plus"
-          size="sm"
-          @click="router.push('/setup/new')"
+        <div
+          v-else-if="error"
+          class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center"
         >
-          Add device
-        </UButton>
-      </div>
+          <p class="text-red-400">{{ error }}</p>
+          <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices"> Retry </UButton>
+        </div>
 
-      <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <UCard v-for="i in 3" :key="i" class="bg-white/5">
-          <USkeleton class="h-32 w-full" />
-        </UCard>
-      </div>
+        <div v-else-if="sortedDevices.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <template v-for="device in sortedDevices" :key="device.id">
+            <MatrixDeviceCard
+              v-if="isMatrxDevice(device)"
+              :device="device"
+              @open="openDevice"
+              @toggle-screen="toggleScreen"
+              @open-settings="openSettings"
+            />
+            <LanternDeviceCard
+              v-else
+              :device="device"
+              @open="openDevice"
+              @toggle-power="togglePower"
+              @send-touch="handleSendTouch"
+              @open-settings="openSettings"
+            />
+          </template>
+        </div>
 
-      <div
-        v-else-if="error"
-        class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center"
-      >
-        <p class="text-red-400">{{ error }}</p>
-        <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices"> Retry </UButton>
-      </div>
+        <div
+          v-else
+          class="rounded-lg border border-dashed border-white/20 p-6 text-center text-white/70"
+        >
+          No devices yet. Add your first Koios Digital product to get started.
+        </div>
+      </section>
+    </main>
 
-      <div v-else-if="sortedDevices.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <template v-for="device in sortedDevices" :key="device.id">
-          <MatrixDeviceCard
-            v-if="isMatrxDevice(device)"
-            :device="device"
-            @open="openDevice"
-            @toggle-screen="toggleScreen"
-            @open-settings="openSettings"
-          />
-          <LanternDeviceCard
-            v-else
-            :device="device"
-            @open="openDevice"
-            @toggle-power="togglePower"
-            @send-touch="handleSendTouch"
-            @open-settings="openSettings"
-          />
-        </template>
-      </div>
-
-      <div
-        v-else
-        class="rounded-lg border border-dashed border-white/20 p-6 text-center text-white/70"
-      >
-        No devices yet. Add your first Koios Digital product to get started.
-      </div>
-    </section>
+    <TabBar />
   </div>
 </template>
 
@@ -101,12 +65,12 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import TabBar from '@/components/layout/TabBar.vue'
 import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import { type ApiDevice, isMatrxDevice } from '@/lib/api/mappers/deviceMapper'
-import { usePullToRefresh } from '@/composables/usePullToRefresh'
 
 useHead({
   title: 'Devices | Koios Digital',
@@ -118,24 +82,6 @@ const router = useRouter()
 const devices = ref<ApiDevice[]>([])
 const loading = ref(false)
 const error = ref<string>()
-
-// Pull to refresh
-const scrollContainer = ref<HTMLElement | null>(null)
-
-const refreshDevices = async () => {
-  error.value = undefined
-  try {
-    const apiDevices = await devicesApi.getDevices()
-    devices.value = apiDevices
-  } catch (err) {
-    error.value = getErrorMessage(err, 'Failed to load devices')
-    console.error('Failed to refresh devices:', err)
-  }
-}
-
-const { isRefreshing, pullDistance } = usePullToRefresh(scrollContainer, {
-  onRefresh: refreshDevices,
-})
 
 const sortedDevices = computed(() => {
   return [...devices.value].sort((a, b) => {
@@ -252,3 +198,10 @@ onMounted(() => {
   loadDevices()
 })
 </script>
+
+<style scoped>
+.home-view {
+  height: 100vh;
+  height: 100dvh;
+}
+</style>

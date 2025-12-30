@@ -1,2 +1,10 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
+
+html,
+body,
+#app {
+  background-color: #09090b; /* zinc-950 */
+  min-height: 100vh;
+  min-height: 100dvh;
+}

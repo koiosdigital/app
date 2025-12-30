@@ -77,12 +77,26 @@
           </div>
         </div>
 
+        <!-- Connecting State -->
+        <div v-else-if="isConnecting" class="space-y-4">
+          <div class="flex items-center justify-center py-8">
+            <div class="space-y-3 text-center">
+              <UIcon
+                name="i-fa6-solid:spinner"
+                class="h-12 w-12 animate-spin text-primary-400 mx-auto"
+              />
+              <p class="text-sm text-white/70">Connecting to device...</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Discovered Devices -->
         <div v-else-if="bleStore.connection.discoveredDevices.length" class="space-y-3">
           <button
             v-for="device in bleStore.connection.discoveredDevices"
             :key="device.deviceId"
             class="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
+            :disabled="isConnecting"
             @click="selectDevice(device)"
           >
             <div class="flex items-center gap-3">
@@ -92,7 +106,7 @@
             <UIcon name="i-fa6-solid:chevron-right" class="h-5 w-5 text-white/40" />
           </button>
 
-          <UButton color="neutral" variant="soft" block @click="startScanning">
+          <UButton color="neutral" variant="soft" block :disabled="isConnecting" @click="startScanning">
             Scan Again
           </UButton>
         </div>
@@ -146,6 +160,7 @@ const bleStore = useBleProvStore()
 const bleError = ref<BleAvailabilityResult | undefined>(undefined)
 const isCheckingBle = ref(false)
 const hasScanned = ref(false)
+const isConnecting = ref(false)
 const isWebPlatform = Capacitor.getPlatform() === 'web'
 const error = ref<{ title: string; description: string } | undefined>(undefined)
 
@@ -182,8 +197,12 @@ async function startScanning() {
 }
 
 async function selectDevice(device: BleDevice) {
+  // Prevent double-clicks
+  if (isConnecting.value) return
+
   // Clear previous error
   error.value = undefined
+  isConnecting.value = true
 
   try {
     await bleStore.connection.stopScan()
@@ -195,8 +214,12 @@ async function selectDevice(device: BleDevice) {
     error.value = {
       title: 'Connection Error',
       description:
-        'Failed to connect to the selected device. Please ensure it is in pairing mode and try again.',
+        err instanceof Error
+          ? err.message
+          : 'Failed to connect to the selected device. Please ensure it is in pairing mode and try again.',
     }
+  } finally {
+    isConnecting.value = false
   }
 }
 

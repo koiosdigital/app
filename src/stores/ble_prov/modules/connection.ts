@@ -14,6 +14,10 @@ export const isScanning = ref(false)
 
 const KOIOS_SERVICE_UUID = '1775244D-6B43-439B-877C-060F2D9BED07'.toLowerCase()
 
+// Scan duration for native platforms (8 seconds)
+const NATIVE_SCAN_DURATION_MS = 8000
+let scanTimeoutId: ReturnType<typeof setTimeout> | null = null
+
 /**
  * Initialize Bluetooth
  */
@@ -32,6 +36,17 @@ function isWebPlatform(): boolean {
  * Start scanning for Koios Digital devices
  */
 export async function startScan() {
+  // Clear any existing scan timeout
+  if (scanTimeoutId) {
+    clearTimeout(scanTimeoutId)
+    scanTimeoutId = null
+  }
+
+  // Stop any existing scan first
+  if (isScanning.value) {
+    await stopScan()
+  }
+
   isScanning.value = true
   discoveredDevices.value = []
 
@@ -50,17 +65,26 @@ export async function startScan() {
       throw err
     }
   } else {
+    // Native: use requestLEScan with auto-stop timeout
     await BleClient.requestLEScan(
       {
         services: [KOIOS_SERVICE_UUID],
         optionalServices: [KOIOS_SERVICE_UUID],
       },
       (result) => {
+        // Use spread to trigger reactivity
         if (!discoveredDevices.value.find((d) => d.deviceId === result.device.deviceId)) {
-          discoveredDevices.value.push(result.device)
+          discoveredDevices.value = [...discoveredDevices.value, result.device]
         }
       },
     )
+
+    // Auto-stop scan after duration on native
+    scanTimeoutId = setTimeout(async () => {
+      if (isScanning.value) {
+        await stopScan()
+      }
+    }, NATIVE_SCAN_DURATION_MS)
   }
 }
 
@@ -68,6 +92,12 @@ export async function startScan() {
  * Stop scanning for devices
  */
 export async function stopScan() {
+  // Clear scan timeout if running
+  if (scanTimeoutId) {
+    clearTimeout(scanTimeoutId)
+    scanTimeoutId = null
+  }
+
   // Only call stopLEScan on native platforms (web uses requestDevice which doesn't need stopping)
   if (!isWebPlatform() && isScanning.value) {
     try {
