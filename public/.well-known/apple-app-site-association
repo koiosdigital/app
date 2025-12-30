@@ -4,7 +4,7 @@
     "details": [
       {
         "appIDs": [
-          "C79ED2F8UF.net.koiosdigital.koiosapp"
+          "9R8RREG67J.net.koiosdigital.app"
         ],
         "components": [
           {
@@ -12,11 +12,7 @@
             "comment": "OAuth callback"
           },
           {
-            "/": "/setup/license_callback",
-            "comment": "License checkout callback"
-          },
-          {
-            "/": "/setup/*",
+            "/": "/oauth/*",
             "comment": "Setup flow callbacks"
           }
         ]

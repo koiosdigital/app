@@ -42,6 +42,7 @@
   "devDependencies": {
     "@bufbuild/buf": "^1.61.0",
     "@bufbuild/protoc-gen-es": "^2.10.2",
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.0.0",
     "@iconify-json/fa6-brands": "^1.2.6",
     "@iconify-json/fa6-regular": "^1.2.4",
@@ -70,7 +71,8 @@
       "vue-demi"
     ],
     "onlyBuiltDependencies": [
-      "@bufbuild/buf"
+      "@bufbuild/buf",
+      "sharp"
     ]
   },
   "packageManager": "pnpm@11.0.0-dev.1005+sha512.91f84a392eea348ea4852a182912d2520273a4336f933b78cc44bc931eb999923c097e9433a9b355adc1f725725ea99082fc9f032a559df832632e764c92c798"
