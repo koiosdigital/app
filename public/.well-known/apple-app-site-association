@@ -6,9 +6,6 @@
         "appIDs": [
           "9R8RREG67J.net.koiosdigital.app"
         ],
-        "paths": [
-          "*"
-        ],
         "components": [
           {
             "/": "/login/*",
@@ -20,6 +17,11 @@
           }
         ]
       }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "9R8RREG67J.net.koiosdigital.app"
     ]
   }
 }

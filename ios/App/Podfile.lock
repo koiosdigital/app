@@ -8,8 +8,12 @@ PODS:
   - CapacitorCommunityBluetoothLe (7.3.0):
     - Capacitor
   - CapacitorCordova (8.0.0)
+  - CapacitorInappbrowser (3.0.0):
+    - Capacitor
+    - OSInAppBrowserLib (~> 2.3.1)
   - CapacitorPreferences (8.0.0):
     - Capacitor
+  - OSInAppBrowserLib (2.3.1)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios`)"
@@ -17,7 +21,12 @@ DEPENDENCIES:
   - "CapacitorBrowser (from `../../node_modules/.pnpm/@capacitor+browser@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/browser`)"
   - "CapacitorCommunityBluetoothLe (from `../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le`)"
   - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios`)"
+  - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser`)"
   - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences`)"
+
+SPEC REPOS:
+  trunk:
+    - OSInAppBrowserLib
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -30,6 +39,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le"
   CapacitorCordova:
     :path: "../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios"
+  CapacitorInappbrowser:
+    :path: "../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser"
   CapacitorPreferences:
     :path: "../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences"
 
@@ -39,8 +50,10 @@ SPEC CHECKSUMS:
   CapacitorBrowser: b7d7f05f840fe042e46f6528bb8db853e3058fb2
   CapacitorCommunityBluetoothLe: 41f9dec8a4c16ab6b81e56402b6047fc19b4735d
   CapacitorCordova: 5dc3912d25ef770a3fe0f431bb65c9fbfa2e92f9
+  CapacitorInappbrowser: 66fc8cc3ff414c2393fe5dcfd52815cf8b6a046f
   CapacitorPreferences: 443fabe9670226200e595658a87ef0b1566716d4
+  OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
 
-PODFILE CHECKSUM: f8695fb13f8e780eabef976bc4f762ef1d78c342
+PODFILE CHECKSUM: fb9a0c45ea14507185facdd8268c97d4f2b17bbb
 
 COCOAPODS: 1.16.2

@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core'
-import { Browser } from '@capacitor/browser'
+import { InAppBrowser } from '@capacitor/inappbrowser'
 import {
   UserManager,
   WebStorageStateStore,
@@ -193,9 +193,9 @@ export class KoiosOidcClient {
       authUrl.searchParams.set('code_challenge', pkce.challenge)
       authUrl.searchParams.set('code_challenge_method', 'S256')
 
-      // Open in-app browser
-      await Browser.open({ url: authUrl.toString() })
-      // Deep link will handle the callback via appUrlOpen listener in main.ts
+      // Open in external browser (Safari) so universal links work on redirect
+      await InAppBrowser.openInExternalBrowser({ url: authUrl.toString() })
+      // Universal link will handle the callback via appUrlOpen listener in main.ts
     } else {
       // Web: Standard redirect using oidc-client-ts
       return getUserManager().signinRedirect()
@@ -259,8 +259,7 @@ export class KoiosOidcClient {
 
       const tokens = (await response.json()) as TokenResponse
 
-      // Close in-app browser
-      Browser.close().catch(() => {})
+      // System browser closes automatically when universal link triggers the app
 
       return {
         accessToken: tokens.access_token,
@@ -303,7 +302,8 @@ export class KoiosOidcClient {
         `${baseUrl}${oauth.postLogoutRedirectPath}`,
       )
 
-      await Browser.open({ url: logoutUrl.toString() })
+      // Open in external browser (Safari) so universal links work on redirect
+      await InAppBrowser.openInExternalBrowser({ url: logoutUrl.toString() })
       // User state is cleared by the auth store after this call
     } else {
       // Web: Standard redirect

@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
     allowNavigation: ['app.koiosdigital.net'],
   },
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     backgroundColor: '#000000',
   },
   android: {
