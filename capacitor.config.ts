@@ -1,7 +1,5 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
-const UNIVERSAL_LINK_HOST = process.env.KOIOS_UNIVERSAL_LINK_HOST ?? 'app.koiosdigital.net'
-
 const config: CapacitorConfig = {
   appId: 'net.koiosdigital.app',
   appName: 'Koios Digital',
@@ -10,7 +8,7 @@ const config: CapacitorConfig = {
     hostname: 'localhost',
     iosScheme: 'https',
     androidScheme: 'https',
-    allowNavigation: [UNIVERSAL_LINK_HOST],
+    allowNavigation: ['app.koiosdigital.net'],
   },
   ios: {
     contentInset: 'automatic',

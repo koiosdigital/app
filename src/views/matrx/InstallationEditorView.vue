@@ -417,11 +417,16 @@ async function triggerGeneratedHandler(fieldId: string) {
   const sourceValue = formState.values.value[field.source]
   if (!sourceValue) return
 
+  let finalValue = sourceValue
+  if (typeof sourceValue === 'object') {
+    finalValue = JSON.stringify(sourceValue)
+  }
+
   try {
     const response = await appsApi.callHandler(
       resolvedAppId.value,
       field.handler,
-      JSON.stringify(sourceValue),
+      finalValue as string,
     )
 
     if (response?.result) {

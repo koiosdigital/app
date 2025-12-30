@@ -40,14 +40,6 @@ const success = ref(false)
 const errorMessage = ref<string | null>(null)
 
 onMounted(async () => {
-  // In dev mode, OAuth redirects to 127.0.0.1 but the app runs on localhost
-  // Redirect to localhost to ensure proper session/storage access
-  if (import.meta.env.DEV && window.location.hostname === '127.0.0.1') {
-    const newUrl = window.location.href.replace('://127.0.0.1', '://localhost')
-    window.location.replace(newUrl)
-    return
-  }
-
   const code = route.query.code as string | undefined
   const stateStr = route.query.state as string | undefined
   const error = route.query.error as string | undefined
