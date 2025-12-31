@@ -73,6 +73,7 @@ export const useBleProvStore = defineStore('ble_prov', () => {
     // Session module
     session: {
       sessionEstablished: session.sessionEstablished,
+      securityLevel: session.securityLevel,
       sec1: session.sec1,
       establishSession: session.establishSession,
       resetSession: session.resetSession,

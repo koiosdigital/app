@@ -484,6 +484,15 @@ async function provisionWithLicenseKey() {
   }
 }
 
+/**
+ * Check if an error indicates the device doesn't support crypto
+ */
+function isCryptoUnsupportedError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false
+  const message = err.message.toLowerCase()
+  return message.includes('unsupported request') || message.includes('unsupported')
+}
+
 async function checkCryptoStatus() {
   error.value = undefined
   isCheckingStatus.value = true
@@ -511,6 +520,13 @@ async function checkCryptoStatus() {
     }
   } catch (err) {
     console.error('Crypto status error:', err)
+
+    // Check if device doesn't support crypto (no crypto module)
+    if (isCryptoUnsupportedError(err)) {
+      console.log('Device does not support crypto, skipping to network setup')
+      router.push('/setup/network')
+      return
+    }
 
     // Check if it's a GATT error
     if (bleStore.isGattError(err)) {

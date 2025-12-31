@@ -28,8 +28,22 @@
           :description="error.description"
         />
 
+        <!-- Security Level 0 - No PoP Required (auto-connecting) -->
+        <div
+          v-if="deviceConfig.securityLevel === 0"
+          class="flex flex-1 items-center justify-center"
+        >
+          <div class="space-y-3 text-center">
+            <UIcon
+              name="i-fa6-solid:spinner"
+              class="mx-auto h-12 w-12 animate-spin text-primary-400"
+            />
+            <p class="text-sm text-white/70">Connecting to device...</p>
+          </div>
+        </div>
+
         <!-- Matrix Device - 6-Digit PoP Code -->
-        <div v-if="deviceType === 'matrix'" class="space-y-4">
+        <div v-else-if="deviceConfig.popType === 'numeric'" class="space-y-4">
           <div class="space-y-2">
             <h2 class="text-lg font-medium text-white/90">Enter Pairing Code</h2>
             <p class="text-sm text-white/60">
@@ -63,7 +77,7 @@
             block
             :disabled="!isPopCodeComplete || isProcessing"
             :loading="isProcessing"
-            @click="proceedToCrypto"
+            @click="proceedWithSession"
           >
             Continue
           </UButton>
@@ -110,7 +124,7 @@
             block
             :disabled="!isLanternComplete || isProcessing"
             :loading="isProcessing"
-            @click="proceedToCrypto"
+            @click="proceedWithSession"
           >
             Continue
           </UButton>
@@ -125,6 +139,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { useBleProvStore } from '@/stores/ble_prov'
+import { getDeviceConfig } from '@/stores/ble_prov/config/deviceConfig'
 
 useHead({
   title: 'Pair Device | Koios Digital',
@@ -134,16 +149,10 @@ useHead({
 const router = useRouter()
 const bleStore = useBleProvStore()
 
-// Determine device type based on connected device name prefix
-const deviceType = computed(() => {
+// Get device configuration based on connected device name prefix
+const deviceConfig = computed(() => {
   const deviceName = bleStore.connection.connectedDevice?.name || ''
-  if (deviceName.startsWith('MATRX-')) {
-    return 'matrix'
-  } else if (deviceName.startsWith('LANTERN-')) {
-    return 'lantern'
-  }
-  // Default to lantern if prefix doesn't match
-  return 'lantern'
+  return getDeviceConfig(deviceName)
 })
 
 // Matrix - 6-Digit PoP Code
@@ -231,7 +240,23 @@ const isLanternComplete = computed(() => {
 const isProcessing = ref(false)
 const error = ref<{ title: string; description: string } | undefined>(undefined)
 
-async function proceedToCrypto() {
+/**
+ * Get next route based on device configuration
+ */
+function getNextRoute(): string {
+  if (deviceConfig.value.hasCrypto) {
+    // Device has crypto module - go to encipherment params
+    return '/setup/encipherment_params'
+  } else {
+    // Device has no crypto module - skip to network setup
+    return '/setup/network'
+  }
+}
+
+/**
+ * Establish session and proceed to next step
+ */
+async function proceedWithSession() {
   if (!bleStore.connection.connectedDevice) {
     console.error('No device connected')
     return
@@ -242,15 +267,24 @@ async function proceedToCrypto() {
   isProcessing.value = true
 
   try {
-    const pop = deviceType.value === 'matrix' ? popToken.value : selectedColors.value.join('')
+    const config = deviceConfig.value
 
-    // Establish secure session with the PoP token
-    await bleStore.session.establishSession(pop)
+    // Determine PoP token based on device type
+    let pop = ''
+    if (config.popType === 'numeric') {
+      pop = popToken.value
+    } else if (config.popType === 'color') {
+      pop = selectedColors.value.join('')
+    }
+    // For 'none', pop stays empty
 
-    console.log('Session established successfully')
+    // Establish session with appropriate security level
+    await bleStore.session.establishSession(pop, config.securityLevel)
 
-    // Navigate to encipherment params step (handles DS params backup/recovery)
-    router.push('/setup/encipherment_params')
+    console.log(`Session established successfully (security level ${config.securityLevel})`)
+
+    // Navigate to next step
+    router.push(getNextRoute())
   } catch (err) {
     console.error('Failed to establish session:', err)
 
@@ -264,7 +298,9 @@ async function proceedToCrypto() {
     error.value = {
       title: 'Session Error',
       description:
-        'Failed to establish a secure session with the device. Please verify the proof of possession code and try again.',
+        deviceConfig.value.securityLevel === 0
+          ? 'Failed to establish connection with the device. Please try again.'
+          : 'Failed to establish a secure session with the device. Please verify the proof of possession code and try again.',
     }
   } finally {
     isProcessing.value = false
@@ -282,11 +318,17 @@ watch(
   },
 )
 
-onMounted(() => {
+onMounted(async () => {
   // Redirect if no device connected
   if (!bleStore.connection.connectedDevice) {
     bleStore.setGattError(new Error('Device disconnected before pairing'))
     router.replace('/setup/new')
+    return
+  }
+
+  // For security level 0 devices, automatically proceed (no PoP required)
+  if (deviceConfig.value.securityLevel === 0) {
+    await proceedWithSession()
   }
 })
 </script>

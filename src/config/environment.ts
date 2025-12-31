@@ -2,7 +2,7 @@
  * Centralized environment configuration
  */
 
-const isDev = import.meta.env.DEV
+const isDev = import.meta.env.DEV && false
 
 export const ENV = {
   /** App URLs */
