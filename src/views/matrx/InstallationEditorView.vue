@@ -670,9 +670,9 @@ onMounted(async () => {
   height: 100dvh;
 }
 
-/* Scrollable content needs bottom padding to account for fixed footer + safe area */
+/* Scrollable content needs bottom padding to account for fixed footer */
 .scrollable-content {
-  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  padding-bottom: 7rem;
 }
 
 /* Preview container - matches now-playing size on device page */

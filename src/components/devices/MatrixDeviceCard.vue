@@ -12,29 +12,27 @@
       <UBadge :color="statusColor" variant="soft">{{ statusLabel }}</UBadge>
     </template>
 
-    <template #preview>
-      <div class="mt-4 flex justify-center">
-        <div class="preview-container">
-          <!-- Show installation preview if one is currently displaying -->
-          <InstallationPreview
-            v-if="device.currentlyDisplayingInstallation"
-            :device-id="device.id"
-            :installation-id="device.currentlyDisplayingInstallation"
-            :app-id="device.currentlyDisplayingInstallation"
-            :app-name="''"
-            :width="deviceWidth"
-            :height="deviceHeight"
-            :show-frame="true"
-            :show-label="false"
-          />
-          <!-- Show empty/off state when no installation is displaying -->
-          <div v-else class="empty-preview-frame">
-            <div
-              class="empty-preview-screen"
-              :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
-            >
-              <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white/30" />
-            </div>
+    <template #content>
+      <div class="preview-container">
+        <!-- Show installation preview if one is currently displaying -->
+        <InstallationPreview
+          v-if="device.currentlyDisplayingInstallation"
+          :device-id="device.id"
+          :installation-id="device.currentlyDisplayingInstallation"
+          :app-id="device.currentlyDisplayingInstallation"
+          :app-name="''"
+          :width="deviceWidth"
+          :height="deviceHeight"
+          :show-frame="true"
+          :show-label="false"
+        />
+        <!-- Show empty/off state when no installation is displaying -->
+        <div v-else class="empty-preview-frame">
+          <div
+            class="empty-preview-screen"
+            :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
+          >
+            <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white/30" />
           </div>
         </div>
       </div>

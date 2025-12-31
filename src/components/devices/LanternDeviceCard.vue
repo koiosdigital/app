@@ -10,28 +10,15 @@
       <span class="h-10 w-10 rounded-full border border-white/20 bg-amber-500" aria-hidden="true" />
     </template>
 
-    <template #metadata>
-      <span class="inline-flex items-center gap-2">
-        <UIcon name="i-fa6-solid:sun" class="h-4 w-4" />
-        Brightness {{ brightnessPercent }}%
-      </span>
-      <span class="inline-flex items-center gap-2">
-        <UIcon name="i-fa6-solid:wifi" class="h-4 w-4" />
-        {{ statusLabel }}
-      </span>
-    </template>
-
-    <template #preview>
-      <div class="mt-4 flex justify-center">
-        <button
-          type="button"
-          class="group relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-white/20 bg-amber-500 transition-all hover:border-white/40 hover:scale-105 active:scale-95"
-          @click.stop="emit('send-touch', device.id)"
-        >
-          <UIcon name="i-fa6-solid:hand" class="h-8 w-8 text-white/90 group-hover:text-white" />
-          <span class="sr-only">Send touch</span>
-        </button>
-      </div>
+    <template #content>
+      <button
+        type="button"
+        class="group relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-white/20 bg-amber-500 transition-all hover:border-white/40 hover:scale-105 active:scale-95"
+        @click.stop="emit('send-touch', device.id)"
+      >
+        <UIcon name="i-fa6-solid:hand" class="h-8 w-8 text-white/90 group-hover:text-white" />
+        <span class="sr-only">Send touch</span>
+      </button>
     </template>
 
     <template #actions>

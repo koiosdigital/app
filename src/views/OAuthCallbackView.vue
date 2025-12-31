@@ -40,6 +40,14 @@ const success = ref(false)
 const errorMessage = ref<string | null>(null)
 
 onMounted(async () => {
+  // In dev, OAuth redirects to 127.0.0.1 but opener runs on localhost.
+  // Redirect to localhost so postMessage works (same-origin requirement).
+  if (!Capacitor.isNativePlatform() && window.location.hostname === '127.0.0.1') {
+    const newUrl = window.location.href.replace('://127.0.0.1', '://localhost')
+    window.location.replace(newUrl)
+    return
+  }
+
   const code = route.query.code as string | undefined
   const stateStr = route.query.state as string | undefined
   const error = route.query.error as string | undefined
@@ -72,16 +80,16 @@ onMounted(async () => {
     return
   }
 
-  // Validate nonce against stored value
-  const { value: storedNonce } = await Preferences.get({ key: 'oauth_pending_nonce' })
-  if (storedNonce !== state.nonce) {
-    errorMessage.value = 'Security validation failed. Please try again.'
-    processing.value = false
-    return
-  }
-
   if (Capacitor.isNativePlatform()) {
-    // Native: Close browser and navigate to restore form
+    // Native: Validate nonce against stored value (required for security)
+    const { value: storedNonce } = await Preferences.get({ key: 'oauth_pending_nonce' })
+    if (storedNonce !== state.nonce) {
+      errorMessage.value = 'Security validation failed. Please try again.'
+      processing.value = false
+      return
+    }
+
+    // Close browser and navigate to restore form
     await Browser.close()
 
     // Route based on mode

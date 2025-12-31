@@ -22,10 +22,11 @@ const isFullscreenRoute = computed(() => FULLSCREEN_ROUTES.has(route.path))
 
 <style scoped>
 .safe-area {
-  /* Handle safe areas for iOS notch */
+  /* Handle safe areas for iOS notch and bottom home indicator */
   padding-top: env(safe-area-inset-top);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 </style>
 

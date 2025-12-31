@@ -1,11 +1,14 @@
 <template>
   <UCard
     :class="[
+      'h-full',
       'border-white/10 backdrop-blur hover:border-primary-500/60 transition-all cursor-pointer',
       cardBackgroundClass,
     ]"
+    :ui="{ body: 'h-full flex flex-col justify-between p-4 sm:p-6' }"
     @click="$emit('click')"
   >
+    <!-- Header -->
     <div class="flex items-start justify-between gap-4">
       <div class="flex-1">
         <p class="text-xs uppercase tracking-[0.35em] text-white/60">{{ eyebrow }}</p>
@@ -15,13 +18,13 @@
       <slot name="header-end" />
     </div>
 
-    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/70">
-      <slot name="metadata" />
+    <!-- Content -->
+    <div class="flex items-center justify-center py-4">
+      <slot name="content" />
     </div>
 
-    <slot name="preview" />
-
-    <div class="mt-6 flex flex-wrap gap-2">
+    <!-- Footer -->
+    <div class="flex flex-wrap gap-2">
       <slot name="actions" />
     </div>
   </UCard>
