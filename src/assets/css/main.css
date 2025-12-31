@@ -4,14 +4,12 @@
 html,
 body {
   height: 100%;
-  overflow: hidden;
-  background-color: #09090b; /* zinc-950 */
   margin: 0;
   padding: 0;
+  background-color: #09090b;
 }
 
 #app {
   height: 100%;
-  overflow: hidden;
-  background-color: #09090b; /* zinc-950 */
+  background-color: #09090b;
 }

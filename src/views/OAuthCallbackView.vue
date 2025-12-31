@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-5">
+  <FullPageLayout>
     <div class="w-full max-w-md space-y-6 text-center">
       <!-- Loading -->
       <div v-if="processing" class="space-y-4">
@@ -21,7 +21,7 @@
         <p class="text-sm text-white/50">{{ errorMessage }}</p>
       </div>
     </div>
-  </div>
+  </FullPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -29,6 +29,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
+import FullPageLayout from '@/layouts/FullPageLayout.vue'
 import { decodeState, isStateExpired } from '@/utils/oauthState'
 
 const route = useRoute()

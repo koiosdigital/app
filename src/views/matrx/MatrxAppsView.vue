@@ -1,5 +1,5 @@
 <template>
-  <div class="apps-view flex flex-col bg-zinc-950">
+  <div class="flex flex-1 min-h-0 flex-col bg-zinc-950">
     <!-- Header -->
     <header class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur">
       <div class="flex items-center justify-between px-5 py-4">
@@ -134,7 +134,7 @@
     </div>
 
     <!-- Apps List -->
-    <div v-else class="flex-1 overflow-y-auto">
+    <div v-else class="flex-1 min-h-0 overflow-y-auto">
       <!-- Empty State -->
       <div
         v-if="apps.length === 0 && !loading"
@@ -352,9 +352,3 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.apps-view {
-  height: 100vh;
-  height: 100dvh;
-}
-</style>

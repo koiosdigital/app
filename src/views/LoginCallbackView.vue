@@ -1,6 +1,6 @@
 <template>
-  <section class="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-    <div class="space-y-2">
+  <FullPageLayout>
+    <div class="space-y-2 text-center">
       <p class="text-xs uppercase tracking-[0.35em] text-white/60">KDID login</p>
       <h1 class="text-2xl font-semibold">Finishing sign-in…</h1>
       <p class="text-sm text-white/70">
@@ -12,7 +12,7 @@
       </p>
     </div>
 
-    <div v-if="errorMessage" class="space-y-4">
+    <div v-if="errorMessage" class="space-y-4 text-center">
       <p class="text-sm text-rose-300">{{ errorMessage }}</p>
       <UButton color="primary" icon="i-fa6-solid:right-to-bracket" @click="retry"
         >Try again</UButton
@@ -20,13 +20,14 @@
     </div>
 
     <USkeleton v-else class="h-1.5 w-48" animation="pulse" />
-  </section>
+  </FullPageLayout>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import FullPageLayout from '@/layouts/FullPageLayout.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/auth/constants'
 

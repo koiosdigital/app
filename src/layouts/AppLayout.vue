@@ -1,28 +1,17 @@
 <template>
   <UApp>
-    <div :class="{ 'safe-area': !isFullscreenRoute }">
+    <div class="app-container">
       <slot />
     </div>
-    <!-- Footer teleport target -->
-    <div id="app-footer" class="footer-area"></div>
+    <div id="app-footer"></div>
   </UApp>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-
-// Routes that should be full screen without safe area padding
-const FULLSCREEN_ROUTES = new Set(['/login', '/login/callback'])
-
-const isFullscreenRoute = computed(() => FULLSCREEN_ROUTES.has(route.path))
-</script>
-
 <style scoped>
-.safe-area {
-  /* Handle safe areas for iOS notch and bottom home indicator */
+.app-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   padding-top: env(safe-area-inset-top);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -31,7 +20,6 @@ const isFullscreenRoute = computed(() => FULLSCREEN_ROUTES.has(route.path))
 </style>
 
 <style>
-/* Footer area - not scoped so teleported content inherits styles */
 #app-footer {
   position: fixed;
   bottom: 0;

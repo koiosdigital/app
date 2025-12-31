@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-5">
+  <FullPageLayout>
     <div class="w-full max-w-md space-y-6 text-center">
       <!-- Success state -->
       <div v-if="licenseKey" class="space-y-6">
@@ -45,7 +45,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </FullPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -54,6 +54,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
+import FullPageLayout from '@/layouts/FullPageLayout.vue'
 
 useHead({
   title: 'License Callback | Koios Digital',

@@ -1,129 +1,114 @@
 <template>
-  <div class="settings-view flex flex-col bg-zinc-950">
-    <header
-      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
-    >
-      <div class="flex items-center gap-4">
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-fa6-solid:arrow-left"
-          square
-          @click="router.push('/')"
-        />
-        <h1 class="text-xl font-semibold">Settings</h1>
-      </div>
-    </header>
+  <PageLayout>
+    <section class="flex flex-col gap-6 px-5 py-6">
 
-    <main class="flex-1 min-h-0 overflow-y-auto">
-      <section class="flex flex-col gap-6 px-5 py-6">
-
-        <!-- Action Result Banner -->
-        <Transition
-          enter-active-class="transition-all duration-200 ease-out"
-          leave-active-class="transition-all duration-150 ease-in"
-          enter-from-class="opacity-0 -translate-y-2"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-from-class="opacity-100 translate-y-0"
-          leave-to-class="opacity-0 -translate-y-2"
+      <!-- Action Result Banner -->
+      <Transition
+        enter-active-class="transition-all duration-200 ease-out"
+        leave-active-class="transition-all duration-150 ease-in"
+        enter-from-class="opacity-0 -translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-2"
+      >
+        <div
+          v-if="actionResult"
+          class="rounded-xl p-4"
+          :class="
+            actionResult.success
+              ? 'border border-green-500/30 bg-green-500/10'
+              : 'border border-amber-500/30 bg-amber-500/10'
+          "
         >
-          <div
-            v-if="actionResult"
-            class="rounded-xl p-4"
-            :class="
-              actionResult.success
-                ? 'border border-green-500/30 bg-green-500/10'
-                : 'border border-amber-500/30 bg-amber-500/10'
-            "
-          >
-            <div class="flex items-center gap-3">
-              <UIcon
-                :name="actionResult.success ? 'i-fa6-solid:circle-check' : 'i-fa6-solid:circle-xmark'"
-                class="h-5 w-5"
-                :class="actionResult.success ? 'text-green-400' : 'text-amber-400'"
-              />
-              <p
-                class="flex-1 text-sm"
-                :class="actionResult.success ? 'text-green-200' : 'text-amber-200'"
-              >
-                {{ actionResult.message }}
-              </p>
-              <UButton
-                size="xs"
-                color="neutral"
-                variant="ghost"
-                icon="i-fa6-solid:xmark"
-                @click="dismissActionResult"
-              />
-            </div>
-          </div>
-        </Transition>
-
-        <UCard class="bg-white/5">
-          <div class="flex flex-col gap-4">
-            <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Account</p>
-              <p class="text-lg font-medium">{{ accountLabel }}</p>
-            </div>
-            <div class="grid gap-2 sm:grid-cols-2">
-              <UButton
-                color="neutral"
-                variant="soft"
-                icon="i-fa6-solid:user-gear"
-                @click="updateProfile"
-              >
-                Manage profile
-              </UButton>
-              <UButton color="neutral" variant="soft" icon="i-fa6-solid:key" @click="changePassword">
-                Change password
-              </UButton>
-            </div>
-            <UButton
-              color="primary"
-              variant="ghost"
-              icon="i-fa6-solid:right-from-bracket"
-              @click="handleLogout"
+          <div class="flex items-center gap-3">
+            <UIcon
+              :name="actionResult.success ? 'i-fa6-solid:circle-check' : 'i-fa6-solid:circle-xmark'"
+              class="h-5 w-5"
+              :class="actionResult.success ? 'text-green-400' : 'text-amber-400'"
+            />
+            <p
+              class="flex-1 text-sm"
+              :class="actionResult.success ? 'text-green-200' : 'text-amber-200'"
             >
-              Log out
+              {{ actionResult.message }}
+            </p>
+            <UButton
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              icon="i-fa6-solid:xmark"
+              @click="dismissActionResult"
+            />
+          </div>
+        </div>
+      </Transition>
+
+      <UCard class="bg-white/5">
+        <div class="flex flex-col gap-4">
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-white/60">Account</p>
+            <p class="text-lg font-medium">{{ accountLabel }}</p>
+          </div>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <UButton
+              color="neutral"
+              variant="soft"
+              icon="i-fa6-solid:user-gear"
+              @click="updateProfile"
+            >
+              Manage profile
+            </UButton>
+            <UButton color="neutral" variant="soft" icon="i-fa6-solid:key" @click="changePassword">
+              Change password
             </UButton>
           </div>
-        </UCard>
+          <UButton
+            color="primary"
+            variant="ghost"
+            icon="i-fa6-solid:right-from-bracket"
+            @click="handleLogout"
+          >
+            Log out
+          </UButton>
+        </div>
+      </UCard>
 
-        <UCard class="bg-white/5">
-          <div class="space-y-3">
-            <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-white/60">About</p>
-              <p class="text-lg font-medium">Koios Digital App</p>
-            </div>
-            <ul class="space-y-2 text-sm text-white/70">
-              <li class="flex items-center justify-between">
-                <span>Version</span>
-                <span>{{ appVersion }}</span>
-              </li>
-              <li class="flex items-center justify-between">
-                <span>Build channel</span>
-                <span class="capitalize">{{ appChannel }}</span>
-              </li>
-            </ul>
-            <div class="flex flex-wrap gap-2">
-              <UButton variant="soft" icon="i-fa6-solid:circle-info" @click="openDocs"
-                >Support</UButton
-              >
-              <UButton variant="soft" icon="i-fa6-regular:envelope" @click="contactSupport"
-                >Contact</UButton
-              >
-            </div>
+      <UCard class="bg-white/5">
+        <div class="space-y-3">
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-white/60">About</p>
+            <p class="text-lg font-medium">Koios Digital App</p>
           </div>
-        </UCard>
-      </section>
-    </main>
-  </div>
+          <ul class="space-y-2 text-sm text-white/70">
+            <li class="flex items-center justify-between">
+              <span>Version</span>
+              <span>{{ appVersion }}</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <span>Build channel</span>
+              <span class="capitalize">{{ appChannel }}</span>
+            </li>
+          </ul>
+          <div class="flex flex-wrap gap-2">
+            <UButton variant="soft" icon="i-fa6-solid:circle-info" @click="openDocs"
+              >Support</UButton
+            >
+            <UButton variant="soft" icon="i-fa6-regular:envelope" @click="contactSupport"
+              >Contact</UButton
+            >
+          </div>
+        </div>
+      </UCard>
+    </section>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import PageLayout from '@/layouts/PageLayout.vue'
+import { usePageHeader } from '@/composables/usePageHeader'
 import { useAuthStore } from '@/stores/auth/auth'
 import { ENV } from '@/config/environment'
 import { goToKeycloakAction, type KeycloakAction } from '@/lib/auth/keycloakActions'
@@ -136,6 +121,7 @@ useHead({
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+const { setHeader } = usePageHeader()
 
 const accountLabel = computed(() =>
   authStore.isLoggedIn ? 'Signed in with Koios ID' : 'Not signed in',
@@ -186,6 +172,10 @@ function dismissActionResult() {
 }
 
 onMounted(() => {
+  setHeader({
+    title: 'Settings',
+    backRoute: '/',
+  })
   handleActionResult()
 })
 
@@ -210,10 +200,3 @@ const handleLogout = async () => {
   router.replace('/login')
 }
 </script>
-
-<style scoped>
-.settings-view {
-  height: 100vh;
-  height: 100dvh;
-}
-</style>

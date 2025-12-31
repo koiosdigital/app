@@ -1,82 +1,67 @@
 <template>
-  <div class="home-view flex flex-col bg-zinc-950">
-    <header
-      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
-    >
-      <div class="flex items-center justify-between">
-        <h1 class="text-xl font-semibold">Devices</h1>
+  <PageLayout>
+    <section class="flex flex-col gap-6 px-5 py-6">
+      <div class="flex flex-wrap items-center justify-end gap-4">
         <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-fa6-solid:gear"
-          square
-          @click="router.push('/settings')"
-        />
+          color="primary"
+          icon="i-fa6-solid:plus"
+          size="sm"
+          @click="router.push('/setup/new')"
+        >
+          Add device
+        </UButton>
       </div>
-    </header>
 
-    <main class="flex-1 min-h-0 overflow-y-auto">
-      <section class="flex flex-col gap-6 px-5 py-6">
-        <div class="flex flex-wrap items-center justify-end gap-4">
-          <UButton
-            color="primary"
-            icon="i-fa6-solid:plus"
-            size="sm"
-            @click="router.push('/setup/new')"
-          >
-            Add device
-          </UButton>
-        </div>
+      <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <UCard v-for="i in 3" :key="i" class="bg-white/5">
+          <USkeleton class="h-32 w-full" />
+        </UCard>
+      </div>
 
-        <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <UCard v-for="i in 3" :key="i" class="bg-white/5">
-            <USkeleton class="h-32 w-full" />
-          </UCard>
-        </div>
+      <div
+        v-else-if="error"
+        class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center"
+      >
+        <p class="text-red-400">{{ error }}</p>
+        <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices"> Retry </UButton>
+      </div>
 
-        <div
-          v-else-if="error"
-          class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center"
-        >
-          <p class="text-red-400">{{ error }}</p>
-          <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices"> Retry </UButton>
-        </div>
+      <div v-else-if="sortedDevices.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <template v-for="device in sortedDevices" :key="device.id">
+          <MatrixDeviceCard
+            v-if="isMatrxDevice(device)"
+            :device="device"
+            @open="openDevice"
+            @toggle-screen="toggleScreen"
+            @open-settings="openSettings"
+          />
+          <LanternDeviceCard
+            v-else
+            :device="device"
+            @open="openDevice"
+            @toggle-power="togglePower"
+            @send-touch="handleSendTouch"
+            @open-settings="openSettings"
+          />
+        </template>
+      </div>
 
-        <div v-else-if="sortedDevices.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <template v-for="device in sortedDevices" :key="device.id">
-            <MatrixDeviceCard
-              v-if="isMatrxDevice(device)"
-              :device="device"
-              @open="openDevice"
-              @toggle-screen="toggleScreen"
-              @open-settings="openSettings"
-            />
-            <LanternDeviceCard
-              v-else
-              :device="device"
-              @open="openDevice"
-              @toggle-power="togglePower"
-              @send-touch="handleSendTouch"
-              @open-settings="openSettings"
-            />
-          </template>
-        </div>
-
-        <div
-          v-else
-          class="rounded-lg border border-dashed border-white/20 p-6 text-center text-white/70"
-        >
-          No devices yet. Add your first Koios Digital product to get started.
-        </div>
-      </section>
-    </main>
-  </div>
+      <div
+        v-else
+        class="rounded-lg border border-dashed border-white/20 p-6 text-center text-white/70"
+      >
+        No devices yet. Add your first Koios Digital product to get started.
+      </div>
+    </section>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import PageLayout from '@/layouts/PageLayout.vue'
+import { usePageHeader } from '@/composables/usePageHeader'
 import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
 import { devicesApi } from '@/lib/api/devices'
@@ -89,6 +74,7 @@ useHead({
 })
 
 const router = useRouter()
+const { setHeader } = usePageHeader()
 
 const devices = ref<ApiDevice[]>([])
 const loading = ref(false)
@@ -206,13 +192,10 @@ const openSettings = (id: string) => {
 }
 
 onMounted(() => {
+  setHeader({
+    title: 'Devices',
+    actions: [{ icon: 'i-fa6-solid:gear', onClick: () => router.push('/settings') }],
+  })
   loadDevices()
 })
 </script>
-
-<style scoped>
-.home-view {
-  height: 100vh;
-  height: 100dvh;
-}
-</style>

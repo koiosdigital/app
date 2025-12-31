@@ -1,5 +1,5 @@
 <template>
-  <div class="matrx-view flex flex-col bg-zinc-950">
+  <div class="flex flex-1 min-h-0 flex-col bg-zinc-950">
     <!-- Header -->
     <header
       class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
@@ -497,11 +497,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.matrx-view {
-  height: 100vh;
-  height: 100dvh;
-}
-
 /* Now playing container - provides size constraints while child fills it */
 .now-playing-container {
   width: min(80vw, 400px); /* Explicit width - uses 80vw or 400px, whichever is smaller */

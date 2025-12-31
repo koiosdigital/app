@@ -1,5 +1,5 @@
 <template>
-  <div class="relative min-h-screen flex items-center justify-center text-white">
+  <FullPageLayout class="relative text-white">
     <img
       :src="backgroundUrl"
       alt="background"
@@ -22,13 +22,14 @@
         Get Started
       </UButton>
     </div>
-  </div>
+  </FullPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import FullPageLayout from '@/layouts/FullPageLayout.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/auth/constants'
 import loginBgImage from '@/assets/images/login-bg.jpg'

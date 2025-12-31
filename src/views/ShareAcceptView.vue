@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-5">
+  <FullPageLayout>
     <div class="w-full max-w-md space-y-6 text-center">
       <!-- Loading -->
       <div v-if="processing" class="space-y-4">
@@ -25,7 +25,7 @@
         <UButton color="neutral" variant="soft" @click="goHome"> Go to Home </UButton>
       </div>
     </div>
-  </div>
+  </FullPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -33,6 +33,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { devicesApi, type AcceptShareResult } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
+import FullPageLayout from '@/layouts/FullPageLayout.vue'
 
 const route = useRoute()
 const router = useRouter()

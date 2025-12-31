@@ -1,5 +1,5 @@
 <template>
-  <div class="success-view flex flex-col items-center justify-center bg-zinc-950 p-5">
+  <FullPageLayout>
     <div class="w-full max-w-md space-y-6 text-center">
       <!-- Success Icon -->
       <div class="flex justify-center">
@@ -43,13 +43,14 @@
         </UButton>
       </div>
     </div>
-  </div>
+  </FullPageLayout>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import FullPageLayout from '@/layouts/FullPageLayout.vue'
 import { useBleProvStore } from '@/stores/ble_prov'
 
 useHead({
@@ -76,10 +77,3 @@ onMounted(() => {
   bleStore.wifi.resetWiFiState()
 })
 </script>
-
-<style scoped>
-.success-view {
-  height: 100vh;
-  height: 100dvh;
-}
-</style>
