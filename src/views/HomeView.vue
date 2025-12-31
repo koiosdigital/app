@@ -1,17 +1,6 @@
 <template>
   <PageLayout>
     <section class="flex flex-col gap-6 px-5 py-6">
-      <div class="flex flex-wrap items-center justify-end gap-4">
-        <UButton
-          color="primary"
-          icon="i-fa6-solid:plus"
-          size="sm"
-          @click="router.push('/setup/new')"
-        >
-          Add device
-        </UButton>
-      </div>
-
       <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <UCard v-for="i in 3" :key="i" class="bg-white/5">
           <USkeleton class="h-32 w-full" />
@@ -194,7 +183,10 @@ const openSettings = (id: string) => {
 onMounted(() => {
   setHeader({
     title: 'Devices',
-    actions: [{ icon: 'i-fa6-solid:gear', onClick: () => router.push('/settings') }],
+    actions: [
+      { icon: 'i-fa6-solid:plus', onClick: () => router.push('/setup/new') },
+      { icon: 'i-fa6-solid:gear', onClick: () => router.push('/settings') },
+    ],
   })
   loadDevices()
 })

@@ -12,7 +12,6 @@ export default defineConfig({
     ui({
       ui: {
         colors: {
-          primary: 'pink',
           neutral: 'zinc',
         },
         // Map default UI component icons to Font Awesome 6

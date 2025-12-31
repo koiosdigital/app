@@ -104,8 +104,12 @@ const maskSizeY = computed(() => `${100 / props.height}%`)
   mask-image: v-bind(dotMaskUrl);
   mask-repeat: repeat;
   mask-size: v-bind(maskSizeX) v-bind(maskSizeY);
+  mask-position: 0 0;
+  mask-origin: content-box;
   -webkit-mask-image: v-bind(dotMaskUrl);
   -webkit-mask-repeat: repeat;
   -webkit-mask-size: v-bind(maskSizeX) v-bind(maskSizeY);
+  -webkit-mask-position: 0 0;
+  -webkit-mask-origin: content-box;
 }
 </style>

@@ -1,6 +1,21 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+/* Brand color palette based on #e79114 - used by Nuxt UI as primary */
+:root {
+  --ui-color-primary-50: #fef9ec;
+  --ui-color-primary-100: #fcf0c9;
+  --ui-color-primary-200: #f8df8f;
+  --ui-color-primary-300: #f4c955;
+  --ui-color-primary-400: #f2b42d;
+  --ui-color-primary-500: #e79114;
+  --ui-color-primary-600: #d06f0f;
+  --ui-color-primary-700: #ad4e10;
+  --ui-color-primary-800: #8c3d14;
+  --ui-color-primary-900: #733314;
+  --ui-color-primary-950: #421906;
+}
+
 html,
 body {
   height: 100%;
@@ -12,4 +27,29 @@ body {
 #app {
   height: 100%;
   background-color: #09090b;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
