@@ -8,7 +8,7 @@
     </header>
 
     <!-- Scrollable content area -->
-    <main class="flex-1 overflow-auto">
+    <main class="flex-1 min-h-0 overflow-y-auto">
       <slot />
     </main>
   </div>
@@ -19,7 +19,7 @@
 
 <style scoped>
 .page-layout {
-  min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
 }
 </style>

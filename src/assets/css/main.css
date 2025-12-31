@@ -2,9 +2,16 @@
 @import '@nuxt/ui';
 
 html,
-body,
-#app {
+body {
+  height: 100%;
+  overflow: hidden;
   background-color: #09090b; /* zinc-950 */
-  min-height: 100vh;
-  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  height: 100%;
+  overflow: hidden;
+  background-color: #09090b; /* zinc-950 */
 }

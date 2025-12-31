@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-zinc-950">
+  <div class="matrx-view flex flex-col bg-zinc-950">
     <!-- Header -->
     <header
       class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
@@ -62,18 +62,17 @@
             <p class="text-xs uppercase tracking-widest text-primary-400">Pinned App</p>
           </div>
           <div class="flex flex-col items-center gap-3">
-            <InstallationPreview
-              :device-id="deviceId"
-              :installation-id="pinnedInstallation.id"
-              :app-id="pinnedInstallation.appId"
-              :app-name="pinnedInstallation.appName"
-              :width="deviceWidth"
-              :height="deviceHeight"
-              :dot-size="4"
-              :dot-gap="1"
-              :show-frame="true"
-              class="no-label"
-            />
+            <div class="now-playing-container" :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }">
+              <InstallationPreview
+                :device-id="deviceId"
+                :installation-id="pinnedInstallation.id"
+                :app-id="pinnedInstallation.appId"
+                :width="deviceWidth"
+                :height="deviceHeight"
+                show-frame
+                :show-label="false"
+              />
+            </div>
             <p class="text-sm text-white/70">{{ pinnedInstallation.appName }}</p>
           </div>
           <UButton
@@ -92,28 +91,27 @@
         <template v-else>
           <p class="text-xs uppercase tracking-widest text-white/50">Now Playing</p>
           <div v-if="currentInstallation" class="flex flex-col items-center gap-3">
-            <InstallationPreview
-              :device-id="deviceId"
-              :installation-id="currentInstallation.id"
-              :app-id="currentInstallation.appId"
-              :app-name="currentInstallation.appName"
-              :width="deviceWidth"
-              :height="deviceHeight"
-              :dot-size="4"
-              :dot-gap="1"
-              :show-frame="true"
-              class="no-label"
-            />
+            <div class="now-playing-container" :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }">
+              <InstallationPreview
+                :device-id="deviceId"
+                :installation-id="currentInstallation.id"
+                :app-id="currentInstallation.appId"
+                :width="deviceWidth"
+                :height="deviceHeight"
+                show-frame
+                :show-label="false"
+              />
+            </div>
             <p class="text-sm text-white/70">{{ currentAppName }}</p>
           </div>
           <div v-else class="flex flex-col items-center gap-3">
             <!-- Empty state with frame -->
-            <div class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
+            <div class="empty-preview-frame">
               <div
-                class="flex items-center justify-center bg-black rounded-sm"
-                :style="emptyPreviewStyle"
+                class="empty-preview-screen"
+                :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
               >
-                <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white" />
+                <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/30" />
               </div>
             </div>
             <p class="text-sm text-white/50">No app displaying</p>
@@ -138,10 +136,7 @@
         </div>
 
         <!-- Installations Grid -->
-        <div
-          ref="installationsContainer"
-          class="grid grid-cols-2 gap-4 md:grid-cols-3"
-        >
+        <div ref="installationsContainer" class="installations-grid">
           <div
             v-for="(installation, index) in installations"
             :key="installation.id"
@@ -167,8 +162,8 @@
               <!-- Skipped state placeholder -->
               <div v-if="installation.skippedByUser" class="flex flex-col items-center gap-2">
                 <div
-                  class="flex items-center justify-center rounded-sm bg-black"
-                  :style="addButtonPreviewStyle"
+                  class="skipped-preview"
+                  :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
                 >
                   <UIcon name="i-fa6-regular:eye-slash" class="h-5 w-5 text-white/30" />
                 </div>
@@ -186,25 +181,9 @@
                 :app-name="installation.appName"
                 :width="deviceWidth"
                 :height="deviceHeight"
-                :dot-size="3"
-                :dot-gap="1"
-                :show-frame="false"
+                :show-frame="true"
               />
             </button>
-
-            <!-- Context menu overlay -->
-            <div v-if="!isReordering" class="absolute top-1 right-1">
-              <UDropdownMenu :items="getInstallationMenuItems(installation)">
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  icon="i-fa6-solid:ellipsis-vertical"
-                  size="xs"
-                  class="bg-zinc-800/80 border border-white/10 hover:bg-zinc-700"
-                  @click.stop
-                />
-              </UDropdownMenu>
-            </div>
 
             <!-- Reorder handle -->
             <div
@@ -223,8 +202,8 @@
           >
             <div class="flex flex-col items-center gap-2">
               <div
-                class="flex items-center justify-center rounded-sm bg-zinc-800/50"
-                :style="addButtonPreviewStyle"
+                class="add-button-preview"
+                :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
               >
                 <UIcon name="i-fa6-solid:plus" class="h-6 w-6 text-white/40" />
               </div>
@@ -291,29 +270,6 @@ const currentAppName = computed(() => currentInstallation.value?.appName || 'Unk
 
 const pinnedInstallation = computed(() => {
   return installations.value.find((i) => i.pinnedByUser)
-})
-
-const emptyPreviewStyle = computed(() => {
-  const dotSize = 4
-  const dotGap = 1
-  const displayWidth = deviceWidth.value * (dotSize + dotGap) - dotGap
-  const displayHeight = deviceHeight.value * (dotSize + dotGap) - dotGap
-  return {
-    width: `${displayWidth}px`,
-    height: `${displayHeight}px`,
-  }
-})
-
-// Match the grid item preview sizing (dotSize=3, dotGap=1)
-const addButtonPreviewStyle = computed(() => {
-  const dotSize = 3
-  const dotGap = 1
-  const displayWidth = deviceWidth.value * (dotSize + dotGap) - dotGap
-  const displayHeight = deviceHeight.value * (dotSize + dotGap) - dotGap
-  return {
-    width: `${displayWidth}px`,
-    height: `${displayHeight}px`,
-  }
 })
 
 useHead({
@@ -541,7 +497,65 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.no-label :deep(span) {
-  display: none;
+.matrx-view {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Now playing container - provides size constraints while child fills it */
+.now-playing-container {
+  width: min(80vw, 400px); /* Explicit width - uses 80vw or 400px, whichever is smaller */
+  max-height: 40vh;
+}
+
+/* Installations grid */
+.installations-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .installations-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Empty state preview frame - matches now-playing constraints */
+.empty-preview-frame {
+  width: min(80vw, 400px);
+  max-height: 40vh;
+  padding: 6px;
+  background: #27272a;
+  border-radius: 0.5rem;
+}
+
+.empty-preview-screen {
+  width: 100%;
+  background: black;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Skipped installation preview */
+.skipped-preview {
+  width: 100%;
+  background: black;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Add button preview */
+.add-button-preview {
+  width: 100%;
+  background: rgb(39 39 42 / 0.5);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

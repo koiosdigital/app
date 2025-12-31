@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-zinc-950">
+  <div class="editor-view flex flex-col bg-zinc-950">
     <!-- Header -->
     <header
       class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
@@ -61,94 +61,68 @@
     </div>
 
     <!-- Main Content -->
-    <div v-else class="flex flex-1 flex-col">
-      <!-- Preview Section -->
-      <section class="flex flex-col items-center gap-4 px-5 py-8 border-b border-white/10">
-        <p class="text-xs uppercase tracking-widest text-white/50">Preview</p>
+    <div v-else class="flex flex-1 flex-col min-h-0">
+      <!-- Scrollable content area -->
+      <div class="flex-1 min-h-0 overflow-y-auto scrollable-content">
+        <!-- Preview Section -->
+        <section class="flex flex-col items-center gap-4 px-5 py-8 border-b border-white/10">
+          <p class="text-xs uppercase tracking-widest text-white/50">Preview</p>
 
-        <!-- Preview with base64 image -->
-        <div v-if="previewBase64" class="relative">
-          <MatrixDevicePreview
-            :src="`data:image/webp;base64,${previewBase64}`"
-            :width="deviceWidth"
-            :height="deviceHeight"
-            :dot-size="4"
-            :dot-gap="1"
-            :show-frame="true"
-          />
-          <div
-            v-if="previewLoading"
-            class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg"
-          >
-            <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/70" />
-          </div>
-        </div>
+          <!-- Preview container - matches now-playing size on device page -->
+          <div class="preview-container">
+            <!-- Preview with base64 image -->
+            <div v-if="previewBase64" class="relative">
+              <MatrixDevicePreview
+                :src="`data:image/webp;base64,${previewBase64}`"
+                :width="deviceWidth"
+                :height="deviceHeight"
+                :show-frame="true"
+              />
+              <div
+                v-if="previewLoading"
+                class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg"
+              >
+                <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/70" />
+              </div>
+            </div>
 
-        <!-- Preview loading state -->
-        <div
-          v-else-if="previewLoading"
-          class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-        >
-          <div
-            class="flex items-center justify-center bg-black rounded-sm"
-            :style="previewPlaceholderStyle"
-          >
-            <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/50" />
-          </div>
-        </div>
+            <!-- Loading/error/empty states -->
+            <div v-else class="preview-frame">
+              <div
+                class="preview-screen"
+                :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
+              >
+                <!-- Loading state -->
+                <div v-if="previewLoading" class="state-overlay">
+                  <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/50" />
+                </div>
 
-        <!-- HTTP error state (non-200 response) -->
-        <div
-          v-else-if="previewErrorType === 'http'"
-          class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-        >
-          <div
-            class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
-            :style="previewPlaceholderStyle"
-          >
-            <UIcon name="i-fa6-solid:circle-exclamation" class="h-6 w-6 text-red-500" />
-            <span class="text-xs text-red-500 text-center px-2">{{ previewError }}</span>
-          </div>
-        </div>
+                <!-- HTTP error state -->
+                <div v-else-if="previewErrorType === 'http'" class="state-overlay flex-col gap-1">
+                  <UIcon name="i-fa6-solid:circle-exclamation" class="h-6 w-6 text-red-500" />
+                  <span class="text-xs text-red-500 text-center px-2">{{ previewError }}</span>
+                </div>
 
-        <!-- Setup required state (render failed due to incomplete config) -->
-        <div
-          v-else-if="previewErrorType === 'setup'"
-          class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-        >
-          <div
-            class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
-            :style="previewPlaceholderStyle"
-          >
-            <UIcon name="i-fa6-solid:gear" class="h-6 w-6 text-amber-500" />
-            <span class="text-xs text-amber-500 text-center px-2">Complete setup below</span>
-          </div>
-        </div>
+                <!-- Setup required state -->
+                <div v-else-if="previewErrorType === 'setup'" class="state-overlay flex-col gap-1">
+                  <UIcon name="i-fa6-solid:gear" class="h-6 w-6 text-amber-500" />
+                  <span class="text-xs text-amber-500 text-center px-2">Complete setup below</span>
+                </div>
 
-        <!-- Empty state (200 but no render output) -->
-        <div
-          v-else-if="previewErrorType === 'empty'"
-          class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-        >
-          <div
-            class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
-            :style="previewPlaceholderStyle"
-          >
-            <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/50" />
-            <span class="text-xs text-white/50 text-center px-2">Nothing to show</span>
-          </div>
-        </div>
+                <!-- Empty state -->
+                <div v-else-if="previewErrorType === 'empty'" class="state-overlay flex-col gap-1">
+                  <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/50" />
+                  <span class="text-xs text-white/50 text-center px-2">Nothing to show</span>
+                </div>
 
-        <!-- Default placeholder -->
-        <div v-else class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
-          <div
-            class="flex items-center justify-center bg-black rounded-sm"
-            :style="previewPlaceholderStyle"
-          >
-            <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/30" />
+                <!-- Default placeholder -->
+                <div v-else class="state-overlay">
+                  <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/30" />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       <!-- Schema Form Section -->
       <section class="flex-1 px-5 py-6">
@@ -198,10 +172,11 @@
           <USwitch v-model="skippedByUser" />
         </div>
       </section>
+      </div>
 
       <!-- Footer Actions -->
       <footer
-        class="sticky bottom-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
+        class="shrink-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur px-5 pt-4 footer-safe-area"
       >
         <div v-if="saveError" class="mb-3">
           <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
@@ -289,16 +264,6 @@ const resolvedAppId = computed(() => props.appId || installation.value?.config?.
 const appName = computed(() => app.value?.name || 'App')
 const deviceWidth = computed(() => device.value?.settings?.width ?? 64)
 const deviceHeight = computed(() => device.value?.settings?.height ?? 32)
-
-const previewPlaceholderStyle = computed(() => {
-  const dotSize = 4
-  const dotGap = 1
-  const cellSize = dotSize + dotGap
-  return {
-    width: `${deviceWidth.value * cellSize - dotGap}px`,
-    height: `${deviceHeight.value * cellSize - dotGap}px`,
-  }
-})
 
 // Merged schema: base schema + dynamic fields from generated handlers
 const mergedSchema = computed(() => {
@@ -695,3 +660,46 @@ onMounted(async () => {
   await checkOAuthRestoration()
 })
 </script>
+
+<style scoped>
+.editor-view {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Scrollable content needs bottom padding to account for footer + safe area */
+.scrollable-content {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+.footer-safe-area {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+
+/* Preview container - matches now-playing size on device page */
+.preview-container {
+  width: min(80vw, 400px);
+}
+
+.preview-frame {
+  width: 100%;
+  padding: 6px;
+  background: #27272a;
+  border-radius: 0.5rem;
+}
+
+.preview-screen {
+  width: 100%;
+  background: black;
+  border-radius: 2px;
+  position: relative;
+}
+
+.state-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

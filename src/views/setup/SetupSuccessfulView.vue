@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-5">
+  <div class="success-view flex flex-col items-center justify-center bg-zinc-950 p-5">
     <div class="w-full max-w-md space-y-6 text-center">
       <!-- Success Icon -->
       <div class="flex justify-center">
@@ -76,3 +76,10 @@ onMounted(() => {
   bleStore.wifi.resetWiFiState()
 })
 </script>
+
+<style scoped>
+.success-view {
+  height: 100vh;
+  height: 100dvh;
+}
+</style>

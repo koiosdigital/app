@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-zinc-950">
+  <div class="settings-view flex flex-col bg-zinc-950">
     <!-- Header -->
     <header
       class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
@@ -583,3 +583,10 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.settings-view {
+  height: 100vh;
+  height: 100dvh;
+}
+</style>

@@ -1,8 +1,22 @@
 <template>
   <div class="settings-view flex flex-col bg-zinc-950">
-    <main class="flex-1 overflow-auto">
-      <section class="flex flex-col gap-6 px-5 py-6 pb-24">
+    <header
+      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
+    >
+      <div class="flex items-center gap-4">
+        <UButton
+          color="neutral"
+          variant="ghost"
+          icon="i-fa6-solid:arrow-left"
+          square
+          @click="router.push('/')"
+        />
         <h1 class="text-xl font-semibold">Settings</h1>
+      </div>
+    </header>
+
+    <main class="flex-1 min-h-0 overflow-y-auto">
+      <section class="flex flex-col gap-6 px-5 py-6">
 
         <!-- Action Result Banner -->
         <Transition
@@ -103,8 +117,6 @@
         </UCard>
       </section>
     </main>
-
-    <TabBar />
   </div>
 </template>
 
@@ -112,7 +124,6 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import TabBar from '@/components/layout/TabBar.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { ENV } from '@/config/environment'
 import { goToKeycloakAction, type KeycloakAction } from '@/lib/auth/keycloakActions'

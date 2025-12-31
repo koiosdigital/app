@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-zinc-950">
+  <div class="apps-view flex flex-col bg-zinc-950">
     <!-- Header -->
     <header class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur">
       <div class="flex items-center justify-between px-5 py-4">
@@ -351,3 +351,10 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.apps-view {
+  height: 100vh;
+  height: 100dvh;
+}
+</style>

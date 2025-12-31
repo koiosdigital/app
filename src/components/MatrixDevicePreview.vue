@@ -1,9 +1,6 @@
 <template>
-  <div
-    class="inline-flex items-center justify-center"
-    :class="{ 'p-3 bg-zinc-800 rounded-lg': showFrame }"
-  >
-    <div class="matrix-container rounded-sm bg-black" :style="containerStyle">
+  <div class="matrix-frame" :class="{ 'has-frame': showFrame }">
+    <div class="matrix-screen" :style="screenStyle">
       <img :src="src" :alt="alt" class="matrix-image" :style="imageStyle" />
     </div>
   </div>
@@ -18,14 +15,10 @@ const props = withDefaults(
     src: string
     /** Alt text for image */
     alt?: string
-    /** Width in pixels (LED count) */
+    /** Width in LED pixels */
     width?: number
-    /** Height in pixels (LED count) */
+    /** Height in LED pixels */
     height?: number
-    /** Size of each LED dot in display pixels */
-    dotSize?: number
-    /** Gap between LED dots in display pixels */
-    dotGap?: number
     /** Show the physical frame around the matrix */
     showFrame?: boolean
     /** Use circular LED dots (true) or square pixels (false) */
@@ -35,85 +28,84 @@ const props = withDefaults(
     alt: 'Matrix display',
     width: 64,
     height: 32,
-    dotSize: 3,
-    dotGap: 1,
     showFrame: true,
     roundDots: true,
   },
 )
 
-const cellSize = computed(() => props.dotSize + props.dotGap)
+const screenStyle = computed(() => ({
+  aspectRatio: `${props.width} / ${props.height}`,
+}))
 
-const containerStyle = computed(() => {
-  const displayWidth = props.width * cellSize.value - props.dotGap
-  const displayHeight = props.height * cellSize.value - props.dotGap
-  return {
-    width: `${displayWidth}px`,
-    height: `${displayHeight}px`,
-  }
-})
-
-const imageStyle = computed(() => {
-  // Scale the image so each source pixel becomes cellSize display pixels
-  return {
-    width: `${props.width}px`,
-    height: `${props.height}px`,
-    transform: `scale(${cellSize.value})`,
-  }
-})
+const imageStyle = computed(() => ({
+  // Image is scaled via CSS to fill container
+  // The mask will tile based on the LED pixel count
+  '--led-cols': props.width,
+  '--led-rows': props.height,
+}))
 
 /**
  * Generate an SVG data URL for a single LED dot mask tile.
- * The mask is applied at 1x1 source pixel size, then scaled with the image.
+ * The dot takes up ~75% of each cell with a small gap.
  */
 const dotMaskUrl = computed(() => {
-  // The mask tile is 1x1 source pixel, which gets scaled with the image
-  // We need to create the dot pattern within that 1x1 space
-  const dotRatio = props.dotSize / cellSize.value
-  const gapRatio = props.dotGap / cellSize.value / 2
+  const dotRatio = 0.75 // dot size relative to cell
+  const center = 0.5
 
   if (props.roundDots) {
-    // Circular LED dot centered in the cell
     const radius = dotRatio / 2
-    const center = 0.5
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1">
       <circle cx="${center}" cy="${center}" r="${radius}" fill="white"/>
     </svg>`
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
   } else {
-    // Square pixel with gap offset
+    const offset = (1 - dotRatio) / 2
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1">
-      <rect x="${gapRatio}" y="${gapRatio}" width="${dotRatio}" height="${dotRatio}" fill="white"/>
+      <rect x="${offset}" y="${offset}" width="${dotRatio}" height="${dotRatio}" fill="white"/>
     </svg>`
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
   }
 })
 
-// Mask size in source pixels (1x1) that scales with transform
-const maskSize = computed(() => '1px 1px')
+// Mask size as percentage of container - one tile per LED pixel
+const maskSizeX = computed(() => `${100 / props.width}%`)
+const maskSizeY = computed(() => `${100 / props.height}%`)
 </script>
 
 <style scoped>
-.matrix-container {
-  position: relative;
+.matrix-frame {
+  display: inline-flex;
+  width: 100%;
+}
+
+.matrix-frame.has-frame {
+  padding: 6px;
+  background: #27272a; /* zinc-800 */
+  border-radius: 0.5rem;
+}
+
+.matrix-screen {
+  width: 100%;
+  background: black;
+  border-radius: 2px;
   overflow: hidden;
+  position: relative;
 }
 
 .matrix-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-origin: top left;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  /* Use the generated SVG mask, repeated to cover the entire image */
-  /* Mask is 1x1 px tiles that scale with the image transform */
+  /* LED dot mask - tiles based on LED pixel count */
   mask-image: v-bind(dotMaskUrl);
   mask-repeat: repeat;
-  mask-size: v-bind(maskSize);
+  mask-size: v-bind(maskSizeX) v-bind(maskSizeY);
   -webkit-mask-image: v-bind(dotMaskUrl);
   -webkit-mask-repeat: repeat;
-  -webkit-mask-size: v-bind(maskSize);
+  -webkit-mask-size: v-bind(maskSizeX) v-bind(maskSizeY);
 }
 </style>

@@ -6,59 +6,31 @@
   >
     <!-- Preview -->
     <div class="flex justify-center mb-3">
-      <!-- Loading state with frame -->
-      <div
-        v-if="previewLoading"
-        class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-      >
-        <div class="flex items-center justify-center bg-black rounded-sm" :style="screenStyle">
-          <UIcon name="i-fa6-solid:spinner" class="h-5 w-5 animate-spin text-white/50" />
-        </div>
-      </div>
+      <div class="preview-frame">
+        <div class="preview-screen" :style="{ aspectRatio: `${width} / ${height}` }">
+          <!-- Loading state -->
+          <div v-if="previewLoading" class="state-overlay">
+            <UIcon name="i-fa6-solid:spinner" class="h-5 w-5 animate-spin text-white/50" />
+          </div>
 
-      <!-- Loaded preview -->
-      <MatrixDevicePreview
-        v-else-if="previewBlobUrl"
-        :src="previewBlobUrl"
-        :width="width"
-        :height="height"
-        :dot-size="3"
-        :dot-gap="1"
-        :show-frame="true"
-      />
+          <!-- Loaded preview -->
+          <MatrixDevicePreview
+            v-else-if="previewBlobUrl"
+            :src="previewBlobUrl"
+            :width="width"
+            :height="height"
+            :show-frame="false"
+          />
 
-      <!-- HTTP error state (non-200 response) -->
-      <div
-        v-else-if="errorType === 'http'"
-        class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-      >
-        <div
-          class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
-          :style="screenStyle"
-        >
-          <UIcon name="i-fa6-solid:circle-exclamation" class="h-4 w-4 text-red-500" />
-          <span class="text-[8px] text-red-500 text-center px-1">{{ error }}</span>
-        </div>
-      </div>
+          <!-- HTTP error state -->
+          <div v-else-if="errorType === 'http'" class="state-overlay">
+            <UIcon name="i-fa6-solid:circle-exclamation" class="h-5 w-5 text-red-500/70" />
+          </div>
 
-      <!-- Empty state (200 but no image data) -->
-      <div
-        v-else-if="errorType === 'empty'"
-        class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg"
-      >
-        <div
-          class="flex flex-col items-center justify-center gap-1 bg-black rounded-sm"
-          :style="screenStyle"
-        >
-          <UIcon name="i-fa6-regular:image" class="h-4 w-4 text-white/50" />
-          <span class="text-[8px] text-white/50 text-center px-1">Nothing to show</span>
-        </div>
-      </div>
-
-      <!-- Default fallback state -->
-      <div v-else class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
-        <div class="flex items-center justify-center bg-black rounded-sm" :style="screenStyle">
-          <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white/30" />
+          <!-- Empty/default state -->
+          <div v-else class="state-overlay">
+            <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white/30" />
+          </div>
         </div>
       </div>
     </div>
@@ -103,19 +75,32 @@ const previewUrl = computed(() => {
 const {
   blobUrl: previewBlobUrl,
   loading: previewLoading,
-  error,
   errorType,
 } = useAuthenticatedImage(previewUrl)
-
-const screenStyle = computed(() => {
-  const dotSize = 3
-  const dotGap = 1
-  const cellSize = dotSize + dotGap
-  const displayWidth = props.width * cellSize - dotGap
-  const displayHeight = props.height * cellSize - dotGap
-  return {
-    width: `${displayWidth}px`,
-    height: `${displayHeight}px`,
-  }
-})
 </script>
+
+<style scoped>
+.preview-frame {
+  width: 100%;
+  max-width: 280px;
+  padding: 6px;
+  background: #27272a;
+  border-radius: 0.5rem;
+}
+
+.preview-screen {
+  width: 100%;
+  background: black;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.state-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-zinc-950">
+  <div class="setup-view flex flex-col bg-zinc-950">
     <!-- Header -->
     <header
       class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
@@ -64,21 +64,8 @@
           </p>
         </div>
 
-        <!-- Scanning State -->
-        <div v-if="bleStore.connection.isScanning" class="space-y-4">
-          <div class="flex items-center justify-center py-8">
-            <div class="space-y-3 text-center">
-              <UIcon
-                name="i-fa6-solid:spinner"
-                class="h-12 w-12 animate-spin text-primary-400 mx-auto"
-              />
-              <p class="text-sm text-white/70">Scanning for devices...</p>
-            </div>
-          </div>
-        </div>
-
         <!-- Connecting State -->
-        <div v-else-if="isConnecting" class="space-y-4">
+        <div v-if="isConnecting" class="space-y-4">
           <div class="flex items-center justify-center py-8">
             <div class="space-y-3 text-center">
               <UIcon
@@ -90,50 +77,68 @@
           </div>
         </div>
 
-        <!-- Discovered Devices -->
-        <div v-else-if="bleStore.connection.discoveredDevices.length" class="space-y-3">
-          <button
-            v-for="device in bleStore.connection.discoveredDevices"
-            :key="device.deviceId"
-            class="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
-            :disabled="isConnecting"
-            @click="selectDevice(device)"
-          >
-            <div class="flex items-center gap-3">
-              <UIcon name="i-fa6-solid:microchip" class="h-5 w-5 text-primary-400" />
-              <span class="font-medium">{{ device.name || device.deviceId }}</span>
-            </div>
-            <UIcon name="i-fa6-solid:chevron-right" class="h-5 w-5 text-white/40" />
-          </button>
+        <!-- Native: Show discovered devices with scanning indicator -->
+        <div v-else-if="!isWebPlatform" class="space-y-4">
+          <!-- Scanning indicator -->
+          <div v-if="bleStore.connection.isScanning" class="flex items-center justify-center gap-2 py-2">
+            <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin text-primary-400" />
+            <p class="text-sm text-white/70">Scanning for devices...</p>
+          </div>
 
-          <UButton color="neutral" variant="soft" block :disabled="isConnecting" @click="startScanning">
-            Scan Again
-          </UButton>
-        </div>
+          <!-- Discovered devices list -->
+          <div v-if="bleStore.connection.discoveredDevices.length" class="space-y-3">
+            <button
+              v-for="device in bleStore.connection.discoveredDevices"
+              :key="device.deviceId"
+              class="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
+              :disabled="isConnecting"
+              @click="selectDevice(device)"
+            >
+              <div class="flex items-center gap-3">
+                <UIcon name="i-fa6-solid:microchip" class="h-5 w-5 text-primary-400" />
+                <span class="font-medium">{{ device.name || device.deviceId }}</span>
+              </div>
+              <UIcon name="i-fa6-solid:chevron-right" class="h-5 w-5 text-white/40" />
+            </button>
+          </div>
 
-        <!-- Initial Prompt (before scanning) -->
-        <div v-else-if="!hasScanned" class="space-y-4">
+          <!-- Empty state while scanning -->
           <div
+            v-else
             class="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/20 py-12 text-center"
           >
             <UIcon name="i-fa6-brands:bluetooth-b" class="h-12 w-12 text-primary-400" />
-            <p class="mt-4 text-sm text-white/70">Press Start Scanning to find nearby devices</p>
+            <p class="mt-4 text-sm text-white/70">Looking for nearby devices...</p>
+            <p class="mt-1 text-xs text-white/50">Make sure your device is powered on and in pairing mode</p>
           </div>
-
-          <UButton color="primary" block @click="startScanning"> Start Scanning </UButton>
         </div>
 
-        <!-- No Devices Found (after scanning) -->
+        <!-- Web: Show button to trigger browser picker -->
         <div v-else class="space-y-4">
-          <div
-            class="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/20 py-12 text-center"
-          >
-            <UIcon name="i-fa6-brands:bluetooth-b" class="h-12 w-12 text-white/40" />
-            <p class="mt-4 text-sm text-white/70">No devices found</p>
-            <p class="mt-1 text-xs text-white/50">Make sure your device is powered on and nearby</p>
+          <!-- Scanning state (browser picker open) -->
+          <div v-if="bleStore.connection.isScanning" class="flex items-center justify-center py-8">
+            <div class="space-y-3 text-center">
+              <UIcon
+                name="i-fa6-solid:spinner"
+                class="h-12 w-12 animate-spin text-primary-400 mx-auto"
+              />
+              <p class="text-sm text-white/70">Select a device from the browser picker...</p>
+            </div>
           </div>
 
-          <UButton color="primary" block @click="startScanning"> Scan Again </UButton>
+          <!-- Initial/retry state -->
+          <div v-else>
+            <div
+              class="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/20 py-12 text-center"
+            >
+              <UIcon name="i-fa6-brands:bluetooth-b" class="h-12 w-12 text-primary-400" />
+              <p class="mt-4 text-sm text-white/70">Click to select a device</p>
+            </div>
+
+            <UButton color="primary" block class="mt-4" @click="startScanning">
+              {{ hasScanned ? 'Try Again' : 'Select Device' }}
+            </UButton>
+          </div>
         </div>
       </div>
     </div>
@@ -250,6 +255,11 @@ onMounted(async () => {
       console.debug('Failed to disconnect device:', err)
     }
   }
+
+  // On native, auto-start scanning when entering the page
+  if (!isWebPlatform && !bleError.value) {
+    await startScanning()
+  }
 })
 
 onUnmounted(async () => {
@@ -259,3 +269,10 @@ onUnmounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.setup-view {
+  height: 100vh;
+  height: 100dvh;
+}
+</style>

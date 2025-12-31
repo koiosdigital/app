@@ -1,9 +1,23 @@
 <template>
   <div class="home-view flex flex-col bg-zinc-950">
-    <main class="flex-1 overflow-auto">
-      <section class="flex flex-col gap-6 px-5 py-6 pb-24">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <h1 class="text-xl font-semibold">Devices</h1>
+    <header
+      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
+    >
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl font-semibold">Devices</h1>
+        <UButton
+          color="neutral"
+          variant="ghost"
+          icon="i-fa6-solid:gear"
+          square
+          @click="router.push('/settings')"
+        />
+      </div>
+    </header>
+
+    <main class="flex-1 min-h-0 overflow-y-auto">
+      <section class="flex flex-col gap-6 px-5 py-6">
+        <div class="flex flex-wrap items-center justify-end gap-4">
           <UButton
             color="primary"
             icon="i-fa6-solid:plus"
@@ -56,8 +70,6 @@
         </div>
       </section>
     </main>
-
-    <TabBar />
   </div>
 </template>
 
@@ -65,7 +77,6 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import TabBar from '@/components/layout/TabBar.vue'
 import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
 import { devicesApi } from '@/lib/api/devices'

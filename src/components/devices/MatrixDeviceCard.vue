@@ -14,24 +14,27 @@
 
     <template #preview>
       <div class="mt-4 flex justify-center">
-        <!-- Show installation preview if one is currently displaying -->
-        <InstallationPreview
-          v-if="device.currentlyDisplayingInstallation"
-          :device-id="device.id"
-          :installation-id="device.currentlyDisplayingInstallation"
-          :app-id="device.currentlyDisplayingInstallation"
-          :app-name="''"
-          :width="deviceWidth"
-          :height="deviceHeight"
-          :dot-size="3"
-          :dot-gap="1"
-          :show-frame="true"
-          class="no-label"
-        />
-        <!-- Show empty/off state when no installation is displaying -->
-        <div v-else class="inline-flex items-center justify-center p-3 bg-zinc-800 rounded-lg">
-          <div class="flex items-center justify-center bg-black rounded-sm" :style="screenStyle">
-            <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white" />
+        <div class="preview-container">
+          <!-- Show installation preview if one is currently displaying -->
+          <InstallationPreview
+            v-if="device.currentlyDisplayingInstallation"
+            :device-id="device.id"
+            :installation-id="device.currentlyDisplayingInstallation"
+            :app-id="device.currentlyDisplayingInstallation"
+            :app-name="''"
+            :width="deviceWidth"
+            :height="deviceHeight"
+            :show-frame="true"
+            :show-label="false"
+          />
+          <!-- Show empty/off state when no installation is displaying -->
+          <div v-else class="empty-preview-frame">
+            <div
+              class="empty-preview-screen"
+              :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
+            >
+              <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white/30" />
+            </div>
           </div>
         </div>
       </div>
@@ -96,25 +99,30 @@ const brightnessPercent = computed(() => {
   return Math.round((brightness / 255) * 100)
 })
 
-const screenStyle = computed(() => {
-  const dotSize = 3
-  const dotGap = 1
-  const cellSize = dotSize + dotGap
-  const displayWidth = deviceWidth.value * cellSize - dotGap
-  const displayHeight = deviceHeight.value * cellSize - dotGap
-  return {
-    width: `${displayWidth}px`,
-    height: `${displayHeight}px`,
-  }
-})
-
 const handleOpen = () => {
   emit('open', device.value.id)
 }
 </script>
 
 <style scoped>
-.no-label :deep(span) {
-  display: none;
+.preview-container {
+  width: 280px;
+  max-width: 100%;
+}
+
+.empty-preview-frame {
+  width: 100%;
+  padding: 6px;
+  background: #27272a;
+  border-radius: 0.5rem;
+}
+
+.empty-preview-screen {
+  width: 100%;
+  background: black;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
