@@ -41,8 +41,8 @@
     </div>
 
     <!-- Settings Content -->
-    <div v-else-if="device" class="flex flex-1 flex-col">
-      <div class="flex-1 px-5 py-6 space-y-6">
+    <div v-else-if="device" class="flex flex-1 flex-col min-h-0">
+      <div class="flex-1 min-h-0 overflow-y-auto px-5 py-6 pb-28 space-y-6">
         <!-- Display Name -->
         <div class="space-y-2">
           <label for="display-name" class="block text-sm font-medium text-white/70">
@@ -230,25 +230,6 @@
         </div>
       </div>
 
-      <!-- Footer -->
-      <footer
-        class="sticky bottom-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
-      >
-        <div v-if="saveError" class="mb-3">
-          <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
-        </div>
-        <UButton
-          color="primary"
-          size="lg"
-          block
-          :loading="saving"
-          :disabled="saving || !hasChanges"
-          @click="saveSettings"
-        >
-          Save Changes
-        </UButton>
-      </footer>
-
       <!-- Invite Modal -->
       <UModal v-model:open="showInviteModal">
         <template #content>
@@ -320,6 +301,25 @@
       />
     </div>
   </div>
+
+  <!-- Footer (teleported to app-footer for safe area handling) -->
+  <Teleport v-if="device" to="#app-footer">
+    <footer class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4">
+      <div v-if="saveError" class="mb-3">
+        <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
+      </div>
+      <UButton
+        color="primary"
+        size="lg"
+        block
+        :loading="saving"
+        :disabled="saving || !hasChanges"
+        @click="saveSettings"
+      >
+        Save Changes
+      </UButton>
+    </footer>
+  </Teleport>
 </template>
 
 <script setup lang="ts">

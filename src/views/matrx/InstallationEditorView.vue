@@ -174,26 +174,29 @@
       </section>
       </div>
 
-      <!-- Footer Actions -->
-      <footer
-        class="shrink-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur px-5 pt-4 footer-safe-area"
-      >
-        <div v-if="saveError" class="mb-3">
-          <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
-        </div>
-        <UButton
-          color="primary"
-          size="lg"
-          block
-          :loading="saving"
-          :disabled="saving"
-          @click="handleSave"
-        >
-          {{ mode === 'install' ? 'Install App' : 'Save Changes' }}
-        </UButton>
-      </footer>
     </div>
   </div>
+
+  <!-- Footer Actions (teleported to app-footer for safe area handling) -->
+  <Teleport to="#app-footer">
+    <footer
+      class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4"
+    >
+      <div v-if="saveError" class="mb-3">
+        <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
+      </div>
+      <UButton
+        color="primary"
+        size="lg"
+        block
+        :loading="saving"
+        :disabled="saving"
+        @click="handleSave"
+      >
+        {{ mode === 'install' ? 'Install App' : 'Save Changes' }}
+      </UButton>
+    </footer>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -667,13 +670,9 @@ onMounted(async () => {
   height: 100dvh;
 }
 
-/* Scrollable content needs bottom padding to account for footer + safe area */
+/* Scrollable content needs bottom padding to account for fixed footer + safe area */
 .scrollable-content {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
-}
-
-.footer-safe-area {
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
 }
 
 /* Preview container - matches now-playing size on device page */
