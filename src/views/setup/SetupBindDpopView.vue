@@ -139,7 +139,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { useBleProvStore } from '@/stores/ble_prov'
-import { getDeviceConfig } from '@/stores/ble_prov/config/deviceConfig'
+import { getDeviceConfig, getSecurity2Credentials } from '@/stores/ble_prov/config/deviceConfig'
 
 useHead({
   title: 'Pair Device | Koios Digital',
@@ -279,7 +279,12 @@ async function proceedWithSession() {
     // For 'none', pop stays empty
 
     // Establish session with appropriate security level
-    await bleStore.session.establishSession(pop, config.securityLevel)
+    if (config.securityLevel === 2) {
+      const credentials = getSecurity2Credentials(pop, config.popType)
+      await bleStore.session.establishSession(credentials, 2)
+    } else {
+      await bleStore.session.establishSession(pop, config.securityLevel)
+    }
 
     console.log(`Session established successfully (security level ${config.securityLevel})`)
 
