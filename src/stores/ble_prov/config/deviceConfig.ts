@@ -25,10 +25,10 @@ export const SECURITY2_DEFAULT_PASSWORD = 'koiosdigital'
  * Security level 2: SRP6a + AES-256-GCM with username/password
  */
 export const DEVICE_PREFIX_CONFIG: Record<string, DeviceSecurityConfig> = {
-  'MATRX-': { securityLevel: 1, popType: 'numeric', hasCrypto: true },
-  'LANTERN-': { securityLevel: 1, popType: 'color', hasCrypto: true },
-  'CLOCK-': { securityLevel: 0, popType: 'none', hasCrypto: false },
-  'TRANQUIL-': { securityLevel: 0, popType: 'none', hasCrypto: false },
+  'MATRX-': { securityLevel: 2, popType: 'numeric', hasCrypto: true },
+  'LANTERN-': { securityLevel: 2, popType: 'color', hasCrypto: true },
+  'CLOCK-': { securityLevel: 2, popType: 'none', hasCrypto: false },
+  'TRANQUIL-': { securityLevel: 2, popType: 'none', hasCrypto: false },
 }
 
 /**
