@@ -80,7 +80,7 @@ export async function establishSession(
       }
 
       const { username, password } = popOrCreds
-      const security2 = new Security2(username, password, false)
+      const security2 = new Security2(username, password, true)
       sec1.value = security2
 
       // Step 0: Send username + client public key A

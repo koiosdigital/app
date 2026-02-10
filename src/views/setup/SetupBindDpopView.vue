@@ -331,8 +331,8 @@ onMounted(async () => {
     return
   }
 
-  // For security level 0 devices, automatically proceed (no PoP required)
-  if (deviceConfig.value.securityLevel === 0) {
+  // For security level 0 devices or popType 'none', automatically proceed
+  if (deviceConfig.value.securityLevel === 0 || deviceConfig.value.popType === 'none') {
     await proceedWithSession()
   }
 })

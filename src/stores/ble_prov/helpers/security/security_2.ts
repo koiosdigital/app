@@ -20,8 +20,7 @@ export class Security2 {
   private sessionState = SecurityState.REQUEST0
   private srpClient: SRP6aClient
   private sessionKey: Uint8Array | null = null
-  private encryptNonce: Uint8Array | null = null
-  private decryptNonce: Uint8Array | null = null
+  private nonce: Uint8Array | null = null // Single shared nonce for both encrypt/decrypt
   private verbose: boolean
 
   constructor(username: string, password: string, verbose = false) {
@@ -165,9 +164,8 @@ export class Security2 {
     // Store session key and nonce
     this.sessionKey = this.srpClient.getSessionKey()
 
-    // Initialize separate nonce counters for encrypt/decrypt
-    this.encryptNonce = new Uint8Array(deviceNonce)
-    this.decryptNonce = new Uint8Array(deviceNonce)
+    // Single shared nonce for both encrypt/decrypt (ESP-IDF behavior)
+    this.nonce = new Uint8Array(deviceNonce)
 
     this.log(`Session Key: 0x${this.uint8ToHex(this.sessionKey)}`)
     this.log('Security2 session established successfully')
@@ -177,7 +175,7 @@ export class Security2 {
    * AES-256-GCM Encryption
    */
   async encryptData(plaintext: Uint8Array): Promise<Uint8Array> {
-    if (!this.sessionKey || !this.encryptNonce) {
+    if (!this.sessionKey || !this.nonce) {
       throw new Error('Session not established')
     }
 
@@ -191,9 +189,9 @@ export class Security2 {
     ])
 
     // AES-GCM with 96-bit nonce, 128-bit tag (default)
-    const iv = this.encryptNonce.buffer.slice(
-      this.encryptNonce.byteOffset,
-      this.encryptNonce.byteOffset + this.encryptNonce.byteLength,
+    const iv = this.nonce.buffer.slice(
+      this.nonce.byteOffset,
+      this.nonce.byteOffset + this.nonce.byteLength,
     ) as ArrayBuffer
     const data = plaintext.buffer.slice(
       plaintext.byteOffset,
@@ -201,8 +199,8 @@ export class Security2 {
     ) as ArrayBuffer
     const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data)
 
-    // Increment nonce (big-endian counter in last 4 bytes)
-    this.incrementNonce(this.encryptNonce)
+    // Increment shared nonce (big-endian counter in last 4 bytes)
+    this.incrementNonce(this.nonce)
 
     return new Uint8Array(ciphertext)
   }
@@ -211,7 +209,7 @@ export class Security2 {
    * AES-256-GCM Decryption
    */
   async decryptData(ciphertext: Uint8Array): Promise<Uint8Array> {
-    if (!this.sessionKey || !this.decryptNonce) {
+    if (!this.sessionKey || !this.nonce) {
       throw new Error('Session not established')
     }
 
@@ -224,9 +222,9 @@ export class Security2 {
       'decrypt',
     ])
 
-    const iv = this.decryptNonce.buffer.slice(
-      this.decryptNonce.byteOffset,
-      this.decryptNonce.byteOffset + this.decryptNonce.byteLength,
+    const iv = this.nonce.buffer.slice(
+      this.nonce.byteOffset,
+      this.nonce.byteOffset + this.nonce.byteLength,
     ) as ArrayBuffer
     const data = ciphertext.buffer.slice(
       ciphertext.byteOffset,
@@ -234,8 +232,8 @@ export class Security2 {
     ) as ArrayBuffer
     const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data)
 
-    // Increment nonce
-    this.incrementNonce(this.decryptNonce)
+    // Increment shared nonce
+    this.incrementNonce(this.nonce)
 
     return new Uint8Array(plaintext)
   }

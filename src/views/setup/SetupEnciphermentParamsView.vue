@@ -165,9 +165,17 @@ async function backupDSParams() {
       return
     }
 
+    //cipher_c and iv need to be base64 encoded.
+    const body = {
+      ds_key_id: dsParams.ds_key_id,
+      rsa_len: dsParams.rsa_len,
+      cipher_c: btoa(String.fromCharCode(...Array.from(dsParams.cipher_c))),
+      iv: btoa(String.fromCharCode(...Array.from(dsParams.iv))),
+    }
+
     const { error } = await provisioningClient.POST('/v1/ds_params', {
       params: { header: { 'x-device-id': deviceId } },
-      body: dsParams,
+      body,
     })
 
     if (error) {
@@ -216,9 +224,14 @@ async function restoreFromBackup() {
       throw new Error(`Failed to fetch backup: ${response.status} ${response.statusText}`)
     }
 
-    // Restore params to device
+    // Restore params to device - decode base64 back to Uint8Array
     loadingMessage.value = 'Restoring security credentials...'
-    await bleStore.console.setDSParams(params)
+    await bleStore.console.setDSParams({
+      ds_key_id: params.ds_key_id,
+      rsa_len: params.rsa_len,
+      cipher_c: Uint8Array.from(atob(params.cipher_c), (c) => c.charCodeAt(0)),
+      iv: Uint8Array.from(atob(params.iv), (c) => c.charCodeAt(0)),
+    })
 
     // Verify crypto status is now valid
     loadingMessage.value = 'Verifying restoration...'
@@ -268,4 +281,3 @@ onMounted(async () => {
   await checkCryptoStatus()
 })
 </script>
-

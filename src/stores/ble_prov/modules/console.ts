@@ -12,6 +12,7 @@ import {
   SetDsParamsRequestSchema,
   SetClaimTokenRequestSchema,
   SetDeviceCertRequestSchema,
+  SetDsParamsRequest,
 } from '@/types/proto/kd/v1/console_pb'
 
 /**
@@ -32,6 +33,13 @@ import {
  */
 
 const KOIOS_SERVICE_UUID = '1775244D-6B43-439B-877C-060F2D9BED07'.toLowerCase()
+
+/** Convert Uint8Array to hex string for debugging */
+function toHex(data: Uint8Array): string {
+  return Array.from(data)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
 const KD_CONSOLE_CHAR = 'kd_console'
 
 // Control commands
@@ -92,7 +100,9 @@ async function writeRaw(data: Uint8Array): Promise<void> {
     throw new Error('Device not connected or session not established')
   }
 
-  const encrypted = sec1.value.encryptData(data)
+  console.debug('[console] writeRaw plaintext:', toHex(data))
+  const encrypted = await sec1.value.encryptData(data)
+  console.debug('[console] writeRaw encrypted:', toHex(encrypted))
 
   await BleClient.write(
     connectedDevice.value.deviceId,
@@ -117,7 +127,9 @@ async function readRaw(): Promise<Uint8Array> {
   )
 
   const encrypted = new Uint8Array(response.buffer)
-  const decrypted = sec1.value.decryptData(encrypted)
+  console.debug('[console] readRaw encrypted:', toHex(encrypted))
+  const decrypted = await sec1.value.decryptData(encrypted)
+  console.debug('[console] readRaw decrypted:', toHex(decrypted))
 
   return decrypted
 }
@@ -420,6 +432,7 @@ async function sendConsoleRequest<T>(
  * Get device crypto status
  */
 export async function getCryptoStatus(): Promise<KDCryptoStatus> {
+  console.debug('Requesting crypto status from device...')
   return sendConsoleRequest(
     'cryptoStatusRequest',
     create(CryptoStatusRequestSchema),
@@ -432,6 +445,7 @@ export async function getCryptoStatus(): Promise<KDCryptoStatus> {
  * Get Certificate Signing Request (CSR) from device
  */
 export async function getCSR(): Promise<string> {
+  console.debug('Requesting CSR from device...')
   return sendConsoleRequest(
     'getCsrRequest',
     create(GetCsrRequestSchema),
@@ -444,11 +458,17 @@ export async function getCSR(): Promise<string> {
  * Get Digital Signature parameters
  */
 export async function getDSParams(): Promise<KD_DSParams> {
+  console.debug('Requesting DS params from device...')
   return sendConsoleRequest(
     'getDsParamsRequest',
     create(GetDsParamsRequestSchema),
     'getDsParamsResponse',
-    (value) => JSON.parse((value as { dsParamsJson: string }).dsParamsJson) as KD_DSParams,
+    (value) => ({
+      ds_key_id: (value as SetDsParamsRequest).keyBlockId,
+      rsa_len: (value as SetDsParamsRequest).rsaLen,
+      cipher_c: (value as SetDsParamsRequest).cipherC,
+      iv: (value as SetDsParamsRequest).iv,
+    } as KD_DSParams),
   )
 }
 
@@ -456,9 +476,16 @@ export async function getDSParams(): Promise<KD_DSParams> {
  * Set Digital Signature parameters
  */
 export async function setDSParams(dsParams: KD_DSParams): Promise<void> {
+  console.debug('Setting DS params on device...', dsParams)
+
   return sendConsoleRequest(
     'setDsParamsRequest',
-    create(SetDsParamsRequestSchema, { dsParamsJson: JSON.stringify(dsParams) }),
+    create(SetDsParamsRequestSchema, {
+      keyBlockId: dsParams.ds_key_id,
+      rsaLen: dsParams.rsa_len,
+      cipherC: dsParams.cipher_c,
+      iv: dsParams.iv,
+    }),
     'setDsParamsResponse',
     (value) => {
       if ((value as { result?: { success?: boolean } }).result?.success !== true) {
@@ -472,6 +499,7 @@ export async function setDSParams(dsParams: KD_DSParams): Promise<void> {
  * Set claim token on device
  */
 export async function setClaimToken(claimToken: string): Promise<void> {
+  console.debug('Setting claim token on device...', claimToken)
   return sendConsoleRequest(
     'setClaimTokenRequest',
     create(SetClaimTokenRequestSchema, { claimToken: new TextEncoder().encode(claimToken) }),
@@ -488,6 +516,7 @@ export async function setClaimToken(claimToken: string): Promise<void> {
  * Set device certificate (PEM format)
  */
 export async function setDeviceCert(certPem: string): Promise<void> {
+  console.debug('Setting device certificate...', certPem)
   return sendConsoleRequest(
     'setDeviceCertRequest',
     create(SetDeviceCertRequestSchema, { certPem: new TextEncoder().encode(certPem) }),

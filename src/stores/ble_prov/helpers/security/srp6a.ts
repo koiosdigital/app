@@ -100,15 +100,16 @@ function constantTimeEquals(a: Uint8Array, b: Uint8Array): boolean {
 }
 
 /**
- * SHA-256 hash using Web Crypto API
+ * SHA-512 hash using Web Crypto API
+ * ESP-IDF Security2 uses SHA-512 for all SRP6a operations
  */
-async function sha256(...data: Uint8Array[]): Promise<Uint8Array> {
+async function sha512(...data: Uint8Array[]): Promise<Uint8Array> {
   const concatenated = concat(...data)
   const buffer = concatenated.buffer.slice(
     concatenated.byteOffset,
     concatenated.byteOffset + concatenated.byteLength,
   ) as ArrayBuffer
-  const hash = await crypto.subtle.digest('SHA-256', buffer)
+  const hash = await crypto.subtle.digest('SHA-512', buffer)
   return new Uint8Array(hash)
 }
 
@@ -144,7 +145,7 @@ function generateSecureRandom(bytes: number): bigint {
 async function computeK(): Promise<bigint> {
   const nBytes = bigIntToBytes(N)
   const gBytes = padTo(bigIntToBytes(g, 1), N_BYTES)
-  const hash = await sha256(nBytes, gBytes)
+  const hash = await sha512(nBytes, gBytes)
   return bytesToBigInt(hash)
 }
 
@@ -159,7 +160,8 @@ export class SRP6aClient {
   private B: bigint | null = null // Device public key
   private salt: Uint8Array | null = null
   private S: bigint | null = null // Shared secret
-  private K: Uint8Array | null = null // Session key
+  private K: Uint8Array | null = null // Full session key (64 bytes) - used for proofs
+  private sessionKey: Uint8Array | null = null // Truncated key (32 bytes) - used for AES
   private M1: Uint8Array | null = null // Client proof
 
   constructor(username: string, password: string) {
@@ -201,7 +203,7 @@ export class SRP6aClient {
     // u = H(PAD(A) || PAD(B))
     const paddedA = padTo(bigIntToBytes(this.A))
     const paddedB = padTo(B)
-    const uHash = await sha256(paddedA, paddedB)
+    const uHash = await sha512(paddedA, paddedB)
     const u = bytesToBigInt(uHash)
 
     if (u === 0n) {
@@ -210,8 +212,8 @@ export class SRP6aClient {
 
     // x = H(salt || H(username || ":" || password))
     const colonBytes = new TextEncoder().encode(':')
-    const innerHash = await sha256(this.username, colonBytes, this.password)
-    const xHash = await sha256(salt, innerHash)
+    const innerHash = await sha512(this.username, colonBytes, this.password)
+    const xHash = await sha512(salt, innerHash)
     const x = bytesToBigInt(xHash)
 
     // k = H(N || PAD(g))
@@ -227,9 +229,11 @@ export class SRP6aClient {
     this.S = modPow(base, exp, N)
 
     // K = H(S) - session key
-    // ESP-IDF uses first 256 bits (32 bytes) of H(S)
+    // Full 64-byte hash is used for proof calculations
+    // First 32 bytes are used for AES-256 encryption key
     const sBytes = bigIntToBytes(this.S)
-    this.K = await sha256(sBytes)
+    this.K = await sha512(sBytes)
+    this.sessionKey = this.K.slice(0, 32)
   }
 
   /**
@@ -242,15 +246,15 @@ export class SRP6aClient {
     }
 
     // H(N) XOR H(g)
-    const hN = await sha256(bigIntToBytes(N))
-    const hg = await sha256(padTo(bigIntToBytes(g, 1), N_BYTES))
+    const hN = await sha512(bigIntToBytes(N))
+    const hg = await sha512(padTo(bigIntToBytes(g, 1), N_BYTES))
     const hNxorHg = xorBytes(hN, hg)
 
     // H(username)
-    const hI = await sha256(this.username)
+    const hI = await sha512(this.username)
 
     // M1 = H(hNxorHg || hI || salt || A || B || K)
-    this.M1 = await sha256(
+    this.M1 = await sha512(
       hNxorHg,
       hI,
       this.salt,
@@ -271,7 +275,7 @@ export class SRP6aClient {
       throw new Error('Must call computeClientProof first')
     }
 
-    const expectedM2 = await sha256(bigIntToBytes(this.A), this.M1, this.K)
+    const expectedM2 = await sha512(bigIntToBytes(this.A), this.M1, this.K)
 
     return constantTimeEquals(expectedM2, M2)
   }
@@ -281,9 +285,9 @@ export class SRP6aClient {
    * Returns first 32 bytes of H(S)
    */
   getSessionKey(): Uint8Array {
-    if (!this.K) {
+    if (!this.sessionKey) {
       throw new Error('Session key not yet derived')
     }
-    return this.K
+    return this.sessionKey
   }
 }
