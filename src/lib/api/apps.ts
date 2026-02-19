@@ -153,6 +153,22 @@ export const appsApi = {
   },
 
   /**
+   * Geocode a lat/lng to a full location object
+   */
+  async geocode(id: string, lat: number, lng: number) {
+    const { data, error } = await apiClient.POST('/v1/apps/{id}/geocoder', {
+      params: { path: { id } },
+      body: { lat, lng },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to geocode location'))
+    }
+
+    return data!
+  },
+
+  /**
    * Call a schema handler (for typeahead/generated fields)
    */
   async callHandler(id: string, handlerName: string, inputData?: string) {

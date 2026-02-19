@@ -80,7 +80,10 @@
         <!-- Native: Show discovered devices with scanning indicator -->
         <div v-else-if="!isWebPlatform" class="space-y-4">
           <!-- Scanning indicator -->
-          <div v-if="bleStore.connection.isScanning" class="flex items-center justify-center gap-2 py-2">
+          <div
+            v-if="bleStore.connection.isScanning"
+            class="flex items-center justify-center gap-2 py-2"
+          >
             <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin text-primary-400" />
             <p class="text-sm text-white/70">Scanning for devices...</p>
           </div>
@@ -109,7 +112,9 @@
           >
             <UIcon name="i-fa6-brands:bluetooth-b" class="h-12 w-12 text-primary-400" />
             <p class="mt-4 text-sm text-white/70">Looking for nearby devices...</p>
-            <p class="mt-1 text-xs text-white/50">Make sure your device is powered on and in pairing mode</p>
+            <p class="mt-1 text-xs text-white/50">
+              Make sure your device is powered on and in pairing mode
+            </p>
           </div>
         </div>
 
@@ -269,4 +274,3 @@ onUnmounted(async () => {
   }
 })
 </script>
-

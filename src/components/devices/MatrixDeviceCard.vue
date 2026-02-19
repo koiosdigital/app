@@ -89,13 +89,7 @@ const displayName = computed(() => device.value.settings?.displayName || device.
 const deviceWidth = computed(() => device.value.settings?.width ?? 64)
 const deviceHeight = computed(() => device.value.settings?.height ?? 32)
 
-const resolutionLabel = computed(() => `${deviceWidth.value}x${deviceHeight.value} pixels`)
 const statusColor = computed(() => getStatusColor(device.value.online))
-
-const brightnessPercent = computed(() => {
-  const brightness = device.value.settings?.typeSettings?.screenBrightness ?? 200
-  return Math.round((brightness / 255) * 100)
-})
 
 const handleOpen = () => {
   emit('open', device.value.id)

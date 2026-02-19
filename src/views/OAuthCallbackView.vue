@@ -48,7 +48,9 @@ onMounted(async () => {
   // In dev, OAuth redirects to 127.0.0.1 but opener runs on localhost.
   // Redirect to localhost so postMessage works (same-origin requirement).
   if (!Capacitor.isNativePlatform() && window.location.hostname === '127.0.0.1') {
-    console.log('[OAuth Callback] Redirecting from 127.0.0.1 to localhost for same-origin postMessage')
+    console.log(
+      '[OAuth Callback] Redirecting from 127.0.0.1 to localhost for same-origin postMessage',
+    )
     const newUrl = window.location.href.replace('://127.0.0.1', '://localhost')
     window.location.replace(newUrl)
     return
@@ -58,7 +60,14 @@ onMounted(async () => {
   const stateStr = route.query.state as string | undefined
   const error = route.query.error as string | undefined
 
-  console.log('[OAuth Callback] Query params - code:', !!code, 'state:', !!stateStr, 'error:', error)
+  console.log(
+    '[OAuth Callback] Query params - code:',
+    !!code,
+    'state:',
+    !!stateStr,
+    'error:',
+    error,
+  )
 
   // Handle OAuth error from provider
   if (error) {
@@ -107,7 +116,12 @@ onMounted(async () => {
     console.log('[OAuth Callback] Native flow - validating nonce')
     // Native: Validate nonce against stored value (required for security)
     const { value: storedNonce } = await Preferences.get({ key: 'oauth_pending_nonce' })
-    console.log('[OAuth Callback] Stored nonce:', storedNonce?.substring(0, 8) + '...', 'State nonce:', state.nonce?.substring(0, 8) + '...')
+    console.log(
+      '[OAuth Callback] Stored nonce:',
+      storedNonce?.substring(0, 8) + '...',
+      'State nonce:',
+      state.nonce?.substring(0, 8) + '...',
+    )
     if (storedNonce !== state.nonce) {
       console.error('[OAuth Callback] Nonce mismatch - security validation failed')
       errorMessage.value = 'Security validation failed. Please try again.'
@@ -140,7 +154,10 @@ onMounted(async () => {
     // Web: Post message to opener and close
     console.log('[OAuth Callback] Web flow - window.opener exists:', !!window.opener)
     if (window.opener) {
-      console.log('[OAuth Callback] Posting OAUTH_CALLBACK message to origin:', window.location.origin)
+      console.log(
+        '[OAuth Callback] Posting OAUTH_CALLBACK message to origin:',
+        window.location.origin,
+      )
       window.opener.postMessage(
         {
           type: 'OAUTH_CALLBACK',

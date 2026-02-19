@@ -61,16 +61,11 @@ const emit = defineEmits<{
 }>()
 
 const device = toRef(props, 'device')
-const { statusLabel, powerLabel } = useDeviceCard(device)
+const { powerLabel } = useDeviceCard(device)
 
 const displayName = computed(() => device.value.settings?.displayName || device.value.id)
 
 const lastUpdatedLabel = computed(() => formatRelativeTime(device.value.updatedAt))
-
-const brightnessPercent = computed(() => {
-  const brightness = device.value.settings?.typeSettings?.brightness ?? 200
-  return Math.round((brightness / 255) * 100)
-})
 
 const handleOpen = () => {
   emit('open', device.value.id)

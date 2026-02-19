@@ -7,6 +7,7 @@ import {
   type User,
 } from 'oidc-client-ts'
 import { ENV } from '@/config/environment'
+import { generatePKCE } from '@/utils/pkce'
 
 type TokenResponse = {
   access_token: string
@@ -137,21 +138,6 @@ function generateRandomString(length: number): string {
   const array = new Uint8Array(length)
   crypto.getRandomValues(array)
   return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')
-}
-
-/**
- * Generates PKCE code verifier and challenge
- */
-async function generatePKCE(): Promise<{ verifier: string; challenge: string }> {
-  const verifier = generateRandomString(32)
-  const encoder = new TextEncoder()
-  const data = encoder.encode(verifier)
-  const hash = await crypto.subtle.digest('SHA-256', data)
-  const challenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-  return { verifier, challenge }
 }
 
 // Storage keys for PKCE state

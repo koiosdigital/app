@@ -46,7 +46,10 @@ export default ts.config(
       'vue/multi-word-component-names': 'off',
       'vue/no-v-html': 'off',
       'vue/require-default-prop': 'off',
-      'vue/no-unused-vars': 'warn',
+      'vue/no-unused-vars': ["error",
+        {
+          "ignorePattern": "^_"
+        }]
     },
   },
 
@@ -54,7 +57,15 @@ export default ts.config(
   {
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_",
+          "ignoreRestSiblings": true
+        }
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },

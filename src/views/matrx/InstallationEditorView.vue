@@ -124,64 +124,62 @@
           </div>
         </section>
 
-      <!-- Schema Form Section -->
-      <section class="flex-1 px-5 py-6">
-        <SchemaForm
-          v-if="mergedSchema.length > 0"
-          :schema="mergedSchema"
-          :values="formState.values.value"
-          :errors="formState.errors.value"
-          :app-id="resolvedAppId"
-          :device-id="props.deviceId"
-          :installation-id="props.installationId"
-          :mode="props.mode"
-          :display-time="displayTime"
-          :skipped-by-user="skippedByUser"
-          @update:value="handleFieldUpdate"
-          @handler-result="handleHandlerResult"
-        />
+        <!-- Schema Form Section -->
+        <section class="flex-1 px-5 py-6">
+          <SchemaForm
+            v-if="mergedSchema.length > 0"
+            :schema="mergedSchema"
+            :values="formState.values.value"
+            :errors="formState.errors.value"
+            :app-id="resolvedAppId"
+            :device-id="props.deviceId"
+            :installation-id="props.installationId"
+            :mode="props.mode"
+            :display-time="displayTime"
+            :skipped-by-user="skippedByUser"
+            @update:value="handleFieldUpdate"
+            @handler-result="handleHandlerResult"
+          />
 
-        <div v-if="schema && mergedSchema.length === 0" class="text-center text-white/50 py-8">
-          This app has no configuration options.
-        </div>
-
-        <!-- Display Time Section -->
-        <div class="border-t border-white/10 pt-4 mt-4">
-          <label class="block text-sm font-medium text-white/70 mb-2">Display Time</label>
-          <USelectMenu
-            v-model="displayTime"
-            :items="displayTimeItems"
-            value-key="value"
-            class="w-full"
-          >
-            <template #item="{ item }">
-              <span>{{ item.label }}</span>
-            </template>
-          </USelectMenu>
-        </div>
-
-        <!-- Skip Toggle (edit mode only) -->
-        <div
-          v-if="mode === 'edit'"
-          class="flex items-center justify-between pt-4 mt-4 border-t border-white/10"
-        >
-          <div>
-            <span class="text-sm font-medium text-white/70">Skip this app</span>
-            <p class="text-xs text-white/50">App won't be shown in rotation</p>
+          <div v-if="schema && mergedSchema.length === 0" class="text-center text-white/50 py-8">
+            This app has no configuration options.
           </div>
-          <USwitch v-model="skippedByUser" />
-        </div>
-      </section>
-      </div>
 
+          <!-- Display Time Section -->
+          <div class="border-t border-white/10 pt-4 mt-4">
+            <label class="block text-sm font-medium text-white/70 mb-2">Display Time</label>
+            <USelectMenu
+              v-model="displayTime"
+              :items="displayTimeItems"
+              value-key="value"
+              :search-input="false"
+              class="w-full"
+            >
+              <template #item="{ item }">
+                <span>{{ item.label }}</span>
+              </template>
+            </USelectMenu>
+          </div>
+
+          <!-- Skip Toggle (edit mode only) -->
+          <div
+            v-if="mode === 'edit'"
+            class="flex items-center justify-between pt-4 mt-4 border-t border-white/10"
+          >
+            <div>
+              <span class="text-sm font-medium text-white/70">Skip this app</span>
+              <p class="text-xs text-white/50">App won't be shown in rotation</p>
+            </div>
+            <USwitch v-model="skippedByUser" />
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
   <!-- Footer Actions (teleported to app-footer for safe area handling) -->
   <Teleport to="#app-footer">
-    <footer
-      class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4"
-    >
+    <footer class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4">
       <div v-if="saveError" class="mb-3">
         <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
       </div>
@@ -283,7 +281,9 @@ const mergedSchema = computed(() => {
     // Insert dynamic fields after their source generated field
     if (field.type === 'generated' && dynamicFields.value.has(field.id)) {
       const dynFields = dynamicFields.value.get(field.id)!
-      console.log(`[InstallationEditor] mergedSchema: adding ${dynFields.length} dynamic fields after ${field.id}`)
+      console.log(
+        `[InstallationEditor] mergedSchema: adding ${dynFields.length} dynamic fields after ${field.id}`,
+      )
       result.push(...dynFields)
     }
   }
@@ -418,7 +418,10 @@ function handleFieldUpdate(fieldId: string, value: unknown) {
   console.log(`[InstallationEditor] handleFieldUpdate: ${fieldId} =`, value)
   console.log(`[InstallationEditor] current form values:`, JSON.stringify(formState.values.value))
   formState.updateValue(fieldId, value)
-  console.log(`[InstallationEditor] after update, form values:`, JSON.stringify(formState.values.value))
+  console.log(
+    `[InstallationEditor] after update, form values:`,
+    JSON.stringify(formState.values.value),
+  )
 
   // Trigger generated field handlers
   const generatedFields = formState.getGeneratedFieldsForSource(fieldId)
@@ -432,7 +435,9 @@ async function triggerGeneratedHandler(fieldId: string) {
   console.log(`[InstallationEditor] triggerGeneratedHandler: ${fieldId}`)
   const field = schema.value?.schema.find((f) => f.id === fieldId)
   if (!field || field.type !== 'generated') {
-    console.log(`[InstallationEditor] triggerGeneratedHandler: field not found or not generated type`)
+    console.log(
+      `[InstallationEditor] triggerGeneratedHandler: field not found or not generated type`,
+    )
     return
   }
   if (!('handler' in field) || !('source' in field)) {
@@ -442,10 +447,15 @@ async function triggerGeneratedHandler(fieldId: string) {
   if (!field.handler || !field.source) return
 
   const sourceValue = formState.values.value[field.source]
-  console.log(`[InstallationEditor] triggerGeneratedHandler: source field ${field.source} value =`, sourceValue)
+  console.log(
+    `[InstallationEditor] triggerGeneratedHandler: source field ${field.source} value =`,
+    sourceValue,
+  )
   if (!sourceValue) {
     // Clear dynamic fields when source is empty
-    console.log(`[InstallationEditor] triggerGeneratedHandler: source is empty, clearing dynamic fields`)
+    console.log(
+      `[InstallationEditor] triggerGeneratedHandler: source is empty, clearing dynamic fields`,
+    )
     dynamicFields.value.delete(fieldId)
     dynamicFields.value = new Map(dynamicFields.value)
     return
@@ -456,8 +466,14 @@ async function triggerGeneratedHandler(fieldId: string) {
     finalValue = JSON.stringify(sourceValue)
   }
 
-  console.log(`[InstallationEditor] triggerGeneratedHandler: calling handler ${field.handler} with:`, finalValue)
-  console.log(`[InstallationEditor] BEFORE handler call, form values:`, JSON.stringify(formState.values.value))
+  console.log(
+    `[InstallationEditor] triggerGeneratedHandler: calling handler ${field.handler} with:`,
+    finalValue,
+  )
+  console.log(
+    `[InstallationEditor] BEFORE handler call, form values:`,
+    JSON.stringify(formState.values.value),
+  )
 
   try {
     const response = await appsApi.callHandler(
@@ -466,7 +482,10 @@ async function triggerGeneratedHandler(fieldId: string) {
       finalValue as string,
     )
 
-    console.log(`[InstallationEditor] AFTER handler call, form values:`, JSON.stringify(formState.values.value))
+    console.log(
+      `[InstallationEditor] AFTER handler call, form values:`,
+      JSON.stringify(formState.values.value),
+    )
     console.log(`[InstallationEditor] triggerGeneratedHandler: response =`, response)
 
     if (response?.result) {
@@ -475,12 +494,17 @@ async function triggerGeneratedHandler(fieldId: string) {
         const parsed = JSON.parse(response.result)
         console.log(`[InstallationEditor] triggerGeneratedHandler: parsed result =`, parsed)
         if (parsed.schema && Array.isArray(parsed.schema)) {
-          console.log(`[InstallationEditor] triggerGeneratedHandler: setting ${parsed.schema.length} dynamic fields`)
+          console.log(
+            `[InstallationEditor] triggerGeneratedHandler: setting ${parsed.schema.length} dynamic fields`,
+          )
           // Store dynamic fields and trigger reactivity
           dynamicFields.value.set(fieldId, parsed.schema as AppSchemaField[])
           dynamicFields.value = new Map(dynamicFields.value)
 
-          console.log(`[InstallationEditor] AFTER dynamicFields update, form values:`, JSON.stringify(formState.values.value))
+          console.log(
+            `[InstallationEditor] AFTER dynamicFields update, form values:`,
+            JSON.stringify(formState.values.value),
+          )
 
           // Initialize default values for new dynamic fields
           for (const dynamicField of parsed.schema) {
@@ -488,12 +512,18 @@ async function triggerGeneratedHandler(fieldId: string) {
               dynamicField.default !== undefined &&
               formState.values.value[dynamicField.id] === undefined
             ) {
-              console.log(`[InstallationEditor] Setting default for dynamic field ${dynamicField.id}:`, dynamicField.default)
+              console.log(
+                `[InstallationEditor] Setting default for dynamic field ${dynamicField.id}:`,
+                dynamicField.default,
+              )
               formState.updateValue(dynamicField.id, dynamicField.default)
             }
           }
 
-          console.log(`[InstallationEditor] AFTER setting dynamic field defaults, form values:`, JSON.stringify(formState.values.value))
+          console.log(
+            `[InstallationEditor] AFTER setting dynamic field defaults, form values:`,
+            JSON.stringify(formState.values.value),
+          )
         }
       } catch (parseErr) {
         console.error(`Failed to parse generated field result for ${fieldId}:`, parseErr)
@@ -629,18 +659,25 @@ async function checkOAuthRestoration() {
 
     // Find the OAuth field and call its handler
     const field = schema.value?.schema.find((f) => f.id === fieldId)
-    if (field && (field.type === 'oauth1' || field.type === 'oauth2') && 'handler' in field) {
+    if (field && field.type === 'oauth2' && 'handler' in field) {
       try {
         const handlerName = field.handler || `${fieldId}_handler`
+        const handlerParams: Record<string, string> = {
+          code,
+          grant_type: 'authorization_code',
+          client_id: session.clientId || (field as { client_id?: string }).client_id || '',
+          redirect_uri: getRedirectUri(),
+        }
+        if (session.codeVerifier) {
+          handlerParams.code_verifier = session.codeVerifier
+        }
+        if (session.clientSecret) {
+          handlerParams.client_secret = session.clientSecret
+        }
         const result = await appsApi.callHandler(
           resolvedAppId.value,
           handlerName,
-          JSON.stringify({
-            code,
-            grant_type: 'authorization_code',
-            client_id: (field as { client_id?: string }).client_id,
-            redirect_uri: getRedirectUri(),
-          }),
+          JSON.stringify(handlerParams),
         )
 
         if (result?.result) {

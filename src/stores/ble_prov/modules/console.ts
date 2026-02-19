@@ -463,12 +463,13 @@ export async function getDSParams(): Promise<KD_DSParams> {
     'getDsParamsRequest',
     create(GetDsParamsRequestSchema),
     'getDsParamsResponse',
-    (value) => ({
-      ds_key_id: (value as SetDsParamsRequest).keyBlockId,
-      rsa_len: (value as SetDsParamsRequest).rsaLen,
-      cipher_c: (value as SetDsParamsRequest).cipherC,
-      iv: (value as SetDsParamsRequest).iv,
-    } as KD_DSParams),
+    (value) =>
+      ({
+        ds_key_id: (value as SetDsParamsRequest).keyBlockId,
+        rsa_len: (value as SetDsParamsRequest).rsaLen,
+        cipher_c: (value as SetDsParamsRequest).cipherC,
+        iv: (value as SetDsParamsRequest).iv,
+      }) as KD_DSParams,
   )
 }
 

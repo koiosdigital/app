@@ -74,7 +74,9 @@ export class Security2 {
     }
 
     this.log(`Client Username: ${new TextDecoder().decode(this.srpClient.getUsername())}`)
-    this.log(`Client Public Key A: 0x${this.uint8ToHex(this.srpClient.getPublicKey()).slice(0, 64)}...`)
+    this.log(
+      `Client Public Key A: 0x${this.uint8ToHex(this.srpClient.getPublicKey()).slice(0, 64)}...`,
+    )
 
     return toBinary(SessionDataSchema, request)
   }

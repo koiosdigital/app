@@ -24,7 +24,10 @@ export function useSchemaForm(schema: Ref<AppSchemaField[] | undefined>) {
   function initializeFromSchema() {
     if (!schema.value) return
 
-    console.log('[useSchemaForm] initializeFromSchema called, formInitialized:', formInitialized.value)
+    console.log(
+      '[useSchemaForm] initializeFromSchema called, formInitialized:',
+      formInitialized.value,
+    )
     console.log('[useSchemaForm] current values:', JSON.stringify(values.value))
 
     const triggers = new Map<string, string[]>()
@@ -173,12 +176,24 @@ export function useSchemaForm(schema: Ref<AppSchemaField[] | undefined>) {
     schema,
     (newSchema, oldSchema) => {
       console.log('[useSchemaForm] schema watcher triggered')
-      console.log('[useSchemaForm] configLoaded:', configLoaded.value, 'formInitialized:', formInitialized.value)
-      console.log('[useSchemaForm] old schema fields:', oldSchema?.length, 'new schema fields:', newSchema?.length)
+      console.log(
+        '[useSchemaForm] configLoaded:',
+        configLoaded.value,
+        'formInitialized:',
+        formInitialized.value,
+      )
+      console.log(
+        '[useSchemaForm] old schema fields:',
+        oldSchema?.length,
+        'new schema fields:',
+        newSchema?.length,
+      )
       if (!configLoaded.value) {
         initializeFromSchema()
       } else {
-        console.log('[useSchemaForm] configLoaded is true, skipping initializeFromSchema but updating triggers')
+        console.log(
+          '[useSchemaForm] configLoaded is true, skipping initializeFromSchema but updating triggers',
+        )
         // Still need to update generated field triggers when schema changes
         if (newSchema) {
           const triggers = new Map<string, string[]>()

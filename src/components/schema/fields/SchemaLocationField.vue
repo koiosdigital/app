@@ -1,48 +1,117 @@
 <template>
-  <div class="space-y-3">
-    <!-- Geolocation button -->
+  <div>
+    <!-- Location set: show label + clear button -->
+    <div
+      v-if="isSet"
+      class="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-1"
+    >
+      <div class="flex items-center gap-2 min-w-0">
+        <UIcon name="i-fa6-solid:location-dot" class="h-4 w-4 shrink-0 text-primary-400" />
+        <span class="truncate text-sm text-white/80 max-w-32 lg:max-w-48">
+          {{ parsedValue?.description || 'Unknown' }}
+        </span>
+      </div>
+      <button type="button" class="shrink-0 rounded p-1 hover:bg-white/10" @click="clearLocation">
+        <UIcon name="i-fa6-solid:xmark" class="h-4 w-4 text-red-400" />
+      </button>
+    </div>
+
+    <!-- No location: show set button -->
     <UButton
+      v-else
       color="neutral"
       variant="soft"
       icon="i-fa6-solid:location-dot"
-      :loading="locating"
-      @click="getLocation"
+      @click="openPicker"
     >
-      Use Current Location
+      Set Location
     </UButton>
 
-    <!-- Manual input -->
-    <div class="grid grid-cols-2 gap-3">
-      <div class="space-y-1">
-        <label class="text-xs text-white/60">Latitude</label>
-        <UInput
-          :model-value="parsedLocation.lat"
-          placeholder="0.0"
-          type="number"
-          step="any"
-          @update:model-value="updateLat"
-        />
-      </div>
-      <div class="space-y-1">
-        <label class="text-xs text-white/60">Longitude</label>
-        <UInput
-          :model-value="parsedLocation.lng"
-          placeholder="0.0"
-          type="number"
-          step="any"
-          @update:model-value="updateLng"
-        />
-      </div>
-    </div>
+    <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
 
-    <p v-if="locationError" class="text-xs text-red-400">{{ locationError }}</p>
-    <p v-if="error" class="text-xs text-red-400">{{ error }}</p>
+    <!-- Map picker modal -->
+    <UModal v-model:open="isOpen" :ui="{ width: 'sm:max-w-xl' }">
+      <template #content>
+        <div class="flex h-[75vh] flex-col bg-zinc-900">
+          <!-- Header -->
+          <div class="flex items-center gap-3 border-b border-white/10 px-4 py-3">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-fa6-solid:xmark"
+              square
+              size="sm"
+              @click="isOpen = false"
+            />
+            <p class="font-medium text-white">Pick Location</p>
+          </div>
+
+          <!-- Map (lazy-loaded) -->
+          <div class="flex-1">
+            <GoogleMap
+              :api-key="apiKey"
+              :libraries="['marker']"
+              :center="mapCenter"
+              :zoom="mapZoom"
+              :disable-default-ui="true"
+              :zoom-control="true"
+              gesture-handling="greedy"
+              background-color="#09090b"
+              map-id="koios-location-picker"
+              style="width: 100%; height: 100%"
+              @click="onMapClick"
+            >
+              <AdvancedMarker
+                v-if="pendingLocation"
+                :options="{ position: pendingLocation, gmpDraggable: true }"
+                @dragend="onMarkerDragEnd"
+              />
+            </GoogleMap>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center gap-2 border-t border-white/10 p-3">
+            <UButton
+              color="neutral"
+              variant="soft"
+              icon="i-fa6-solid:location-crosshairs"
+              :loading="locating"
+              @click="useCurrentLocation"
+            >
+              Use Current Location
+            </UButton>
+            <div class="flex-1" />
+            <UButton
+              color="primary"
+              :disabled="!pendingLocation"
+              :loading="geocoding"
+              @click="confirmLocation"
+            >
+              Confirm
+            </UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import type { components } from '@/types/api'
+import { ENV } from '@/config/environment'
+import { appsApi } from '@/lib/api/apps'
+
+// Lazy-load Google Maps components — only fetched when this field renders
+const GoogleMap = defineAsyncComponent(() => import('vue3-google-map').then((m) => m.GoogleMap))
+const AdvancedMarker = defineAsyncComponent(() =>
+  import('vue3-google-map').then((m) => m.AdvancedMarker),
+)
+
+interface LatLng {
+  lat: number
+  lng: number
+}
 
 type LocationField = components['schemas']['AppSchemaLocationFieldDto']
 
@@ -50,54 +119,67 @@ const props = defineProps<{
   field: LocationField
   value: unknown
   error?: string
+  appId: string
 }>()
 
 const emit = defineEmits<{
   (e: 'update:value', value: string): void
 }>()
 
-const locating = ref(false)
-const locationError = ref<string>()
+const apiKey = ENV.googleMapsApiKey()
 
-// Location is stored as JSON: {"lat":"...","lng":"...","timezone":"..."}
-const parsedLocation = computed(() => {
-  if (!props.value) return { lat: '', lng: '' }
+const isOpen = ref(false)
+const locating = ref(false)
+const geocoding = ref(false)
+const pendingLocation = ref<LatLng | null>(null)
+const mapCenter = ref<LatLng>({ lat: 37.7749, lng: -122.4194 })
+const mapZoom = ref(12)
+
+const parsedValue = computed(() => {
+  if (!props.value) return null
   try {
     const parsed = JSON.parse(String(props.value))
-    return {
-      lat: parsed.lat || '',
-      lng: parsed.lng || '',
-    }
+    if (!parsed.lat || !parsed.lng) return null
+    return parsed as { lat: string; lng: string; description: string }
   } catch {
-    return { lat: '', lng: '' }
+    return null
   }
 })
 
-function buildLocationValue(lat: string, lng: string, timezone?: string) {
-  return JSON.stringify({
-    lat,
-    lng,
-    timezone: timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-  })
-}
+const parsedLatLng = computed<LatLng | null>(() => {
+  if (!parsedValue.value) return null
+  const lat = parseFloat(parsedValue.value.lat)
+  const lng = parseFloat(parsedValue.value.lng)
+  if (isNaN(lat) || isNaN(lng)) return null
+  return { lat, lng }
+})
 
-function updateLat(val: string) {
-  emit('update:value', buildLocationValue(val, parsedLocation.value.lng))
-}
+const isSet = computed(() => !!parsedLatLng.value)
 
-function updateLng(val: string) {
-  emit('update:value', buildLocationValue(parsedLocation.value.lat, val))
-}
-
-async function getLocation() {
-  if (!navigator.geolocation) {
-    locationError.value = 'Geolocation not supported'
-    return
+function openPicker() {
+  if (parsedLatLng.value) {
+    mapCenter.value = parsedLatLng.value
+    pendingLocation.value = parsedLatLng.value
+  } else {
+    pendingLocation.value = null
   }
+  isOpen.value = true
+}
+
+function onMapClick(event: google.maps.MapMouseEvent) {
+  if (!event.latLng) return
+  pendingLocation.value = { lat: event.latLng.lat(), lng: event.latLng.lng() }
+}
+
+function onMarkerDragEnd(event: google.maps.MapMouseEvent) {
+  if (!event.latLng) return
+  pendingLocation.value = { lat: event.latLng.lat(), lng: event.latLng.lng() }
+}
+
+async function useCurrentLocation() {
+  if (!navigator.geolocation) return
 
   locating.value = true
-  locationError.value = undefined
-
   try {
     const position = await new Promise<GeolocationPosition>((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -106,15 +188,31 @@ async function getLocation() {
       })
     })
 
-    emit(
-      'update:value',
-      buildLocationValue(position.coords.latitude.toFixed(6), position.coords.longitude.toFixed(6)),
-    )
+    const pos = { lat: position.coords.latitude, lng: position.coords.longitude }
+    pendingLocation.value = pos
+    mapCenter.value = pos
   } catch (err) {
-    locationError.value =
-      err instanceof GeolocationPositionError ? err.message : 'Failed to get location'
+    console.error('Geolocation error:', err)
   } finally {
     locating.value = false
   }
+}
+
+async function confirmLocation() {
+  if (!pendingLocation.value) return
+
+  geocoding.value = true
+  try {
+    const loc = pendingLocation.value
+    const result = await appsApi.geocode(props.appId, loc.lat, loc.lng)
+    emit('update:value', JSON.stringify(result))
+    isOpen.value = false
+  } finally {
+    geocoding.value = false
+  }
+}
+
+function clearLocation() {
+  emit('update:value', '')
 }
 </script>

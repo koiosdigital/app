@@ -1,7 +1,6 @@
 <template>
   <PageLayout>
     <section class="flex flex-col gap-6 px-5 py-6">
-
       <!-- Action Result Banner -->
       <Transition
         enter-active-class="transition-all duration-200 ease-out"

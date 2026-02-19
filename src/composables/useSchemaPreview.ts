@@ -89,7 +89,7 @@ export function useSchemaPreview(
         error.value = 'Nothing to show'
         previewBase64.value = null
       }
-    } catch (err) {
+    } catch (_err) {
       previewBase64.value = null
       errorType.value = 'setup'
       error.value = 'Complete setup below'

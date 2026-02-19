@@ -53,7 +53,7 @@ export async function checkBleAvailability(): Promise<BleAvailabilityResult> {
     try {
       await BleClient.initialize()
       return { available: true }
-    } catch (error) {
+    } catch (_error) {
       return {
         available: false,
         errorTitle: 'Bluetooth Permission Required',
@@ -73,7 +73,7 @@ export async function checkBleAvailability(): Promise<BleAvailabilityResult> {
     try {
       await BleClient.initialize()
       return { available: true }
-    } catch (error) {
+    } catch (_error) {
       return {
         available: false,
         errorTitle: 'Bluetooth Permission Required',

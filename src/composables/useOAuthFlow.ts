@@ -30,6 +30,13 @@ export interface PendingOAuthSession {
   nonce: string
   timestamp: number
 
+  // PKCE
+  codeVerifier?: string
+
+  // User-defined client
+  clientId?: string
+  clientSecret?: string
+
   // Full form state snapshot
   formValues: Record<string, unknown>
   displayTime: number
@@ -45,6 +52,9 @@ export interface OAuthFlowContext {
   formValues?: Record<string, unknown>
   displayTime?: number
   skippedByUser?: boolean
+  codeVerifier?: string
+  clientId?: string
+  clientSecret?: string
 }
 
 export function useOAuthFlow(options: OAuthFlowOptions) {
@@ -87,6 +97,9 @@ export function useOAuthFlow(options: OAuthFlowOptions) {
         mode: context.mode,
         nonce: state.nonce,
         timestamp: state.timestamp,
+        codeVerifier: context.codeVerifier,
+        clientId: context.clientId,
+        clientSecret: context.clientSecret,
         formValues: context.formValues || {},
         displayTime: context.displayTime || 10,
         skippedByUser: context.skippedByUser || false,

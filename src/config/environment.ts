@@ -2,6 +2,8 @@
  * Centralized environment configuration
  */
 
+import { Capacitor } from "@capacitor/core"
+
 const isDev = import.meta.env.DEV && false
 
 export const ENV = {
@@ -20,6 +22,18 @@ export const ENV = {
   /** App Metadata */
   appChannel: isDev ? 'dev' : 'prod',
   appVersion: '1.0.0',
+
+  /** Google Maps */
+  googleMapsApiKey: () => {
+    switch (Capacitor.getPlatform()) {
+      case 'ios':
+        return 'AIzaSyCjzcR3dy7ydaxO2UMLq5TkxwClrB4Kj-o'
+      case 'android':
+        return import.meta.env.VITE_GOOGLE_MAPS_API_KEY_ANDROID
+      default:
+        return 'AIzaSyD1H49aKouJALZoue_XG0SfnPdHMonUL4s'
+    }
+  },
 
   /** OAuth/OIDC Configuration */
   oauth: {

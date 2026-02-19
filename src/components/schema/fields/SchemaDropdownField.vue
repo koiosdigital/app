@@ -6,7 +6,9 @@
       value-key="value"
       placeholder="Select option"
       class="w-full"
+      :search-input="false"
       @update:model-value="handleSelect"
+      :ui="{ base: 'min-w-32!' }"
     >
       <template #item="{ item }">
         <span>{{ item.label }}</span>

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 md:grid md:grid-cols-2 md:gap-y-4 md:gap-x-16">
     <template v-for="field in schema" :key="field.id">
       <SchemaFieldWrapper :field="field" :visibility-state="evaluateVisibility(field.visibility)">
         <component
@@ -65,7 +65,6 @@ const fieldComponentMap: Record<string, Component> = {
   location: SchemaLocationField,
   locationbased: SchemaLocationBasedField,
   typeahead: SchemaTypeaheadField,
-  oauth1: SchemaOAuthField,
   oauth2: SchemaOAuthField,
   png: SchemaPNGField,
   notification: SchemaNotificationField,
@@ -77,7 +76,7 @@ function getFieldComponent(type: string): Component {
 }
 
 function isOAuthField(type: string): boolean {
-  return type === 'oauth1' || type === 'oauth2'
+  return type === 'oauth2'
 }
 
 const oauthProps = computed(() => ({

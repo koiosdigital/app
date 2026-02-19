@@ -8,8 +8,8 @@
         type="button"
         class="h-8 w-8 rounded-full border-2 transition"
         :class="value === color ? 'border-white' : 'border-transparent'"
-        :style="{ backgroundColor: color }"
-        @click="emit('update:value', color)"
+        :style="{ backgroundColor: mapColorToHex(color) }"
+        @click="emit('update:value', mapColorToHex(color))"
       />
     </div>
 
@@ -46,4 +46,11 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'update:value', value: string): void
 }>()
+
+const mapColorToHex = (color: string): string => {
+  const ctx = document.createElement('canvas').getContext('2d')
+  if (!ctx) return color
+  ctx.fillStyle = color
+  return ctx.fillStyle
+}
 </script>

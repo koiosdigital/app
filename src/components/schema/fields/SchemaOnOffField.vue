@@ -1,6 +1,5 @@
 <template>
   <div class="flex items-center justify-between">
-    <span v-if="!hideLabel" class="text-sm text-white/70">{{ field.name }}</span>
     <USwitch
       :model-value="value === 'true' || value === true"
       @update:model-value="emit('update:value', $event ? 'true' : 'false')"

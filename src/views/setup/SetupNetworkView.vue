@@ -475,4 +475,3 @@ onMounted(async () => {
   await scanNetworks()
 })
 </script>
-

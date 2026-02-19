@@ -62,7 +62,10 @@
             <p class="text-xs uppercase tracking-widest text-primary-400">Pinned App</p>
           </div>
           <div class="flex flex-col items-center gap-3">
-            <div class="now-playing-container" :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }">
+            <div
+              class="now-playing-container"
+              :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
+            >
               <InstallationPreview
                 :device-id="deviceId"
                 :installation-id="pinnedInstallation.id"
@@ -91,7 +94,10 @@
         <template v-else>
           <p class="text-xs uppercase tracking-widest text-white/50">Now Playing</p>
           <div v-if="currentInstallation" class="flex flex-col items-center gap-3">
-            <div class="now-playing-container" :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }">
+            <div
+              class="now-playing-container"
+              :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
+            >
               <InstallationPreview
                 :device-id="deviceId"
                 :installation-id="currentInstallation.id"
@@ -365,33 +371,6 @@ async function saveInstallationOrder() {
   }
 }
 
-async function togglePin(installation: InstallationListItem) {
-  const newPinState = !installation.pinnedByUser
-  try {
-    await devicesApi.setPinState(deviceId.value, installation.id, newPinState)
-    // If pinning, unpin all others locally
-    if (newPinState) {
-      installations.value.forEach((inst) => {
-        inst.pinnedByUser = inst.id === installation.id
-      })
-    } else {
-      installation.pinnedByUser = false
-    }
-  } catch (err) {
-    console.error('Failed to toggle pin:', err)
-  }
-}
-
-async function toggleSkip(installation: InstallationListItem) {
-  const newSkipState = !installation.skippedByUser
-  try {
-    await devicesApi.setSkipState(deviceId.value, installation.id, newSkipState)
-    installation.skippedByUser = newSkipState
-  } catch (err) {
-    console.error('Failed to toggle skip:', err)
-  }
-}
-
 async function unpinPinnedInstallation() {
   if (!pinnedInstallation.value) return
   unpinning.value = true
@@ -413,11 +392,6 @@ const deleteTarget = ref<InstallationListItem | null>(null)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 
-function confirmDelete(installation: InstallationListItem) {
-  deleteTarget.value = installation
-  showDeleteModal.value = true
-}
-
 async function handleDelete() {
   if (!deleteTarget.value) return
 
@@ -432,31 +406,6 @@ async function handleDelete() {
   } finally {
     deleting.value = false
   }
-}
-
-function getInstallationMenuItems(installation: InstallationListItem) {
-  return [
-    [
-      {
-        label: installation.pinnedByUser ? 'Unpin' : 'Pin',
-        icon: 'i-fa6-solid:thumbtack',
-        onSelect: () => togglePin(installation),
-      },
-      {
-        label: installation.skippedByUser ? 'Show in rotation' : 'Skip in rotation',
-        icon: installation.skippedByUser ? 'i-fa6-regular:eye' : 'i-fa6-regular:eye-slash',
-        onSelect: () => toggleSkip(installation),
-      },
-    ],
-    [
-      {
-        label: 'Delete',
-        icon: 'i-fa6-solid:trash',
-        color: 'error' as const,
-        onSelect: () => confirmDelete(installation),
-      },
-    ],
-  ]
 }
 
 function openInstallation(installationId: string) {
@@ -501,6 +450,7 @@ onUnmounted(() => {
 .now-playing-container {
   width: min(80vw, 400px); /* Explicit width - uses 80vw or 400px, whichever is smaller */
   max-height: 40vh;
+  max-width: 40vw;
 }
 
 /* Installations grid */
@@ -513,6 +463,18 @@ onUnmounted(() => {
 @media (min-width: 768px) {
   .installations-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .installations-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .installations-grid {
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
