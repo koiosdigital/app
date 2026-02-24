@@ -103,7 +103,7 @@ const canConnect = computed(() => {
   if (props.field.pkce && !codeChallenge.value) return false
   if (props.field.user_defined_client && !userClientId.value) return false
   if (!props.field.user_defined_client && !props.field.client_id) return false
-  if (!props.field.user_defined_client && props.field.pkce && !userClientSecret.value) return false
+  if (props.field.user_defined_client && !props.field.pkce && !userClientSecret.value) return false
   return true
 })
 

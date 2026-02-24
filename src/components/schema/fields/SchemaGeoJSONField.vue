@@ -46,37 +46,9 @@
             <p class="font-medium text-white">Draw Area</p>
           </div>
 
-          <!-- Step indicator (only when collect_point) -->
-          <div
-            v-if="collectPoint"
-            class="flex items-center gap-4 border-b border-white/10 px-4 py-2"
-          >
-            <div
-              v-for="(label, i) in stepLabels"
-              :key="i"
-              class="flex items-center gap-1.5 text-xs"
-              :class="
-                step === i
-                  ? 'text-primary-400'
-                  : stepCompleted(i)
-                    ? 'text-green-400'
-                    : 'text-white/40'
-              "
-            >
-              <span
-                class="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
-                :class="
-                  stepCompleted(i)
-                    ? 'bg-green-500/20'
-                    : step === i
-                      ? 'bg-primary-500/20'
-                      : 'bg-white/10'
-                "
-              >
-                {{ stepCompleted(i) ? '\u2713' : i + 1 }}
-              </span>
-              {{ label }}
-            </div>
+          <!-- Stepper (only when collect_point) -->
+          <div v-if="collectPoint" class="px-4 pt-3">
+            <UStepper v-model="activeStep" :items="stepperItems" size="sm" color="primary" />
           </div>
 
           <!-- Status text -->
@@ -120,6 +92,17 @@
 
           <!-- Footer -->
           <div class="flex flex-wrap items-center gap-2 border-t border-white/10 p-3">
+            <UButton
+              v-if="collectPoint && activeStep === 'point'"
+              color="neutral"
+              variant="soft"
+              icon="i-fa6-solid:location-crosshairs"
+              :loading="locating"
+              @click="useCurrentLocation"
+            >
+              Use Current Location
+            </UButton>
+
             <UButton v-if="!closed && vertices.length >= 3" color="primary" @click="closePolygon">
               Close Polygon
             </UButton>
@@ -157,6 +140,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from 'vue'
+import { Geolocation } from '@capacitor/geolocation'
 import type { components } from '@/types/api'
 import { ENV } from '@/config/environment'
 import { appsApi } from '@/lib/api/apps'
@@ -187,14 +171,19 @@ const emit = defineEmits<{
 }>()
 
 const apiKey = ENV.googleMapsApiKey()
-const stepLabels = ['Set Point', 'Draw Polygon']
+
+const stepperItems = [
+  { value: 'point', title: 'Set Point', icon: 'i-fa6-solid:location-dot' as const },
+  { value: 'polygon', title: 'Draw Polygon', icon: 'i-fa6-solid:draw-polygon' as const },
+]
 
 // Modal state
 const isOpen = ref(false)
 const geocoding = ref(false)
 
 // Drawing state
-const step = ref<number>(0)
+const activeStep = ref<string | number>('point')
+const locating = ref(false)
 const point = ref<LatLng | null>(null)
 const vertices = ref<LatLng[]>([])
 const closed = ref(false)
@@ -275,7 +264,7 @@ function vertexPinOptions(index: number) {
 // --- Status text ---
 
 const statusText = computed(() => {
-  if (collectPoint.value && step.value === 0) {
+  if (collectPoint.value && activeStep.value === 'point') {
     return 'Click the map to set your location point'
   }
   if (closed.value) {
@@ -297,20 +286,33 @@ const canConfirm = computed(() => {
   return closed.value && vertices.value.length >= 3
 })
 
-function stepCompleted(i: number): boolean {
-  if (i === 0) return point.value !== null
-  if (i === 1) return closed.value
-  return false
-}
-
 // --- Actions ---
+
+async function useCurrentLocation() {
+  locating.value = true
+  try {
+    const position = await Geolocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 10000,
+    })
+
+    const pos = { lat: position.coords.latitude, lng: position.coords.longitude }
+    point.value = pos
+    mapCenter.value = pos
+    activeStep.value = 'polygon'
+  } catch (err) {
+    console.error('Geolocation error:', err)
+  } finally {
+    locating.value = false
+  }
+}
 
 function openPicker() {
   if (parsedValue.value) {
     point.value = parsedValue.value.point
     vertices.value = [...parsedValue.value.vertices]
     closed.value = parsedValue.value.vertices.length >= 3
-    step.value = 1
+    activeStep.value = 'polygon'
 
     if (parsedValue.value.vertices.length > 0) {
       mapCenter.value = computeCentroid(parsedValue.value.vertices)
@@ -323,7 +325,7 @@ function openPicker() {
     point.value = null
     vertices.value = []
     closed.value = false
-    step.value = collectPoint.value ? 0 : 1
+    activeStep.value = collectPoint.value ? 'point' : 'polygon'
     mapZoom.value = 4
   }
   isOpen.value = true
@@ -333,10 +335,10 @@ function onMapClick(event: google.maps.MapMouseEvent) {
   if (!event.latLng) return
   const pos: LatLng = { lat: event.latLng.lat(), lng: event.latLng.lng() }
 
-  if (collectPoint.value && step.value === 0) {
+  if (collectPoint.value && activeStep.value === 'point') {
     point.value = pos
-    step.value = 1
-  } else if (step.value === 1 && !closed.value) {
+    activeStep.value = 'polygon'
+  } else if (activeStep.value === 'polygon' && !closed.value) {
     vertices.value = [...vertices.value, pos]
   }
 }
@@ -356,7 +358,7 @@ function clearAll() {
   point.value = null
   vertices.value = []
   closed.value = false
-  step.value = collectPoint.value ? 0 : 1
+  activeStep.value = collectPoint.value ? 'point' : 'polygon'
 }
 
 function clearValue() {

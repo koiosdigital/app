@@ -4,7 +4,7 @@
 
 import { Capacitor } from '@capacitor/core'
 
-const isDev = import.meta.env.DEV && false
+const isDev = import.meta.env.DEV && true
 
 export const ENV = {
   /** App URLs */

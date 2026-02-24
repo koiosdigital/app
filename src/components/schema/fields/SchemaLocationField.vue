@@ -98,6 +98,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from 'vue'
+import { Geolocation } from '@capacitor/geolocation'
 import type { components } from '@/types/api'
 import { ENV } from '@/config/environment'
 import { appsApi } from '@/lib/api/apps'
@@ -177,15 +178,11 @@ function onMarkerDragEnd(event: google.maps.MapMouseEvent) {
 }
 
 async function useCurrentLocation() {
-  if (!navigator.geolocation) return
-
   locating.value = true
   try {
-    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      })
+    const position = await Geolocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 10000,
     })
 
     const pos = { lat: position.coords.latitude, lng: position.coords.longitude }

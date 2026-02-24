@@ -431,6 +431,14 @@ function handleFieldUpdate(fieldId: string, value: unknown) {
   }
 }
 
+function buildConfig(): Record<string, string> {
+  const config: Record<string, string> = {}
+  for (const [k, v] of Object.entries(formState.values.value)) {
+    if (v != null) config[k] = String(v)
+  }
+  return config
+}
+
 async function triggerGeneratedHandler(fieldId: string) {
   console.log(`[InstallationEditor] triggerGeneratedHandler: ${fieldId}`)
   const field = schema.value?.schema.find((f) => f.id === fieldId)
@@ -479,6 +487,7 @@ async function triggerGeneratedHandler(fieldId: string) {
     const response = await appsApi.callHandler(
       resolvedAppId.value,
       field.handler,
+      buildConfig(),
       finalValue as string,
     )
 
@@ -677,6 +686,7 @@ async function checkOAuthRestoration() {
         const result = await appsApi.callHandler(
           resolvedAppId.value,
           handlerName,
+          buildConfig(),
           JSON.stringify(handlerParams),
         )
 
