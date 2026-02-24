@@ -59,12 +59,23 @@ const props = defineProps<{
   value: unknown
   error?: string
   appId: string
+  formValues?: Record<string, unknown>
 }>()
 
 const emit = defineEmits<{
   (e: 'update:value', value: string): void
   (e: 'handler-result', result: unknown): void
 }>()
+
+function buildConfig(): Record<string, string> {
+  const config: Record<string, string> = {}
+  if (props.formValues) {
+    for (const [k, v] of Object.entries(props.formValues)) {
+      if (v != null) config[k] = String(v)
+    }
+  }
+  return config
+}
 
 const fetching = ref(false)
 const fetchError = ref<string>()
@@ -108,6 +119,7 @@ async function fetchLocationOptions() {
     const response = await appsApi.callHandler(
       props.appId,
       props.field.handler,
+      buildConfig(),
       JSON.stringify(locationData),
     )
 

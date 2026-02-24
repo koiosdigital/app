@@ -77,6 +77,16 @@ const emit = defineEmits<{
   (e: 'update:value', value: string): void
 }>()
 
+function buildConfig(): Record<string, string> {
+  const config: Record<string, string> = {}
+  if (props.formValues) {
+    for (const [k, v] of Object.entries(props.formValues)) {
+      if (v != null) config[k] = String(v)
+    }
+  }
+  return config
+}
+
 // User-defined client credentials
 const userClientId = ref('')
 const userClientSecret = ref('')
@@ -146,6 +156,7 @@ const oauthFlow = useOAuthFlow({
       const result = await appsApi.callHandler(
         props.appId,
         handlerName,
+        buildConfig(),
         JSON.stringify(handlerParams),
       )
 

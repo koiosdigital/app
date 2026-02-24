@@ -2,7 +2,7 @@
  * Centralized environment configuration
  */
 
-import { Capacitor } from "@capacitor/core"
+import { Capacitor } from '@capacitor/core'
 
 const isDev = import.meta.env.DEV && false
 

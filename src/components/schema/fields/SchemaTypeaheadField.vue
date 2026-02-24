@@ -124,11 +124,22 @@ const props = defineProps<{
   value: unknown
   error?: string
   appId: string
+  formValues?: Record<string, unknown>
 }>()
 
 const emit = defineEmits<{
   (e: 'update:value', value: string): void
 }>()
+
+function buildConfig(): Record<string, string> {
+  const config: Record<string, string> = {}
+  if (props.formValues) {
+    for (const [k, v] of Object.entries(props.formValues)) {
+      if (v != null) config[k] = String(v)
+    }
+  }
+  return config
+}
 
 const isOpen = ref(false)
 const searchQuery = ref('')
@@ -169,7 +180,7 @@ async function search(query: string) {
   searching.value = true
 
   try {
-    const response = await appsApi.callHandler(props.appId, props.field.handler, query)
+    const response = await appsApi.callHandler(props.appId, props.field.handler, buildConfig(), query)
 
     if (response?.result) {
       // Result is JSON string of options array

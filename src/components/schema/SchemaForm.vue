@@ -8,7 +8,7 @@
           :value="values[field.id]"
           :error="errors[field.id]"
           :app-id="appId"
-          v-bind="isOAuthField(field.type) ? oauthProps : {}"
+          v-bind="getExtraProps(field.type)"
           @update:value="(val: unknown) => emit('update:value', field.id, val)"
           @handler-result="(result: unknown) => emit('handler-result', field.id, result)"
         />
@@ -33,6 +33,7 @@ import SchemaTypeaheadField from './fields/SchemaTypeaheadField.vue'
 import SchemaOAuthField from './fields/SchemaOAuthField.vue'
 import SchemaPNGField from './fields/SchemaPNGField.vue'
 import SchemaNotificationField from './fields/SchemaNotificationField.vue'
+import SchemaGeoJSONField from './fields/SchemaGeoJSONField.vue'
 
 type AppSchemaField = components['schemas']['AppSchemaDto']['schema'][number]
 type AppSchemaVisibility = components['schemas']['AppSchemaVisibilityDto']
@@ -68,15 +69,12 @@ const fieldComponentMap: Record<string, Component> = {
   oauth2: SchemaOAuthField,
   png: SchemaPNGField,
   notification: SchemaNotificationField,
+  geojson: SchemaGeoJSONField,
   // generated fields have no UI component - they are hidden by the wrapper
 }
 
 function getFieldComponent(type: string): Component {
   return fieldComponentMap[type] || SchemaTextField
-}
-
-function isOAuthField(type: string): boolean {
-  return type === 'oauth2'
 }
 
 const oauthProps = computed(() => ({
@@ -87,6 +85,16 @@ const oauthProps = computed(() => ({
   displayTime: props.displayTime,
   skippedByUser: props.skippedByUser,
 }))
+
+const handlerProps = computed(() => ({
+  formValues: props.values,
+}))
+
+function getExtraProps(type: string): Record<string, unknown> {
+  if (type === 'oauth2') return oauthProps.value
+  if (type === 'locationbased' || type === 'typeahead') return handlerProps.value
+  return {}
+}
 
 function evaluateVisibility(visibility: AppSchemaVisibility | undefined): {
   visible: boolean

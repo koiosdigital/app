@@ -171,12 +171,18 @@ export const appsApi = {
   /**
    * Call a schema handler (for typeahead/generated fields)
    */
-  async callHandler(id: string, handlerName: string, inputData?: string) {
+  async callHandler(
+    id: string,
+    handlerName: string,
+    config: Record<string, string>,
+    inputData?: string,
+  ) {
     const { data, error } = await apiClient.POST('/v1/apps/{id}/call_handler', {
       params: { path: { id } },
       body: {
         handler_name: handlerName,
         data: inputData,
+        config,
       },
     })
 
