@@ -18,17 +18,6 @@ enum SecurityState {
  */
 export class Security0 {
   private sessionState = SecurityState.REQUEST
-  private verbose: boolean
-
-  constructor(verbose = false) {
-    this.verbose = verbose
-  }
-
-  private log(message: string) {
-    if (this.verbose) {
-      console.debug(`%c++++ ${message} ++++`, 'color: #32cd32')
-    }
-  }
 
   async handleSession(responseData: Uint8Array | undefined): Promise<Uint8Array | undefined> {
     switch (this.sessionState) {
@@ -48,8 +37,6 @@ export class Security0 {
   }
 
   private sessionRequest(): Uint8Array {
-    this.log('Security0: Sending session request')
-
     const request = create(SessionDataSchema)
     request.secVer = SecSchemeVersion.SecScheme0
     request.proto.case = 'sec0'
@@ -79,8 +66,6 @@ export class Security0 {
     if (status !== Status.Success) {
       throw new Error(`Security0 session failed with status: ${status}`)
     }
-
-    this.log('Security0: Session established successfully')
   }
 
   /**

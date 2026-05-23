@@ -218,7 +218,14 @@ async function selectDevice(device: BleDevice) {
     await bleStore.connection.stopScan()
     await bleStore.connection.connectToDevice(device)
 
-    router.push('/setup/bind_dpop')
+    // Skip the bind/PoP view for methods that don't need a session handshake
+    // (e.g. Improv). Methods that do need one still flow through bind_dpop.
+    const caps = bleStore.connection.capabilities
+    if (caps && !caps.needsSession) {
+      router.push(caps.hasCrypto ? '/setup/encipherment_params' : '/setup/network')
+    } else {
+      router.push('/setup/bind_dpop')
+    }
   } catch (err) {
     console.error('Failed to connect to device:', err)
     error.value = {

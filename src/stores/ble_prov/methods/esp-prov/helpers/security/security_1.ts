@@ -21,25 +21,16 @@ export class Security1 {
   private clientPublicKey!: Uint8Array
   private devicePublicKey!: Uint8Array
   private cipher!: AESCipher
-  private verbose: boolean
 
-  constructor(pop: string, verbose = false) {
+  constructor(pop: string) {
     this.pop = new TextEncoder().encode(pop)
-    this.verbose = verbose
   }
 
   private async generateKeyPair() {
     if (this.clientPrivateKey) return
-    //this.clientPrivateKey = ed.utils.randomPrivateKey();
     const keypair = stable.generateKeyPair()
     this.clientPrivateKey = keypair.secretKey
     this.clientPublicKey = keypair.publicKey
-  }
-
-  private log(message: string) {
-    if (this.verbose) {
-      console.debug(`%c++++ ${message} ++++`, 'color: #32cd32')
-    }
   }
 
   async handleSession(responseData: Uint8Array | undefined): Promise<Uint8Array | undefined> {
@@ -78,8 +69,6 @@ export class Security1 {
       $typeName: 'ble_prov.SessionCmd0',
     }
 
-    this.log(`Client Public Key: 0x${this.uint8ToHex(this.clientPublicKey)}`)
-    this.log(`Client Private Key: 0x${this.uint8ToHex(this.clientPrivateKey)}`)
     return toBinary(SessionDataSchema, setupReq)
   }
 
@@ -105,17 +94,10 @@ export class Security1 {
     }
 
     this.cipher = createAES(sharedKey, setupResp.proto.value.payload.value.deviceRandom)
-
-    this.log(`Device Public Key: 0x${this.uint8ToHex(this.devicePublicKey)}`)
-    this.log(
-      `Device Random: 0x${this.uint8ToHex(setupResp.proto.value.payload.value.deviceRandom)}`,
-    )
-    this.log(`Shared Key: 0x${this.uint8ToHex(sharedKey)}`)
   }
 
   private async setup1Request(): Promise<Uint8Array> {
     const encryptedDeviceKey = this.cipher.encrypt(this.devicePublicKey)
-    this.log(`Client Proof: 0x${this.uint8ToHex(encryptedDeviceKey)}`)
 
     const setupReq = create(SessionDataSchema)
     setupReq.secVer = SecSchemeVersion.SecScheme1
@@ -142,9 +124,6 @@ export class Security1 {
 
     const decrypted = this.cipher.encrypt(setupResp.proto.value.payload.value.deviceVerifyData)
 
-    this.log(`Device Proof: 0x${this.uint8ToHex(decrypted)}`)
-    this.log(`Client Public Key: 0x${this.uint8ToHex(this.clientPublicKey)}`)
-
     if (!this.uint8Equals(decrypted, this.clientPublicKey)) {
       throw new Error('Failed to verify device!')
     }
@@ -152,12 +131,6 @@ export class Security1 {
 
   private xorBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
     return a.map((val, i) => val ^ b[i])
-  }
-
-  private uint8ToHex(bytes: Uint8Array): string {
-    return Array.from(bytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
   }
 
   private uint8Equals(a: Uint8Array, b: Uint8Array): boolean {

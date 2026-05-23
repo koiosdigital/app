@@ -64,6 +64,7 @@ export const useBleProvStore = defineStore('ble_prov', () => {
       discoveredDevices: connection.discoveredDevices,
       isScanning: connection.isScanning,
       protoVersion: connection.protoVersion,
+      capabilities: connection.capabilities,
       initializeBluetooth: connection.initializeBluetooth,
       startScan: connection.startScan,
       stopScan: connection.stopScan,
@@ -108,5 +109,6 @@ export const useBleProvStore = defineStore('ble_prov', () => {
 
 // Export types
 export type { WifiAP } from './modules/wifi'
-export type { ProtoVersionInfo } from './modules/connection'
-export { KDCryptoStatus, type KD_DSParams } from './helpers/kd_console'
+export type { ProtoVersionInfo } from './methods/esp-prov/proto-ver'
+export type { MethodCapabilities } from './methods/types'
+export { KDCryptoStatus, type KD_DSParams } from './methods/esp-prov/helpers/kd_console'

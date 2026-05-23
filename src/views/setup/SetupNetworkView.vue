@@ -77,17 +77,32 @@
           </div>
         </div>
 
-        <!-- No Networks Found -->
+        <!-- No Networks Found (or method has no in-band scan) -->
         <div v-else class="space-y-4">
           <div
             class="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/20 py-12 text-center"
           >
             <UIcon name="i-fa6-solid:wifi" class="h-12 w-12 text-white/40" />
-            <p class="mt-4 text-sm text-white/70">No networks found</p>
-            <p class="mt-1 text-xs text-white/50">Make sure WiFi is enabled on your device</p>
+            <p class="mt-4 text-sm text-white/70">
+              {{ scanSupported ? 'No networks found' : 'This device uses manual WiFi entry' }}
+            </p>
+            <p class="mt-1 text-xs text-white/50">
+              {{
+                scanSupported
+                  ? 'Make sure WiFi is enabled on your device'
+                  : 'Enter your network details to provision the device'
+              }}
+            </p>
           </div>
 
-          <UButton color="primary" block @click="scanNetworks"> Scan for Networks </UButton>
+          <div class="flex gap-3">
+            <UButton v-if="scanSupported" color="primary" class="flex-1" @click="scanNetworks">
+              Scan for Networks
+            </UButton>
+            <UButton color="primary" class="flex-1" @click="showOtherNetworkModal">
+              Enter Network
+            </UButton>
+          </div>
         </div>
       </div>
     </div>
@@ -290,6 +305,10 @@ const isConnecting = ref(false)
 const otherNetworkSsid = ref('')
 const otherNetworkPassword = ref('')
 
+const scanSupported = computed(() => {
+  return bleStore.connection.capabilities?.supportsWifiScan !== false
+})
+
 const sortedNetworks = computed(() => {
   // Merge networks with same SSID, keeping the one with strongest signal
   const merged = new Map<string, WifiAP>()
@@ -468,6 +487,13 @@ onMounted(async () => {
   if (!bleStore.connection.connectedDevice) {
     bleStore.setGattError(new Error('Device disconnected before WiFi setup'))
     router.replace('/setup/new')
+    return
+  }
+
+  // For methods without in-band scan (e.g. Improv), skip auto-scan and prompt
+  // the user for a manual SSID + password right away.
+  if (bleStore.connection.capabilities?.supportsWifiScan === false) {
+    showOtherNetworkModal()
     return
   }
 

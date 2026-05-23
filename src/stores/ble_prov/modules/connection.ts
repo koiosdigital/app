@@ -1,10 +1,20 @@
-import { ref } from 'vue'
-import { BleClient, BleDevice, BleCharacteristic } from '@capacitor-community/bluetooth-le'
+import { ref, shallowRef } from 'vue'
+import {
+  BleClient,
+  BleDevice,
+  BleCharacteristic,
+  BleService,
+} from '@capacitor-community/bluetooth-le'
 import { Capacitor } from '@capacitor/core'
+import { allServiceUuids, pickMethodForServices } from '../methods/registry'
+import type { MethodCapabilities, ProvisioningMethod } from '../methods/types'
 
 /**
  * BLE Connection Module
- * Handles Bluetooth initialization, device scanning, and connection
+ *
+ * Owns the BLE init/scan/connect lifecycle and the active provisioning method.
+ * The actual provisioning protocol (esp-prov, Improv, …) lives in the method
+ * instance — this module just routes calls through.
  */
 
 export const connectedDevice = ref<BleDevice | undefined>(undefined)
@@ -12,41 +22,37 @@ export const connectedDeviceServiceMap = ref<Map<string, BleCharacteristic>>(new
 export const discoveredDevices = ref<BleDevice[]>([])
 export const isScanning = ref(false)
 
+/** Capabilities reported by the active method. Undefined until connected. */
+export const capabilities = ref<MethodCapabilities | undefined>(undefined)
+
 /**
- * Provisioning protocol version info returned by the device's `proto-ver` endpoint.
+ * Back-compat ref kept so existing UI/code that reads `protoVersion.sec_ver`
+ * continues to work. Sourced from `capabilities.sec_ver` for esp-prov;
+ * undefined for methods that don't speak proto-ver (e.g. Improv).
  */
-export interface ProtoVersionInfo {
-  ver: string
-  sec_ver: 0 | 1 | 2
-  sec_patch_ver?: number
-  cap?: string[]
+export const protoVersion = ref<
+  { ver: string; sec_ver: 0 | 1 | 2; sec_patch_ver?: number; cap?: string[] } | undefined
+>(undefined)
+
+/**
+ * Active method instance. shallowRef so Vue doesn't recursively proxy the
+ * class internals (security handler, char map, etc.).
+ */
+export const activeMethod = shallowRef<ProvisioningMethod | undefined>(undefined)
+
+function isWebPlatform(): boolean {
+  return Capacitor.getPlatform() === 'web'
 }
 
-export const protoVersion = ref<ProtoVersionInfo | undefined>(undefined)
-
-const KOIOS_SERVICE_UUID = '1775244D-6B43-439B-877C-060F2D9BED07'.toLowerCase()
-
-/**
- * Initialize Bluetooth
- */
 export async function initializeBluetooth() {
   await BleClient.initialize()
 }
 
 /**
- * Check if we're on web platform and need to use requestDevice instead of requestLEScan
- */
-function isWebPlatform(): boolean {
-  return Capacitor.getPlatform() === 'web'
-}
-
-/**
- * Start scanning for Koios Digital devices
- * On native: continuous scan until stopScan() is called
- * On web: shows browser device picker (one-shot)
+ * Start scanning for devices advertising any registered method's service UUID.
+ * On native: continuous scan. On web: shows the browser device picker.
  */
 export async function startScan() {
-  // Stop any existing scan first
   if (isScanning.value) {
     await stopScan()
   }
@@ -54,12 +60,13 @@ export async function startScan() {
   isScanning.value = true
   discoveredDevices.value = []
 
-  // On web, always use requestDevice (shows browser's device picker)
+  const services = allServiceUuids()
+
   if (isWebPlatform()) {
     try {
       const device = await BleClient.requestDevice({
-        services: [KOIOS_SERVICE_UUID],
-        optionalServices: [KOIOS_SERVICE_UUID], // Required for getServices() access on Web
+        services,
+        optionalServices: services,
       })
       discoveredDevices.value = [device]
       isScanning.value = false
@@ -69,216 +76,98 @@ export async function startScan() {
       throw err
     }
   } else {
-    // Native: continuous scan - devices appear as they're discovered
-    await BleClient.requestLEScan(
-      {
-        services: [KOIOS_SERVICE_UUID],
-        optionalServices: [KOIOS_SERVICE_UUID],
-      },
-      (result) => {
-        // Use spread to trigger reactivity
-        if (!discoveredDevices.value.find((d) => d.deviceId === result.device.deviceId)) {
-          discoveredDevices.value = [...discoveredDevices.value, result.device]
-        }
-      },
-    )
+    await BleClient.requestLEScan({ services, optionalServices: services }, (result) => {
+      if (!discoveredDevices.value.find((d) => d.deviceId === result.device.deviceId)) {
+        discoveredDevices.value = [...discoveredDevices.value, result.device]
+      }
+    })
   }
 }
 
-/**
- * Stop scanning for devices
- */
 export async function stopScan() {
-  // Only call stopLEScan on native platforms (web uses requestDevice which doesn't need stopping)
   if (!isWebPlatform() && isScanning.value) {
     try {
       await BleClient.stopLEScan()
     } catch {
-      // Ignore errors when stopping scan
+      // ignore
     }
   }
   isScanning.value = false
 }
 
 /**
- * Connect to a device and build service map
+ * Connect to a device, pick the appropriate provisioning method based on the
+ * services it advertises, and let the method initialize itself.
  */
 export async function connectToDevice(device: BleDevice) {
   try {
     await BleClient.connect(device.deviceId, () => {
-      connectedDevice.value = undefined
-      connectedDeviceServiceMap.value.clear()
-      protoVersion.value = undefined
+      handleDisconnect()
     })
 
     connectedDevice.value = device
 
-    // Build service characteristic map
     const services = await BleClient.getServices(device.deviceId)
 
-    // Map characteristic UUIDs to names
-    const CHAR_UUID_MAP: Record<string, string> = {
-      '1775ff4f-6b43-439b-877c-060f2d9bed07': 'prov-ctrl',
-      '1775ff50-6b43-439b-877c-060f2d9bed07': 'prov-scan',
-      '1775ff51-6b43-439b-877c-060f2d9bed07': 'prov-session',
-      '1775ff52-6b43-439b-877c-060f2d9bed07': 'prov-config',
-      '1775ff53-6b43-439b-877c-060f2d9bed07': 'proto-ver',
-      '1775ff54-6b43-439b-877c-060f2d9bed07': 'kd_console',
+    const picked = pickMethodForServices(
+      services.map((s) => s.uuid),
+      device,
+    )
+    if (!picked) {
+      throw new Error('Device does not advertise a supported provisioning service')
     }
 
-    const serviceMap = new Map<string, BleCharacteristic>()
+    activeMethod.value = picked.method
+    connectedDeviceServiceMap.value = mergeCharacteristics(services, picked.serviceUuid)
 
-    for (const service of services) {
-      for (const characteristic of service.characteristics) {
-        const charName = CHAR_UUID_MAP[characteristic.uuid.toLowerCase()]
-        if (charName) {
-          serviceMap.set(charName, characteristic)
-        }
+    capabilities.value = await picked.method.onConnect(device.deviceId, device.name ?? '', services)
+
+    // Surface esp-prov's proto-ver back-compat ref.
+    if (capabilities.value?.sec_ver !== undefined) {
+      protoVersion.value = {
+        ver: capabilities.value.protoVer ?? '',
+        sec_ver: capabilities.value.sec_ver,
       }
+    } else {
+      protoVersion.value = undefined
     }
-
-    connectedDeviceServiceMap.value = serviceMap
-
-    // Query device for its provisioning protocol info (sec_ver, capabilities, etc.)
-    protoVersion.value = await fetchProtoVersion(device.deviceId, serviceMap)
   } catch (error) {
     console.error('Error connecting to device:', error)
+    handleDisconnect()
     throw error
   }
 }
 
-/**
- * Query the device's proto-ver endpoint to determine which security version it supports.
- * Sends a single 0xEE byte; device responds with a JSON string describing the
- * provisioning version, security version, and capabilities.
- */
-async function fetchProtoVersion(
-  deviceId: string,
-  serviceMap: Map<string, BleCharacteristic>,
-): Promise<ProtoVersionInfo | undefined> {
-  const characteristic = serviceMap.get('proto-ver')
-  if (!characteristic) {
-    console.warn('proto-ver characteristic not present on device')
-    return undefined
-  }
-
-  try {
-    const request = new Uint8Array([0xee])
-    await BleClient.write(
-      deviceId,
-      KOIOS_SERVICE_UUID,
-      characteristic.uuid,
-      new DataView(request.buffer),
-    )
-
-    const response = await BleClient.read(deviceId, KOIOS_SERVICE_UUID, characteristic.uuid)
-    const text = new TextDecoder().decode(new Uint8Array(response.buffer))
-    const parsed = JSON.parse(text) as { prov?: ProtoVersionInfo }
-
-    if (!parsed.prov || typeof parsed.prov.sec_ver !== 'number') {
-      console.warn('proto-ver response missing prov.sec_ver:', text)
-      return undefined
-    }
-
-    return parsed.prov
-  } catch (error) {
-    console.error('Failed to read proto-ver:', error)
-    return undefined
-  }
-}
-
-/**
- * Disconnect from current device
- */
 export async function disconnectDevice() {
   if (connectedDevice.value) {
     await BleClient.disconnect(connectedDevice.value.deviceId)
-    connectedDevice.value = undefined
-    connectedDeviceServiceMap.value.clear()
-    protoVersion.value = undefined
+    handleDisconnect()
   }
 }
 
-/**
- * Maximum chunk size for BLE writes
- * Set to 509 bytes to account for 3-byte header (0xA5 | LenHi | LenLo)
- * Total packet size = 509 + 3 = 512 bytes (within BLE MTU)
- */
-const MAX_CHUNK_SIZE = 509
+function handleDisconnect() {
+  activeMethod.value?.teardown()
+  activeMethod.value = undefined
+  connectedDevice.value = undefined
+  connectedDeviceServiceMap.value.clear()
+  capabilities.value = undefined
+  protoVersion.value = undefined
+}
 
 /**
- * Send data to a characteristic with chunking support and receive response
- * Chunks data into packets with format: 0xA5 | LenHi | LenLo | Data (max 512 bytes total)
- * Waits for acknowledgment (read) between chunks
+ * For back-compat, also expose a flat characteristic UUID → BleCharacteristic
+ * map keyed by friendly name. The esp-prov method owns the canonical map
+ * internally; this is purely for any legacy reader.
  */
-export async function sendData(
-  data: Uint8Array,
-  characteristicName: string,
-): Promise<Uint8Array | undefined> {
-  try {
-    if (!connectedDevice.value || !connectedDeviceServiceMap.value.has(characteristicName)) {
-      throw new Error('Device not connected or characteristic not found')
-    }
-
-    const characteristic = connectedDeviceServiceMap.value.get(characteristicName)!
-
-    // Check if we need to chunk the data
-    if (data.length <= MAX_CHUNK_SIZE) {
-      // Single write - no chunking needed
-      await BleClient.write(
-        connectedDevice.value.deviceId,
-        KOIOS_SERVICE_UUID,
-        characteristic.uuid,
-        new DataView(data.buffer),
-      )
-
-      const response = await BleClient.read(
-        connectedDevice.value.deviceId,
-        KOIOS_SERVICE_UUID,
-        characteristic.uuid,
-      )
-
-      return new Uint8Array(response.buffer)
-    }
-
-    // Chunked write - split into multiple packets
-    let offset = 0
-    let lastResponse: Uint8Array | undefined = undefined
-
-    while (offset < data.length) {
-      const remainingBytes = data.length - offset
-      const chunkSize = Math.min(MAX_CHUNK_SIZE, remainingBytes)
-      const chunkData = data.slice(offset, offset + chunkSize)
-
-      // Build packet: 0xA5 | LenHi | LenLo | Data
-      const packet = new Uint8Array(3 + chunkSize)
-      packet[0] = 0xa5
-      packet[1] = (chunkSize >> 8) & 0xff
-      packet[2] = chunkSize & 0xff
-      packet.set(chunkData, 3)
-
-      // Write chunk
-      await BleClient.write(
-        connectedDevice.value.deviceId,
-        KOIOS_SERVICE_UUID,
-        characteristic.uuid,
-        new DataView(packet.buffer),
-      )
-
-      // Read acknowledgment before sending next chunk
-      const ack = await BleClient.read(
-        connectedDevice.value.deviceId,
-        KOIOS_SERVICE_UUID,
-        characteristic.uuid,
-      )
-
-      lastResponse = new Uint8Array(ack.buffer)
-      offset += chunkSize
-    }
-
-    return lastResponse
-  } catch (error) {
-    console.error(`Error in sendData (${characteristicName}):`, error)
-    throw error
+function mergeCharacteristics(
+  services: BleService[],
+  targetUuid: string,
+): Map<string, BleCharacteristic> {
+  const map = new Map<string, BleCharacteristic>()
+  const target = services.find((s) => s.uuid.toLowerCase() === targetUuid.toLowerCase())
+  if (!target) return map
+  for (const c of target.characteristics) {
+    map.set(c.uuid.toLowerCase(), c)
   }
+  return map
 }
