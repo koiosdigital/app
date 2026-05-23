@@ -12,6 +12,18 @@ export const connectedDeviceServiceMap = ref<Map<string, BleCharacteristic>>(new
 export const discoveredDevices = ref<BleDevice[]>([])
 export const isScanning = ref(false)
 
+/**
+ * Provisioning protocol version info returned by the device's `proto-ver` endpoint.
+ */
+export interface ProtoVersionInfo {
+  ver: string
+  sec_ver: 0 | 1 | 2
+  sec_patch_ver?: number
+  cap?: string[]
+}
+
+export const protoVersion = ref<ProtoVersionInfo | undefined>(undefined)
+
 const KOIOS_SERVICE_UUID = '1775244D-6B43-439B-877C-060F2D9BED07'.toLowerCase()
 
 /**
@@ -96,6 +108,7 @@ export async function connectToDevice(device: BleDevice) {
     await BleClient.connect(device.deviceId, () => {
       connectedDevice.value = undefined
       connectedDeviceServiceMap.value.clear()
+      protoVersion.value = undefined
     })
 
     connectedDevice.value = device
@@ -125,9 +138,52 @@ export async function connectToDevice(device: BleDevice) {
     }
 
     connectedDeviceServiceMap.value = serviceMap
+
+    // Query device for its provisioning protocol info (sec_ver, capabilities, etc.)
+    protoVersion.value = await fetchProtoVersion(device.deviceId, serviceMap)
   } catch (error) {
     console.error('Error connecting to device:', error)
     throw error
+  }
+}
+
+/**
+ * Query the device's proto-ver endpoint to determine which security version it supports.
+ * Sends a single 0xEE byte; device responds with a JSON string describing the
+ * provisioning version, security version, and capabilities.
+ */
+async function fetchProtoVersion(
+  deviceId: string,
+  serviceMap: Map<string, BleCharacteristic>,
+): Promise<ProtoVersionInfo | undefined> {
+  const characteristic = serviceMap.get('proto-ver')
+  if (!characteristic) {
+    console.warn('proto-ver characteristic not present on device')
+    return undefined
+  }
+
+  try {
+    const request = new Uint8Array([0xee])
+    await BleClient.write(
+      deviceId,
+      KOIOS_SERVICE_UUID,
+      characteristic.uuid,
+      new DataView(request.buffer),
+    )
+
+    const response = await BleClient.read(deviceId, KOIOS_SERVICE_UUID, characteristic.uuid)
+    const text = new TextDecoder().decode(new Uint8Array(response.buffer))
+    const parsed = JSON.parse(text) as { prov?: ProtoVersionInfo }
+
+    if (!parsed.prov || typeof parsed.prov.sec_ver !== 'number') {
+      console.warn('proto-ver response missing prov.sec_ver:', text)
+      return undefined
+    }
+
+    return parsed.prov
+  } catch (error) {
+    console.error('Failed to read proto-ver:', error)
+    return undefined
   }
 }
 
@@ -139,6 +195,7 @@ export async function disconnectDevice() {
     await BleClient.disconnect(connectedDevice.value.deviceId)
     connectedDevice.value = undefined
     connectedDeviceServiceMap.value.clear()
+    protoVersion.value = undefined
   }
 }
 

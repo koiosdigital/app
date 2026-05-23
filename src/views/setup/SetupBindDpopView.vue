@@ -29,10 +29,7 @@
         />
 
         <!-- Security Level 0 - No PoP Required (auto-connecting) -->
-        <div
-          v-if="deviceConfig.securityLevel === 0"
-          class="flex flex-1 items-center justify-center"
-        >
+        <div v-if="securityLevel === 0" class="flex flex-1 items-center justify-center">
           <div class="space-y-3 text-center">
             <UIcon
               name="i-fa6-solid:spinner"
@@ -149,10 +146,16 @@ useHead({
 const router = useRouter()
 const bleStore = useBleProvStore()
 
-// Get device configuration based on connected device name prefix
+// Get UI configuration (popType, hasCrypto) from device name prefix.
 const deviceConfig = computed(() => {
   const deviceName = bleStore.connection.connectedDevice?.name || ''
   return getDeviceConfig(deviceName)
+})
+
+// Security level is reported by the device itself via the proto-ver endpoint.
+// Default to 1 while we're still waiting on (or fell back from) the response.
+const securityLevel = computed<0 | 1 | 2>(() => {
+  return bleStore.connection.protoVersion?.sec_ver ?? 1
 })
 
 // Matrix - 6-Digit PoP Code
@@ -278,15 +281,16 @@ async function proceedWithSession() {
     }
     // For 'none', pop stays empty
 
-    // Establish session with appropriate security level
-    if (config.securityLevel === 2) {
+    // Establish session with the security level reported by the device.
+    const level = securityLevel.value
+    if (level === 2) {
       const credentials = getSecurity2Credentials(pop, config.popType)
       await bleStore.session.establishSession(credentials, 2)
     } else {
-      await bleStore.session.establishSession(pop, config.securityLevel)
+      await bleStore.session.establishSession(pop, level)
     }
 
-    console.log(`Session established successfully (security level ${config.securityLevel})`)
+    console.log(`Session established successfully (security level ${level})`)
 
     // Navigate to next step
     router.push(getNextRoute())
@@ -303,7 +307,7 @@ async function proceedWithSession() {
     error.value = {
       title: 'Session Error',
       description:
-        deviceConfig.value.securityLevel === 0
+        securityLevel.value === 0
           ? 'Failed to establish connection with the device. Please try again.'
           : 'Failed to establish a secure session with the device. Please verify the proof of possession code and try again.',
     }
@@ -332,7 +336,7 @@ onMounted(async () => {
   }
 
   // For security level 0 devices or popType 'none', automatically proceed
-  if (deviceConfig.value.securityLevel === 0 || deviceConfig.value.popType === 'none') {
+  if (securityLevel.value === 0 || deviceConfig.value.popType === 'none') {
     await proceedWithSession()
   }
 })

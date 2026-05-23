@@ -1,13 +1,18 @@
 /**
  * Device configuration based on BLE device name prefix.
- * Maps device prefixes to their security and capability settings.
+ *
+ * Note: the security level (Security0 / Security1 / Security2) is no longer
+ * inferred from the prefix — it's queried at connect time from the device's
+ * `proto-ver` endpoint and exposed via `connection.protoVersion.sec_ver`.
+ * This file only describes UI-specific bits (PoP input style, crypto module
+ * presence) that still vary by device family.
  */
 
-export type DeviceSecurityConfig = {
-  /** 0 = no encryption, 1 = Curve25519 + AES-CTR, 2 = SRP6a + AES-GCM */
-  securityLevel: 0 | 1 | 2
+export type PopType = 'numeric' | 'color' | 'none'
+
+export type DeviceUiConfig = {
   /** Type of Proof of Possession UI to show (used as password input for Security2) */
-  popType: 'numeric' | 'color' | 'none'
+  popType: PopType
   /** Whether the device has a crypto module for certificates */
   hasCrypto: boolean
 }
@@ -18,43 +23,35 @@ export const SECURITY2_USERNAME = 'koiosdigital'
 /** Default password when popType is 'none' for Security2 */
 export const SECURITY2_DEFAULT_PASSWORD = 'koiosdigital'
 
-/**
- * Device prefix to configuration mapping.
- * Security level 0: No encryption, no PoP required
- * Security level 1: Curve25519 + AES-256-CTR encryption with PoP
- * Security level 2: SRP6a + AES-256-GCM with username/password
- */
-export const DEVICE_PREFIX_CONFIG: Record<string, DeviceSecurityConfig> = {
-  'MATRX-': { securityLevel: 2, popType: 'numeric', hasCrypto: true },
-  'LANTERN-': { securityLevel: 2, popType: 'color', hasCrypto: true },
-  'CLOCK-': { securityLevel: 2, popType: 'none', hasCrypto: false },
-  'TRANQUIL-': { securityLevel: 2, popType: 'none', hasCrypto: false },
+export const DEVICE_PREFIX_CONFIG: Record<string, DeviceUiConfig> = {
+  'MATRX-': { popType: 'numeric', hasCrypto: true },
+  'LANTERN-': { popType: 'color', hasCrypto: true },
+  'CLOCK-': { popType: 'none', hasCrypto: false },
+  'TRANQUIL-': { popType: 'none', hasCrypto: false },
 }
 
 /**
- * Get device configuration based on device name prefix.
+ * Get UI configuration based on device name prefix.
  * @param deviceName The BLE device name (e.g., "MATRX-ABC123")
- * @returns Device configuration for the matching prefix
  */
-export function getDeviceConfig(deviceName: string): DeviceSecurityConfig {
+export function getDeviceConfig(deviceName: string): DeviceUiConfig {
   for (const [prefix, config] of Object.entries(DEVICE_PREFIX_CONFIG)) {
     if (deviceName.startsWith(prefix)) {
       return config
     }
   }
-  // Default to security level 1 with color PoP (Lantern behavior)
-  return { securityLevel: 1, popType: 'color', hasCrypto: true }
+  // Default to color PoP (Lantern behavior)
+  return { popType: 'color', hasCrypto: true }
 }
 
 /**
  * Get Security2 credentials from popCode.
  * @param popCode The proof of possession code (used as password)
  * @param popType The type of PoP input
- * @returns Credentials object for Security2 authentication
  */
 export function getSecurity2Credentials(
   popCode: string,
-  popType: 'numeric' | 'color' | 'none',
+  popType: PopType,
 ): { username: string; password: string } {
   return {
     username: SECURITY2_USERNAME,

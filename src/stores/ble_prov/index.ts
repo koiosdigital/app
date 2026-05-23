@@ -63,6 +63,7 @@ export const useBleProvStore = defineStore('ble_prov', () => {
       connectedDeviceServiceMap: connection.connectedDeviceServiceMap,
       discoveredDevices: connection.discoveredDevices,
       isScanning: connection.isScanning,
+      protoVersion: connection.protoVersion,
       initializeBluetooth: connection.initializeBluetooth,
       startScan: connection.startScan,
       stopScan: connection.stopScan,
@@ -107,4 +108,5 @@ export const useBleProvStore = defineStore('ble_prov', () => {
 
 // Export types
 export type { WifiAP } from './modules/wifi'
+export type { ProtoVersionInfo } from './modules/connection'
 export { KDCryptoStatus, type KD_DSParams } from './helpers/kd_console'
