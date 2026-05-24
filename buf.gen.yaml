@@ -1,6 +1,6 @@
 version: v2
 inputs:
-  - directory: src/stores/ble_prov/proto
+  - directory: src/stores/ble_prov/methods/esp-prov/proto
   - directory: src/protobufs/proto
 plugins:
   - remote: buf.build/bufbuild/es

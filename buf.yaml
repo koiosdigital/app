@@ -1,6 +1,6 @@
 version: v2
 modules:
-  - path: ./src/stores/ble_prov/proto
+  - path: ./src/stores/ble_prov/methods/esp-prov/proto
     lint:
       use:
         - STANDARD
