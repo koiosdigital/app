@@ -127,7 +127,7 @@ const emit = defineEmits<{
   (e: 'update:value', value: string): void
 }>()
 
-const apiKey = ENV.googleMapsApiKey()
+const apiKey = ENV.googleMapsApiKey
 
 const isOpen = ref(false)
 const locating = ref(false)

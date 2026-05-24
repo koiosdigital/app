@@ -194,7 +194,7 @@ const emit = defineEmits<{
   (e: 'handler-result', result: unknown): void
 }>()
 
-const apiKey = ENV.googleMapsApiKey()
+const apiKey = ENV.googleMapsApiKey
 
 const stepperItems = [
   { value: 'location', title: 'Location', icon: 'i-fa6-solid:location-dot' as const },
