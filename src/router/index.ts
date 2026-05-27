@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import LoginCallbackView from '@/views/LoginCallbackView.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import AccountView from '@/views/account/AccountView.vue'
 import SetupNewView from '@/views/setup/SetupNewView.vue'
 import SetupBindDpopView from '@/views/setup/SetupBindDpopView.vue'
 import SetupCryptoView from '@/views/setup/SetupCryptoView.vue'
@@ -85,6 +86,11 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsView,
+    },
+    {
+      path: '/settings/account',
+      name: 'account',
+      component: AccountView,
     },
     {
       path: '/matrx/:id',

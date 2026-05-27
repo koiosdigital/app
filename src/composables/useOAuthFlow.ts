@@ -5,7 +5,7 @@
 
 import { ref, onUnmounted } from 'vue'
 import { Preferences } from '@capacitor/preferences'
-import { InAppBrowser } from '@capacitor/inappbrowser'
+import { Browser } from '@capacitor/browser'
 import { Capacitor } from '@capacitor/core'
 import { openPopupSync } from '@/utils/browser'
 import { decodeState, isStateExpired, type OAuthState } from '@/utils/oauthState'
@@ -109,9 +109,9 @@ export function useOAuthFlow(options: OAuthFlowOptions) {
         value: JSON.stringify(session),
       })
 
-      // Open in external browser (Safari) so universal links work on redirect
-      await InAppBrowser.openInExternalBrowser({ url: authUrl })
-      // Flow continues via universal link → OAuthCallbackView
+      // Open in-app via SFSafariViewController (iOS) / Chrome Custom Tabs (Android).
+      // Flow continues via universal link → OAuthCallbackView; main.ts dismisses the browser.
+      await Browser.open({ url: authUrl })
     } else {
       // Web: Open popup synchronously (required for popup blockers)
       popup = openPopupSync('oauth', 'width=500,height=700')

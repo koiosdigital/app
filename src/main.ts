@@ -7,6 +7,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createHead } from '@unhead/vue/client'
 import { App as CapacitorApp } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
 import { Capacitor } from '@capacitor/core'
 
 import App from './App.vue'
@@ -27,6 +28,9 @@ if (Capacitor.isNativePlatform()) {
     if (!url) {
       return
     }
+    // Dismiss the SFSafariViewController / Custom Tab left over from an
+    // OAuth flow that just redirected back into the app via universal link.
+    Browser.close().catch(() => {})
     try {
       const parsed = new URL(url)
       const path = `${parsed.pathname}${parsed.search}${parsed.hash}`

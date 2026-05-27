@@ -53,9 +53,9 @@
               color="neutral"
               variant="soft"
               icon="i-fa6-solid:user-gear"
-              @click="updateProfile"
+              @click="openAccount"
             >
-              Manage profile
+              Manage account
             </UButton>
             <UButton color="neutral" variant="soft" icon="i-fa6-solid:key" @click="changePassword">
               Change password
@@ -148,6 +148,10 @@ const ACTION_MESSAGES: Record<KeycloakAction, { success: string; cancelled: stri
   },
 }
 
+const openAccount = () => {
+  router.push('/settings/account')
+}
+
 function handleActionResult() {
   const kcAction = route.query.kc_action as KeycloakAction | undefined
   const kcActionStatus = route.query.kc_action_status as string | undefined
@@ -177,10 +181,6 @@ onMounted(() => {
   })
   handleActionResult()
 })
-
-const updateProfile = () => {
-  goToKeycloakAction('UPDATE_PROFILE')
-}
 
 const changePassword = () => {
   goToKeycloakAction('UPDATE_PASSWORD')

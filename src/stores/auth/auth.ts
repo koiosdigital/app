@@ -147,10 +147,13 @@ export const useAuthStore = defineStore('auth', () => {
    * Log out the user and clear all tokens
    */
   async function logout() {
+    // Capture the refresh token before clearing — the native logout needs
+    // it to backchannel-invalidate the session.
+    const tokenForLogout = refreshToken.value
     await persistTokens(undefined, undefined)
 
     try {
-      await KoiosOidcClient.logout()
+      await KoiosOidcClient.logout(tokenForLogout)
     } catch (error) {
       console.warn('Remote logout failed', error)
     }

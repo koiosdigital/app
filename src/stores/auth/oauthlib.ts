@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core'
-import { InAppBrowser } from '@capacitor/inappbrowser'
+import { Browser } from '@capacitor/browser'
 import {
   UserManager,
   WebStorageStateStore,
@@ -179,9 +179,10 @@ export class KoiosOidcClient {
       authUrl.searchParams.set('code_challenge', pkce.challenge)
       authUrl.searchParams.set('code_challenge_method', 'S256')
 
-      // Open in external browser (Safari) so universal links work on redirect
-      await InAppBrowser.openInExternalBrowser({ url: authUrl.toString() })
-      // Universal link will handle the callback via appUrlOpen listener in main.ts
+      // Open in-app via SFSafariViewController (iOS) / Chrome Custom Tabs (Android).
+      // Universal link redirect re-enters the app via the appUrlOpen listener in main.ts,
+      // which dismisses this browser.
+      await Browser.open({ url: authUrl.toString() })
     } else {
       // Web: Standard redirect using oidc-client-ts
       return getUserManager().signinRedirect()
@@ -271,26 +272,33 @@ export class KoiosOidcClient {
   }
 
   /**
-   * Initiates logout flow
-   * On native: Opens in-app browser for IdP logout
-   * On web: Standard redirect flow
+   * Initiates logout flow.
+   * On native: Backchannel POST to the IdP using the refresh token — no browser.
+   *   The post_logout_redirect_uri flow can't reliably bounce back into the app
+   *   via universal links from SFSafariViewController, leaving the user stranded
+   *   on the web logout page. The backchannel call invalidates the session
+   *   silently and we navigate to /login client-side.
+   * On web: Standard redirect flow.
    */
-  static async logout() {
+  static async logout(refreshToken?: string) {
     if (Capacitor.isNativePlatform()) {
-      // Native: Build logout URL and open in-app browser
+      if (!refreshToken) return
       const { oauth } = ENV
-      const baseUrl = resolveBaseUrl()
+      const logoutEndpoint = `${oauth.authority}/protocol/openid-connect/logout`
 
-      const logoutUrl = new URL(`${oauth.authority}/protocol/openid-connect/logout`)
-      logoutUrl.searchParams.set('client_id', oauth.clientId)
-      logoutUrl.searchParams.set(
-        'post_logout_redirect_uri',
-        `${baseUrl}${oauth.postLogoutRedirectPath}`,
-      )
+      const response = await fetch(logoutEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodeForm({
+          client_id: oauth.clientId,
+          refresh_token: refreshToken,
+        }),
+      })
 
-      // Open in external browser (Safari) so universal links work on redirect
-      await InAppBrowser.openInExternalBrowser({ url: logoutUrl.toString() })
-      // User state is cleared by the auth store after this call
+      if (!response.ok && response.status !== 204) {
+        const body = await response.text().catch(() => '')
+        throw new Error(`Backchannel logout failed: ${response.status} ${body}`)
+      }
     } else {
       // Web: Standard redirect
       return getUserManager().signoutRedirect()
