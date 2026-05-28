@@ -41,6 +41,9 @@ importers:
       '@capacitor/preferences':
         specifier: ^8.0.0
         version: 8.0.0(@capacitor/core@8.0.0)
+      '@capawesome-team/capacitor-oauth':
+        specifier: ^0.1.6
+        version: 0.1.6(@capacitor/core@8.0.0)
       '@ckpack/vue-color':
         specifier: ^1.6.0
         version: 1.6.0(vue@3.5.26(typescript@5.9.3))
@@ -304,6 +307,11 @@ packages:
 
   '@capacitor/synapse@1.0.4':
     resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
+
+  '@capawesome-team/capacitor-oauth@0.1.6':
+    resolution: {integrity: sha512-Uka26ik7L+BiR7o6yG4OAVZ/9LZVL5JOx7hQFnw0wRsbEGiU9nAK5RmiwkQUiSOUfZaPj7GTZjCeHYT7c6Qk1g==, tarball: https://npm.registry.capawesome.io/download/@capawesome-team/capacitor-oauth/0.1.6/59c64a31870301671f80138e1095fc845eef4949}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
 
   '@capsizecss/unpack@3.0.1':
     resolution: {integrity: sha512-8XqW8xGn++Eqqbz3e9wKuK7mxryeRjs4LOHLxbh2lwKeSbuNR4NFifDZT4KzvjU6HMOPbiNTsWpniK5EJfTWkg==}
@@ -4609,6 +4617,10 @@ snapshots:
       '@capacitor/core': 8.0.0
 
   '@capacitor/synapse@1.0.4': {}
+
+  '@capawesome-team/capacitor-oauth@0.1.6(@capacitor/core@8.0.0)':
+    dependencies:
+      '@capacitor/core': 8.0.0
 
   '@capsizecss/unpack@3.0.1':
     dependencies:

@@ -23,7 +23,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>net.koiosdigital.lantern</string>
+				<string>net.koiosdigital.app</string>
 			</array>
 		</dict>
 	</array>

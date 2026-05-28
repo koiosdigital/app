@@ -1,5 +1,5 @@
 <template>
-  <PageLayout>
+  <PageLayout :on-refresh="loadDevices">
     <section class="flex flex-col gap-6 px-5 py-6">
       <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <UCard v-for="i in 3" :key="i" class="bg-white/5">

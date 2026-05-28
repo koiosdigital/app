@@ -1,12 +1,13 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { Preferences } from '@capacitor/preferences'
-import { KoiosOidcClient } from './oauthlib'
+import { KoiosOidcClient, OauthUserCancelledError } from './oauthlib'
 import { jwtDecode } from 'jwt-decode'
 
 const TOKEN_KEYS = {
   ACCESS: 'access_token',
   REFRESH: 'refresh_token',
+  ID: 'id_token',
 } as const
 
 type JwtPayload = {
@@ -34,6 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
   // State
   const accessToken = ref<string>()
   const refreshToken = ref<string>()
+  const idToken = ref<string>()
 
   // Computed
   const accessTokenExpired = computed(() => {
@@ -60,13 +62,15 @@ export const useAuthStore = defineStore('auth', () => {
    * Should be called on app startup
    */
   async function initialize() {
-    const [accessResult, refreshResult] = await Promise.all([
+    const [accessResult, refreshResult, idResult] = await Promise.all([
       Preferences.get({ key: TOKEN_KEYS.ACCESS }),
       Preferences.get({ key: TOKEN_KEYS.REFRESH }),
+      Preferences.get({ key: TOKEN_KEYS.ID }),
     ])
 
     accessToken.value = accessResult.value ?? undefined
     refreshToken.value = refreshResult.value ?? undefined
+    idToken.value = idResult.value ?? undefined
 
     // Auto-refresh if access token is expired but refresh token exists
     if (accessTokenExpired.value && refreshToken.value) {
@@ -77,25 +81,41 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Persist tokens to storage and update reactive state
    */
-  async function persistTokens(nextAccessToken?: string, nextRefreshToken?: string) {
+  async function persistTokens(
+    nextAccessToken?: string,
+    nextRefreshToken?: string,
+    nextIdToken?: string,
+  ) {
     accessToken.value = nextAccessToken
     refreshToken.value = nextRefreshToken
+    idToken.value = nextIdToken
 
     await Promise.all([
       setOrRemovePreference(TOKEN_KEYS.ACCESS, nextAccessToken),
       setOrRemovePreference(TOKEN_KEYS.REFRESH, nextRefreshToken),
+      setOrRemovePreference(TOKEN_KEYS.ID, nextIdToken),
     ])
   }
 
   /**
-   * Initiate OAuth login flow
+   * Initiate OAuth login flow.
+   *
+   * Native: returns once the in-app auth window completes and tokens have
+   * been persisted. Throws {@link OauthUserCancelledError} if the user closes
+   * the auth window.
+   *
+   * Web: triggers a top-level redirect; resolution happens via the callback
+   * view calling {@link completeAuthentication}.
    */
   async function beginAuthentication() {
-    await KoiosOidcClient.beginAuthentication()
+    const tokens = await KoiosOidcClient.beginAuthentication()
+    if (tokens?.accessToken) {
+      await persistTokens(tokens.accessToken, tokens.refreshToken, tokens.idToken)
+    }
   }
 
   /**
-   * Complete OAuth callback and store tokens
+   * Complete OAuth callback and store tokens (web only).
    */
   async function completeAuthentication(callbackUrl?: string) {
     const tokens = await KoiosOidcClient.completeAuthentication(callbackUrl)
@@ -104,7 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('OIDC callback missing access token')
     }
 
-    await persistTokens(tokens.accessToken, tokens.refreshToken)
+    await persistTokens(tokens.accessToken, tokens.refreshToken, tokens.idToken)
     return tokens
   }
 
@@ -119,7 +139,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await KoiosOidcClient.refreshToken(refreshToken.value)
-      await persistTokens(response.access_token, response.refresh_token ?? refreshToken.value)
+      await persistTokens(
+        response.access_token,
+        response.refresh_token ?? refreshToken.value,
+        response.id_token ?? idToken.value,
+      )
       return accessToken.value
     } catch (error) {
       console.error('Token refresh failed', error)
@@ -147,16 +171,26 @@ export const useAuthStore = defineStore('auth', () => {
    * Log out the user and clear all tokens
    */
   async function logout() {
-    // Capture the refresh token before clearing — the native logout needs
-    // it to backchannel-invalidate the session.
-    const tokenForLogout = refreshToken.value
-    await persistTokens(undefined, undefined)
+    // Capture the id token before clearing — it's used as the id_token_hint
+    // for the end-session call so Keycloak can drop the session silently
+    // without asking the user to confirm.
+    const idTokenForLogout = idToken.value
+    await persistTokens(undefined, undefined, undefined)
 
     try {
-      await KoiosOidcClient.logout(tokenForLogout)
+      await KoiosOidcClient.logout({ idToken: idTokenForLogout })
     } catch (error) {
       console.warn('Remote logout failed', error)
     }
+  }
+
+  /**
+   * Returns the current id_token (if any). Used as id_token_hint for the
+   * Keycloak delete_account required-action flow — Keycloak rejects the
+   * request without it.
+   */
+  function getIdToken(): string | undefined {
+    return idToken.value
   }
 
   return {
@@ -169,7 +203,10 @@ export const useAuthStore = defineStore('auth', () => {
     beginAuthentication,
     completeAuthentication,
     getAccessToken,
+    getIdToken,
     refreshAccessToken,
     logout,
   }
 })
+
+export { OauthUserCancelledError }

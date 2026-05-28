@@ -2,8 +2,6 @@
  * Centralized environment configuration
  */
 
-import { Capacitor } from '@capacitor/core'
-
 const isDev = import.meta.env.DEV && false
 
 export const ENV = {
@@ -32,6 +30,14 @@ export const ENV = {
     clientId: 'koios-app',
     redirectPath: '/login/callback',
     postLogoutRedirectPath: '/login',
+    /**
+     * Custom-scheme redirect URLs used by ASWebAuthenticationSession /
+     * Chrome Custom Tabs on native. Must be registered as valid redirect URIs
+     * on the Keycloak client. The scheme is declared in iOS Info.plist
+     * (CFBundleURLSchemes) and Android intent filters.
+     */
+    nativeRedirectUrl: 'net.koiosdigital.app://oauth/callback',
+    nativePostLogoutRedirectUrl: 'net.koiosdigital.app://oauth/logout',
     scope: 'openid profile email offline_access',
   },
 } as const

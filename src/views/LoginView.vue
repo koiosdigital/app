@@ -30,7 +30,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import FullPageLayout from '@/layouts/FullPageLayout.vue'
-import { useAuthStore } from '@/stores/auth/auth'
+import { useAuthStore, OauthUserCancelledError } from '@/stores/auth/auth'
 import { LOGIN_DEFAULT_REDIRECT, LOGIN_REDIRECT_STORAGE_KEY } from '@/stores/auth/constants'
 import loginBgImage from '@/assets/images/login-bg.jpg'
 
@@ -66,8 +66,15 @@ const startLogin = async () => {
   if (isAuthorizing.value) return
   isAuthorizing.value = true
   persistRedirectTarget()
-  await authStore.beginAuthentication()
-  isAuthorizing.value = false
+  try {
+    await authStore.beginAuthentication()
+  } catch (error) {
+    if (!(error instanceof OauthUserCancelledError)) {
+      console.error('Sign-in failed', error)
+    }
+  } finally {
+    isAuthorizing.value = false
+  }
 }
 
 watch(

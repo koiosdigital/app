@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core'
-import { Browser } from '@capacitor/browser'
+import { Oauth, ErrorCode as OauthErrorCode } from '@capawesome-team/capacitor-oauth'
 import {
   UserManager,
   WebStorageStateStore,
@@ -7,7 +7,6 @@ import {
   type User,
 } from 'oidc-client-ts'
 import { ENV } from '@/config/environment'
-import { generatePKCE } from '@/utils/pkce'
 
 type TokenResponse = {
   access_token: string
@@ -27,8 +26,23 @@ export type OidcCallbackTokens = {
 }
 
 /**
- * Resolves the base URL for browser (web) environments
+ * Indicates the user cancelled the native OAuth flow (closed the
+ * ASWebAuthenticationSession / Custom Tab). Callers can treat this as a
+ * non-error to silently abandon the login attempt.
  */
+export class OauthUserCancelledError extends Error {
+  constructor() {
+    super('User cancelled the sign-in flow')
+    this.name = 'OauthUserCancelledError'
+  }
+}
+
+const isUserCancelled = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') return false
+  const code = (error as { code?: unknown }).code
+  return code === OauthErrorCode.UserCanceled
+}
+
 const resolveBrowserBaseUrl = () => {
   if (typeof window === 'undefined') {
     return ENV.appUrl
@@ -36,18 +50,9 @@ const resolveBrowserBaseUrl = () => {
   return window.location.origin
 }
 
-/**
- * Resolves the base URL for the current platform (native or web)
- */
-const resolveBaseUrl = () =>
-  Capacitor.isNativePlatform() ? ENV.appNativeUrl : resolveBrowserBaseUrl()
-
-/**
- * Builds OIDC UserManager settings with proper PKCE configuration
- */
-const buildSettings = (): UserManagerSettings => {
-  const baseUrl = resolveBaseUrl()
+const buildWebSettings = (): UserManagerSettings => {
   const { oauth } = ENV
+  const baseUrl = resolveBrowserBaseUrl()
 
   const settings: UserManagerSettings = {
     authority: oauth.authority,
@@ -56,19 +61,14 @@ const buildSettings = (): UserManagerSettings => {
     post_logout_redirect_uri: `${baseUrl}${oauth.postLogoutRedirectPath}`,
     response_type: 'code',
     scope: oauth.scope,
-
-    // PKCE best practices
-    automaticSilentRenew: false, // We handle refresh manually
-    monitorSession: false, // Not needed for mobile/SPA
+    automaticSilentRenew: false,
+    monitorSession: false,
     loadUserInfo: true,
-
-    // Additional security settings
     filterProtocolClaims: true,
     validateSubOnSilentRenew: true,
     includeIdTokenInSilentRenew: false,
   }
 
-  // Use localStorage for web state storage
   if (typeof window !== 'undefined' && window.localStorage) {
     settings.userStore = new WebStorageStateStore({ store: window.localStorage })
   }
@@ -76,14 +76,8 @@ const buildSettings = (): UserManagerSettings => {
   return settings
 }
 
-/**
- * Gets a fresh UserManager instance with current settings
- */
-const getUserManager = () => new UserManager(buildSettings())
+const getUserManager = () => new UserManager(buildWebSettings())
 
-/**
- * Maps OIDC User object to our internal token structure
- */
 const mapUserToTokens = (user: User): OidcCallbackTokens => ({
   accessToken: user.access_token,
   refreshToken: user.refresh_token,
@@ -92,9 +86,6 @@ const mapUserToTokens = (user: User): OidcCallbackTokens => ({
   expiresAt: user.expires_at,
 })
 
-/**
- * Encodes form data for OAuth token requests
- */
 const encodeForm = (params: Record<string, string | undefined>) =>
   Object.entries(params)
     .filter(([, value]) => value !== undefined)
@@ -105,17 +96,12 @@ const encodeForm = (params: Record<string, string | undefined>) =>
       return searchParams
     }, new URLSearchParams())
 
-/**
- * Exchanges a refresh token for new access token
- */
-const exchangeRefreshToken = async (refreshToken: string): Promise<TokenResponse> => {
+const exchangeRefreshTokenWeb = async (refreshToken: string): Promise<TokenResponse> => {
   const tokenEndpoint = `${ENV.oauth.authority}/protocol/openid-connect/token`
 
   const response = await fetch(tokenEndpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: encodeForm({
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
@@ -132,184 +118,130 @@ const exchangeRefreshToken = async (refreshToken: string): Promise<TokenResponse
 }
 
 /**
- * Generates a cryptographically random string for PKCE and state
- */
-function generateRandomString(length: number): string {
-  const array = new Uint8Array(length)
-  crypto.getRandomValues(array)
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')
-}
-
-// Storage keys for PKCE state
-const PKCE_VERIFIER_KEY = 'oidc_pkce_verifier'
-const OIDC_STATE_KEY = 'oidc_state'
-
-/**
- * OIDC Client for Koios authentication
- * Handles OAuth/OIDC flows with best practices for PKCE
+ * OIDC Client for Koios authentication.
+ *
+ * Native (iOS/Android): uses @capawesome-team/capacitor-oauth, which wraps
+ * AppAuth (ASWebAuthenticationSession on iOS, Chrome Custom Tabs on Android).
+ * The plugin handles PKCE, the in-app auth window, the redirect callback, and
+ * token exchange internally — `login()` resolves directly with the tokens.
+ *
+ * Web: uses oidc-client-ts with the standard redirect flow handled by
+ * LoginCallbackView.
  */
 export class KoiosOidcClient {
   /**
-   * Initiates the OIDC authentication flow
-   * On native: Opens in-app browser, deep link brings user back
-   * On web: Standard redirect flow
+   * Begin the OIDC authentication flow.
+   *
+   * Native: resolves with tokens after the user completes the in-app auth
+   * window. The caller is responsible for persisting the returned tokens.
+   *
+   * Web: triggers a top-level redirect; resolves with `undefined`. The
+   * LoginCallbackView then calls {@link completeAuthentication}.
    */
-  static async beginAuthentication() {
+  static async beginAuthentication(): Promise<OidcCallbackTokens | undefined> {
     if (Capacitor.isNativePlatform()) {
-      // Native: Build authorization URL manually with PKCE and open in-app browser
       const { oauth } = ENV
-      const baseUrl = resolveBaseUrl()
-      const redirectUri = `${baseUrl}${oauth.redirectPath}`
-
-      // Generate PKCE values
-      const pkce = await generatePKCE()
-      const state = generateRandomString(16)
-
-      // Store PKCE verifier and state for callback
-      sessionStorage.setItem(PKCE_VERIFIER_KEY, pkce.verifier)
-      sessionStorage.setItem(OIDC_STATE_KEY, state)
-
-      // Build authorization URL
-      const authUrl = new URL(`${oauth.authority}/protocol/openid-connect/auth`)
-      authUrl.searchParams.set('client_id', oauth.clientId)
-      authUrl.searchParams.set('redirect_uri', redirectUri)
-      authUrl.searchParams.set('response_type', 'code')
-      authUrl.searchParams.set('scope', oauth.scope)
-      authUrl.searchParams.set('state', state)
-      authUrl.searchParams.set('code_challenge', pkce.challenge)
-      authUrl.searchParams.set('code_challenge_method', 'S256')
-
-      // Open in-app via SFSafariViewController (iOS) / Chrome Custom Tabs (Android).
-      // Universal link redirect re-enters the app via the appUrlOpen listener in main.ts,
-      // which dismisses this browser.
-      await Browser.open({ url: authUrl.toString() })
+      try {
+        const result = await Oauth.login({
+          issuerUrl: oauth.authority,
+          clientId: oauth.clientId,
+          redirectUrl: oauth.nativeRedirectUrl,
+          scopes: oauth.scope.split(' ').filter(Boolean),
+          prefersEphemeralWebBrowserSession: false,
+        })
+        return {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          idToken: result.idToken,
+          scope: result.scope,
+          expiresAt: result.accessTokenExpirationDate
+            ? Math.floor(result.accessTokenExpirationDate / 1000)
+            : undefined,
+        }
+      } catch (error) {
+        if (isUserCancelled(error)) {
+          throw new OauthUserCancelledError()
+        }
+        throw error
+      }
     } else {
-      // Web: Standard redirect using oidc-client-ts
-      return getUserManager().signinRedirect()
+      await getUserManager().signinRedirect()
+      return undefined
     }
   }
 
   /**
-   * Completes the OIDC authentication callback
-   * Parses the callback URL and extracts tokens
+   * Complete the OIDC redirect callback. Web-only — on native, tokens are
+   * delivered directly by {@link beginAuthentication}.
    */
   static async completeAuthentication(callbackUrl?: string): Promise<OidcCallbackTokens> {
-    if (Capacitor.isNativePlatform() && callbackUrl) {
-      // Native: Handle callback manually with stored PKCE verifier
-      const url = new URL(callbackUrl)
-      const code = url.searchParams.get('code')
-      const state = url.searchParams.get('state')
-
-      // Verify state
-      const storedState = sessionStorage.getItem(OIDC_STATE_KEY)
-      if (state !== storedState) {
-        throw new Error('Invalid state parameter')
-      }
-
-      // Get stored PKCE verifier
-      const verifier = sessionStorage.getItem(PKCE_VERIFIER_KEY)
-      if (!verifier) {
-        throw new Error('PKCE verifier not found')
-      }
-
-      // Clean up stored values
-      sessionStorage.removeItem(PKCE_VERIFIER_KEY)
-      sessionStorage.removeItem(OIDC_STATE_KEY)
-
-      if (!code) {
-        throw new Error('Authorization code not found in callback')
-      }
-
-      // Exchange code for tokens
-      const { oauth } = ENV
-      const baseUrl = resolveBaseUrl()
-      const tokenEndpoint = `${oauth.authority}/protocol/openid-connect/token`
-
-      const response = await fetch(tokenEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: encodeForm({
-          grant_type: 'authorization_code',
-          client_id: oauth.clientId,
-          redirect_uri: `${baseUrl}${oauth.redirectPath}`,
-          code,
-          code_verifier: verifier,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Token exchange failed: ${response.status} ${errorText}`)
-      }
-
-      const tokens = (await response.json()) as TokenResponse
-
-      // System browser closes automatically when universal link triggers the app
-
-      return {
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
-        idToken: tokens.id_token,
-        expiresAt: tokens.expires_in
-          ? Math.floor(Date.now() / 1000) + tokens.expires_in
-          : undefined,
-        scope: tokens.scope,
-      }
-    } else {
-      // Web: Use oidc-client-ts
-      const user = await getUserManager().signinRedirectCallback(callbackUrl)
-      return mapUserToTokens(user)
+    if (Capacitor.isNativePlatform()) {
+      throw new Error('completeAuthentication is not used on native; tokens are returned by login()')
     }
+    const user = await getUserManager().signinRedirectCallback(callbackUrl)
+    return mapUserToTokens(user)
   }
 
   /**
-   * Exchanges a refresh token for a new access token
+   * Refresh the access token.
    */
   static async refreshToken(refreshToken: string): Promise<TokenResponse> {
-    return exchangeRefreshToken(refreshToken)
+    if (Capacitor.isNativePlatform()) {
+      const { oauth } = ENV
+      const result = await Oauth.refreshToken({
+        issuerUrl: oauth.authority,
+        clientId: oauth.clientId,
+        refreshToken,
+      })
+      return {
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+        id_token: result.idToken,
+        scope: result.scope,
+        token_type: result.tokenType ?? 'Bearer',
+        expires_in: result.accessTokenExpirationDate
+          ? Math.max(0, Math.floor((result.accessTokenExpirationDate - Date.now()) / 1000))
+          : 0,
+      }
+    }
+    return exchangeRefreshTokenWeb(refreshToken)
   }
 
   /**
    * Initiates logout flow.
-   * On native: Backchannel POST to the IdP using the refresh token — no browser.
-   *   The post_logout_redirect_uri flow can't reliably bounce back into the app
-   *   via universal links from SFSafariViewController, leaving the user stranded
-   *   on the web logout page. The backchannel call invalidates the session
-   *   silently and we navigate to /login client-side.
-   * On web: Standard redirect flow.
+   *
+   * Native: calls Keycloak's end-session endpoint via the plugin. The plugin
+   * presents the same ASWebAuthenticationSession and dismisses on
+   * post-logout redirect. If Keycloak is configured with
+   * `frontchannel-logout-required: false` and an `id_token_hint` is supplied,
+   * this completes without user interaction.
+   *
+   * Web: standard redirect flow via oidc-client-ts.
    */
-  static async logout(refreshToken?: string) {
+  static async logout(opts: { refreshToken?: string; idToken?: string } = {}) {
     if (Capacitor.isNativePlatform()) {
-      if (!refreshToken) return
       const { oauth } = ENV
-      const logoutEndpoint = `${oauth.authority}/protocol/openid-connect/logout`
-
-      const response = await fetch(logoutEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: encodeForm({
-          client_id: oauth.clientId,
-          refresh_token: refreshToken,
-        }),
-      })
-
-      if (!response.ok && response.status !== 204) {
-        const body = await response.text().catch(() => '')
-        throw new Error(`Backchannel logout failed: ${response.status} ${body}`)
+      try {
+        await Oauth.logout({
+          issuerUrl: oauth.authority,
+          idToken: opts.idToken,
+          postLogoutRedirectUrl: oauth.nativePostLogoutRedirectUrl,
+          prefersEphemeralWebBrowserSession: false,
+        })
+      } catch (error) {
+        // Treat user cancel as success — the local tokens are already cleared.
+        if (!isUserCancelled(error)) throw error
       }
-    } else {
-      // Web: Standard redirect
-      return getUserManager().signoutRedirect()
+      return
     }
+    return getUserManager().signoutRedirect()
   }
 
   /**
-   * Removes local user state without server-side logout
-   * Useful for silent cleanup
+   * Removes local user state without server-side logout (web only).
    */
   static async removeUser() {
+    if (Capacitor.isNativePlatform()) return
     return getUserManager().removeUser()
   }
 }

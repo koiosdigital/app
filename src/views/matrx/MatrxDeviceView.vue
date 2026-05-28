@@ -1,30 +1,5 @@
 <template>
-  <div class="flex flex-1 min-h-0 flex-col bg-zinc-950">
-    <!-- Header -->
-    <header
-      class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4"
-    >
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            icon="i-fa6-solid:arrow-left"
-            square
-            @click="router.push('/')"
-          />
-          <h1 class="text-xl font-semibold">{{ deviceName }}</h1>
-        </div>
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-fa6-solid:gear"
-          square
-          @click="router.push(`/matrx/${deviceId}/settings`)"
-        />
-      </div>
-    </header>
-
+  <PageLayout :on-refresh="loadDevice">
     <!-- Delete Confirmation Modal -->
     <DangerConfirmModal
       v-model="showDeleteModal"
@@ -224,13 +199,15 @@
         </div>
       </section>
     </div>
-  </div>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import PageLayout from '@/layouts/PageLayout.vue'
+import { usePageHeader } from '@/composables/usePageHeader'
 import InstallationPreview from '@/components/installations/InstallationPreview.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import { devicesApi } from '@/lib/api/devices'
@@ -430,7 +407,25 @@ async function pollDeviceState() {
   }
 }
 
+const { setHeader } = usePageHeader()
+
+function syncHeader() {
+  setHeader({
+    title: deviceName.value,
+    backRoute: '/',
+    actions: [
+      {
+        icon: 'i-fa6-solid:gear',
+        onClick: () => router.push(`/matrx/${deviceId.value}/settings`),
+      },
+    ],
+  })
+}
+
+watch(deviceName, syncHeader)
+
 onMounted(() => {
+  syncHeader()
   loadDevice()
   // Start polling every 5 seconds
   pollInterval = setInterval(pollDeviceState, 5000)

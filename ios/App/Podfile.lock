@@ -1,4 +1,10 @@
 PODS:
+  - AppAuth (2.0.0):
+    - AppAuth/Core (= 2.0.0)
+    - AppAuth/ExternalUserAgent (= 2.0.0)
+  - AppAuth/Core (2.0.0)
+  - AppAuth/ExternalUserAgent (2.0.0):
+    - AppAuth/Core
   - Capacitor (8.0.0):
     - CapacitorCordova
   - CapacitorApp (8.0.0):
@@ -16,6 +22,9 @@ PODS:
     - OSInAppBrowserLib (~> 2.3.1)
   - CapacitorPreferences (8.0.0):
     - Capacitor
+  - CapawesomeTeamCapacitorOauth (0.1.6):
+    - AppAuth (~> 2.0)
+    - Capacitor
   - IONGeolocationLib (2.0.0)
   - OSInAppBrowserLib (2.3.1)
 
@@ -28,9 +37,11 @@ DEPENDENCIES:
   - "CapacitorGeolocation (from `../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation`)"
   - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser`)"
   - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences`)"
+  - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@0.1.6_@capacitor+core@8.0.0/node_modules/@capawesome-team/capacitor-oauth`)"
 
 SPEC REPOS:
   trunk:
+    - AppAuth
     - IONGeolocationLib
     - OSInAppBrowserLib
 
@@ -51,8 +62,11 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser"
   CapacitorPreferences:
     :path: "../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences"
+  CapawesomeTeamCapacitorOauth:
+    :path: "../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@0.1.6_@capacitor+core@8.0.0/node_modules/@capawesome-team/capacitor-oauth"
 
 SPEC CHECKSUMS:
+  AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   Capacitor: 341ff7cf652ec695d1a8ebf604db448ac7b6d635
   CapacitorApp: 3963a84197280757b84f126afd1520a85ae3b092
   CapacitorBrowser: b7d7f05f840fe042e46f6528bb8db853e3058fb2
@@ -61,9 +75,10 @@ SPEC CHECKSUMS:
   CapacitorGeolocation: 7132de914f9d853ec4642dc1d36e4e2018a4e8a8
   CapacitorInappbrowser: 66fc8cc3ff414c2393fe5dcfd52815cf8b6a046f
   CapacitorPreferences: 443fabe9670226200e595658a87ef0b1566716d4
+  CapawesomeTeamCapacitorOauth: a6bf817db15bbd82c59f59ac0bc760cdf4bf3a07
   IONGeolocationLib: a5e40b54edc2ee9902036eda5aaa41ddf07bb68d
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
 
-PODFILE CHECKSUM: 1ef5bba6c950c9cd150833284f2be0e6a76335c8
+PODFILE CHECKSUM: 07e09c5e83e6d0df4ac91e8bef54aadac004f82d
 
 COCOAPODS: 1.16.2

@@ -3,8 +3,15 @@ import { useAuthStore } from '@/stores/auth/auth'
 
 /**
  * Keycloak Account REST API client.
- * Lets the signed-in user manage their own profile, sessions, and account
- * without leaving the app. Backed by `{authority}/account/*` endpoints.
+ * In-app profile / sessions / account management, no external browser. Calls
+ * `{authority}/account/*` with the user's bearer token.
+ *
+ * Server-side prerequisites on Keycloak:
+ *   1. koios-app client must have an "Audience" protocol mapper that adds
+ *      `account` to the access token's `aud` claim.
+ *   2. The built-in `account` client must list the WebView origins
+ *      (capacitor://localhost, https://localhost, ionic://localhost, and the
+ *      web origin) in Web Origins so CORS preflight passes.
  */
 
 export interface AccountProfile {
@@ -32,11 +39,30 @@ export interface AccountSession {
   clients?: AccountSessionClient[]
 }
 
+/**
+ * Matches Keycloak's `DeviceRepresentation`. The Account Console UI calls
+ * `/sessions/devices` (not `/sessions`) because it aggregates BOTH online and
+ * offline user sessions, grouped per physical device. `/sessions` alone only
+ * returns online sessions and is empty whenever the user signed in with the
+ * `offline_access` scope.
+ */
+export interface AccountDevice {
+  id?: string
+  ipAddress?: string
+  os?: string
+  osVersion?: string
+  browser?: string
+  device?: string
+  lastAccess?: number
+  current?: boolean
+  mobile?: boolean
+  sessions: AccountSession[]
+}
+
 const ACCOUNT_BASE = `${ENV.oauth.authority}/account`
 
 async function authedFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const authStore = useAuthStore()
-  const token = await authStore.getAccessToken()
+  const token = await useAuthStore().getAccessToken()
   if (!token) {
     throw new Error('Not signed in')
   }
@@ -90,10 +116,10 @@ export const keycloakAccountApi = {
     if (!response.ok) await parseError(response, 'Failed to update profile')
   },
 
-  async listSessions(): Promise<AccountSession[]> {
-    const response = await authedFetch('/sessions')
+  async listDevices(): Promise<AccountDevice[]> {
+    const response = await authedFetch('/sessions/devices')
     if (!response.ok) await parseError(response, 'Failed to load sessions')
-    return (await response.json()) as AccountSession[]
+    return (await response.json()) as AccountDevice[]
   },
 
   async revokeSession(id: string): Promise<void> {
@@ -104,19 +130,17 @@ export const keycloakAccountApi = {
   },
 
   async revokeAllOtherSessions(): Promise<void> {
+    // ?current=false (also the default) keeps the current session alive and
+    // kills every other one. ?current=true would log the user out everywhere.
     const response = await authedFetch('/sessions?current=false', {
       method: 'DELETE',
     })
     if (!response.ok) await parseError(response, 'Failed to revoke sessions')
   },
 
-  /**
-   * Deletes the signed-in user's account. Requires the realm to have the
-   * "Delete Account" capability enabled and the user to hold the
-   * `delete-account` role. Returns 403 otherwise.
-   */
-  async deleteAccount(): Promise<void> {
-    const response = await authedFetch('/', { method: 'DELETE' })
-    if (!response.ok) await parseError(response, 'Failed to delete account')
-  },
+  // Account deletion is intentionally not exposed here — the Keycloak Account
+  // REST API has no DELETE endpoint (verified against the AccountRestService
+  // source on `main`). Self-deletion in Keycloak runs through the
+  // `delete_account` required action, which requires the user to confirm
+  // their identity in Keycloak's hosted UI.
 }

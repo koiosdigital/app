@@ -12,7 +12,13 @@ export type DeviceSharesResponse = components['schemas']['DeviceSharesResponseDt
 export type ShareUser = components['schemas']['ShareUserDto']
 export type ShareInvite = components['schemas']['ShareInviteDto']
 export type ShareInviteCreated = components['schemas']['ShareInviteCreatedDto']
-export type AcceptShareResult = components['schemas']['AcceptShareResultDto']
+// Backend OpenAPI does not yet expose AcceptShareResultDto / /v1/shares/accept.
+// Mirror the response shape locally until the schema is regenerated.
+export interface AcceptShareResult {
+  message: string
+  deviceId: string
+  deviceName: string
+}
 
 /**
  * Device API service
@@ -307,15 +313,26 @@ export const devicesApi = {
   },
 
   /**
-   * Accept a share invite using token from email
+   * Accept a share invite using token from email.
+   * Bypasses the typed client because the backend OpenAPI doesn't yet
+   * expose /v1/shares/accept. Remove the casts once the schema catches up.
    */
-  async acceptShareInvite(token: string) {
-    const { data, error } = await apiClient.POST('/v1/shares/accept', {
+  async acceptShareInvite(token: string): Promise<AcceptShareResult> {
+    const { data, error } = await (apiClient as unknown as {
+      POST: (
+        path: string,
+        init: { body: unknown },
+      ) => Promise<{ data?: AcceptShareResult; error?: unknown }>
+    }).POST('/v1/shares/accept', {
       body: { token },
     })
 
     if (error) {
       throw new Error(getErrorMessage(error, 'Failed to accept invite'))
+    }
+
+    if (!data) {
+      throw new Error('Accept share returned no data')
     }
 
     return data

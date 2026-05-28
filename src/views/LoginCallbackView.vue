@@ -57,34 +57,21 @@ const consumeRedirectTarget = () => {
   return typeof fallback === 'string' && fallback.length ? fallback : null
 }
 
-/**
- * Check if this callback is from a Keycloak account action (password change, profile update)
- */
-const handleKeycloakAction = (): boolean => {
-  const kcAction = route.query.kc_action as string | undefined
-  const kcActionStatus = route.query.kc_action_status as string | undefined
-
-  if (kcAction && kcActionStatus) {
-    // Redirect to settings with action result
-    router.replace({
-      path: '/settings',
-      query: {
-        kc_action: kcAction,
-        kc_action_status: kcActionStatus,
-      },
-    })
-    return true
-  }
-  return false
-}
-
 const completeLogin = async () => {
-  // Handle Keycloak account actions (password change, profile update)
-  if (handleKeycloakAction()) {
-    return
-  }
-
   try {
+    // kc_action flows (delete_account etc.) redirect here with kc_action +
+    // kc_action_status query params. Forward them to /settings — there's no
+    // token exchange to perform.
+    const kcAction = route.query.kc_action
+    const kcActionStatus = route.query.kc_action_status
+    if (typeof kcAction === 'string' && typeof kcActionStatus === 'string') {
+      await router.replace({
+        path: '/settings',
+        query: { kc_action: kcAction, kc_action_status: kcActionStatus },
+      })
+      return
+    }
+
     await authStore.completeAuthentication(
       typeof window !== 'undefined' ? window.location.href : undefined,
     )
@@ -99,7 +86,10 @@ const completeLogin = async () => {
 
 const retry = () => {
   errorMessage.value = null
-  authStore.beginAuthentication()
+  authStore.beginAuthentication().catch((error) => {
+    console.error('Retry of sign-in failed', error)
+    errorMessage.value = 'Could not restart sign-in. Please try again.'
+  })
 }
 
 onMounted(() => {

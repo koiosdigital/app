@@ -22,7 +22,6 @@ class EspProvMethod implements ProvisioningMethod {
   readonly serviceUuid = ESP_PROV_SERVICE_UUID
 
   private deviceId = ''
-  private deviceName = ''
   private serviceMap: CharacteristicMap = new Map()
   private protoVersion?: ProtoVersionInfo
   private security?: EspProvSecurity
@@ -31,7 +30,6 @@ class EspProvMethod implements ProvisioningMethod {
 
   constructor(device: BleDevice) {
     this.deviceId = device.deviceId
-    this.deviceName = device.name ?? ''
   }
 
   async onConnect(
@@ -40,7 +38,6 @@ class EspProvMethod implements ProvisioningMethod {
     services: BleService[],
   ): Promise<MethodCapabilities> {
     this.deviceId = deviceId
-    this.deviceName = deviceName
     this.serviceMap = buildCharacteristicMap(services)
     this.protoVersion = await fetchProtoVersion(deviceId, this.serviceMap)
     this.hasCryptoChar = this.serviceMap.has('kd_console')

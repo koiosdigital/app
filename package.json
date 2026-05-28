@@ -28,6 +28,7 @@
     "@capacitor/inappbrowser": "^3.0.0",
     "@capacitor/ios": "^8.0.0",
     "@capacitor/preferences": "^8.0.0",
+    "@capawesome-team/capacitor-oauth": "^0.1.6",
     "@ckpack/vue-color": "^1.6.0",
     "@iconify/vue": "^5.0.0",
     "@libp2p/aes-ctr": "^1.0.1",

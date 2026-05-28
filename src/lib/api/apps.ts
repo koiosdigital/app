@@ -157,7 +157,10 @@ export const appsApi = {
    */
   async geocode(id: string, lat: number, lng: number) {
     const { data, error } = await apiClient.POST('/v1/apps/{id}/geocoder', {
-      params: { path: { id } },
+      // Backend OpenAPI omits the {id} path parameter declaration; the cast
+      // gets us past the generated `path?: never` type. Remove once the
+      // schema is regenerated with proper path params.
+      params: { path: { id } as never },
       body: { lat, lng },
     })
 
