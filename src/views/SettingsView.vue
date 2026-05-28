@@ -139,7 +139,11 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
                   <UIcon
-                    :name="device.mobile ? 'i-fa6-solid:mobile-screen' : 'i-fa6-solid:desktop'"
+                    :name="
+                      isCurrentDeviceMobile(device)
+                        ? 'i-fa6-solid:mobile-screen'
+                        : 'i-fa6-solid:desktop'
+                    "
                     class="h-4 w-4 shrink-0 text-white/60"
                   />
                   <p class="truncate text-sm font-medium">{{ deviceLabel(device) }}</p>
@@ -268,6 +272,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
+import { Device, type DeviceInfo } from '@capacitor/device'
 import { InAppBrowser } from '@capacitor/inappbrowser'
 import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
@@ -439,6 +444,25 @@ const loadingSessions = ref(false)
 const revokingDeviceId = ref<string | null>(null)
 const revokingAll = ref(false)
 
+// Locally-detected info for the current device — used to override Keycloak's
+// user-agent parsing, which lags real OS versions.
+const currentDeviceInfo = ref<DeviceInfo | null>(null)
+async function loadCurrentDeviceInfo() {
+  try {
+    currentDeviceInfo.value = await Device.getInfo()
+  } catch (error) {
+    console.warn('Failed to load local device info', error)
+  }
+}
+
+function isCurrentDeviceMobile(device: AccountDevice): boolean {
+  if (device.current && currentDeviceInfo.value) {
+    const p = currentDeviceInfo.value.platform
+    return p === 'ios' || p === 'android'
+  }
+  return device.mobile ?? false
+}
+
 const otherDeviceCount = computed(() => devices.value.filter((d) => !d.current).length)
 
 function deviceKey(device: AccountDevice, index: number): string {
@@ -446,6 +470,13 @@ function deviceKey(device: AccountDevice, index: number): string {
 }
 
 function deviceLabel(device: AccountDevice): string {
+  // For the current device, Keycloak's user-agent parsing often lags the real
+  // OS version (e.g. WKWebView reports an older WebKit major than the iOS
+  // build). Override with the locally-detected info from @capacitor/device.
+  if (device.current && currentDeviceInfo.value) {
+    return localDeviceLabel(currentDeviceInfo.value)
+  }
+
   const parts: string[] = []
   if (device.browser) parts.push(device.browser)
   const os = device.os
@@ -453,6 +484,33 @@ function deviceLabel(device: AccountDevice): string {
     : ''
   if (os) parts.push(os)
   return parts.join(' · ') || device.device || 'Unknown device'
+}
+
+function localDeviceLabel(info: DeviceInfo): string {
+  // `name` is the user-set device name on iOS but is only returned for apps
+  // with the right entitlement — typically empty in third-party apps. `model`
+  // is "iPhone" / "iPad" generically on iOS 16+, or a marketing name on
+  // Android ("Pixel 7"). Combine with OS to give something useful.
+  const model = info.name || info.model || info.platform
+  const osLabel = osDisplayName(info.operatingSystem, info.platform)
+  const osVersion = info.osVersion
+  const os = osVersion ? `${osLabel} ${osVersion}` : osLabel
+  return [model, os].filter(Boolean).join(' · ')
+}
+
+function osDisplayName(os: DeviceInfo['operatingSystem'], platform: string): string {
+  switch (os) {
+    case 'ios':
+      return 'iOS'
+    case 'mac':
+      return 'macOS'
+    case 'android':
+      return 'Android'
+    case 'windows':
+      return 'Windows'
+    default:
+      return platform || 'Unknown'
+  }
 }
 
 function allClientsForDevice(device: AccountDevice): string {
@@ -658,5 +716,6 @@ onMounted(() => {
   consumeDeleteResult()
   loadProfile()
   loadSessions()
+  loadCurrentDeviceInfo()
 })
 </script>

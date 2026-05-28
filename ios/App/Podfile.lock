@@ -14,6 +14,8 @@ PODS:
   - CapacitorCommunityBluetoothLe (7.3.0):
     - Capacitor
   - CapacitorCordova (8.0.0)
+  - CapacitorDevice (8.0.2):
+    - Capacitor
   - CapacitorGeolocation (8.1.0):
     - Capacitor
     - IONGeolocationLib (= 2.0.0)
@@ -34,6 +36,7 @@ DEPENDENCIES:
   - "CapacitorBrowser (from `../../node_modules/.pnpm/@capacitor+browser@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/browser`)"
   - "CapacitorCommunityBluetoothLe (from `../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le`)"
   - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios`)"
+  - "CapacitorDevice (from `../../node_modules/.pnpm/@capacitor+device@8.0.2_@capacitor+core@8.0.0/node_modules/@capacitor/device`)"
   - "CapacitorGeolocation (from `../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation`)"
   - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser`)"
   - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences`)"
@@ -56,6 +59,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le"
   CapacitorCordova:
     :path: "../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios"
+  CapacitorDevice:
+    :path: "../../node_modules/.pnpm/@capacitor+device@8.0.2_@capacitor+core@8.0.0/node_modules/@capacitor/device"
   CapacitorGeolocation:
     :path: "../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation"
   CapacitorInappbrowser:
@@ -72,6 +77,7 @@ SPEC CHECKSUMS:
   CapacitorBrowser: b7d7f05f840fe042e46f6528bb8db853e3058fb2
   CapacitorCommunityBluetoothLe: 41f9dec8a4c16ab6b81e56402b6047fc19b4735d
   CapacitorCordova: 5dc3912d25ef770a3fe0f431bb65c9fbfa2e92f9
+  CapacitorDevice: 14cba6f88d1c3074cbf825fea977c8c526453ff8
   CapacitorGeolocation: 7132de914f9d853ec4642dc1d36e4e2018a4e8a8
   CapacitorInappbrowser: 66fc8cc3ff414c2393fe5dcfd52815cf8b6a046f
   CapacitorPreferences: 443fabe9670226200e595658a87ef0b1566716d4
@@ -79,6 +85,6 @@ SPEC CHECKSUMS:
   IONGeolocationLib: a5e40b54edc2ee9902036eda5aaa41ddf07bb68d
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
 
-PODFILE CHECKSUM: 07e09c5e83e6d0df4ac91e8bef54aadac004f82d
+PODFILE CHECKSUM: b12d4e2914cc9908506a3c388e0a2eee131ada03
 
 COCOAPODS: 1.16.2
