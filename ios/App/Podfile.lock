@@ -40,7 +40,7 @@ DEPENDENCIES:
   - "CapacitorGeolocation (from `../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation`)"
   - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser`)"
   - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences`)"
-  - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@0.1.6_@capacitor+core@8.0.0/node_modules/@capawesome-team/capacitor-oauth`)"
+  - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+578374_d597849d0ea3b4f45ffc89b034aedfae/node_modules/@capawesome-team/capacitor-oauth`)"
 
 SPEC REPOS:
   trunk:
@@ -68,7 +68,7 @@ EXTERNAL SOURCES:
   CapacitorPreferences:
     :path: "../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences"
   CapawesomeTeamCapacitorOauth:
-    :path: "../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@0.1.6_@capacitor+core@8.0.0/node_modules/@capawesome-team/capacitor-oauth"
+    :path: "../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+578374_d597849d0ea3b4f45ffc89b034aedfae/node_modules/@capawesome-team/capacitor-oauth"
 
 SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
@@ -85,6 +85,6 @@ SPEC CHECKSUMS:
   IONGeolocationLib: a5e40b54edc2ee9902036eda5aaa41ddf07bb68d
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
 
-PODFILE CHECKSUM: b12d4e2914cc9908506a3c388e0a2eee131ada03
+PODFILE CHECKSUM: 5fb64f862bc67a921218773699a632382324e6e1
 
 COCOAPODS: 1.16.2

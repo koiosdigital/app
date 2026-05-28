@@ -154,10 +154,14 @@
                     This device
                   </span>
                 </div>
-                <p class="mt-0.5 truncate text-xs text-white/60">
-                  {{ device.ipAddress || 'Unknown IP' }}
+                <p
+                  v-if="device.ipAddress || device.lastAccess"
+                  class="mt-0.5 truncate text-xs text-white/60"
+                >
+                  <span v-if="device.ipAddress">{{ device.ipAddress }}</span>
+                  <span v-if="device.ipAddress && device.lastAccess"> · </span>
                   <span v-if="device.lastAccess">
-                    · Last active {{ formatRelative(device.lastAccess) }}
+                    Last active {{ formatRelative(device.lastAccess) }}
                   </span>
                 </p>
                 <p
