@@ -94,48 +94,41 @@
         <p v-else class="text-sm text-white/50">No live telemetry reported yet.</p>
       </UCard>
 
-      <!-- Fleet health -->
-      <UCard v-if="state?.fleet" class="bg-white/5">
+      <!-- Currently displayed frame -->
+      <UCard class="bg-white/5">
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Modules</h3>
-            <UBadge :color="state.fleet.inError > 0 ? 'error' : 'success'" variant="soft">
-              {{ state.fleet.inError > 0 ? `${state.fleet.inError} faulted` : 'Healthy' }}
-            </UBadge>
+            <h3 class="font-semibold">Now showing</h3>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              icon="i-fa6-solid:rotate"
+              :loading="busy === 'refresh-display'"
+              @click="refreshDisplay"
+            />
           </div>
         </template>
 
-        <div class="grid grid-cols-3 gap-3 text-center">
-          <div>
-            <p class="text-2xl font-semibold">{{ state.fleet.alive }}/{{ state.fleet.total }}</p>
-            <p class="text-xs text-white/50">Alive</p>
-          </div>
-          <div>
-            <p class="text-2xl font-semibold">{{ state.fleet.homed }}</p>
-            <p class="text-xs text-white/50">Homed</p>
-          </div>
-          <div>
-            <p class="text-2xl font-semibold">{{ state.fleet.gridMapped }}</p>
-            <p class="text-xs text-white/50">Mapped</p>
-          </div>
-        </div>
-
-        <div v-if="state.fleet.faults.length" class="mt-4 space-y-2 border-t border-white/10 pt-4">
-          <div
-            v-for="fault in state.fleet.faults"
-            :key="fault.uuid"
-            class="flex items-center justify-between rounded-md bg-red-500/10 px-3 py-2 text-sm"
-          >
-            <span class="font-mono text-white/70">#{{ fault.shortId || '—' }}</span>
-            <UBadge color="error" variant="soft">{{ formatPhase(fault.kind) }}</UBadge>
-          </div>
-        </div>
+        <NemotoFlapGrid
+          v-if="state?.display?.valid && state.display.flaps"
+          :flaps="state.display.flaps"
+        />
+        <p v-else class="text-sm text-white/50">Nothing displayed yet.</p>
       </UCard>
 
       <!-- Commands -->
       <UCard class="bg-white/5">
         <template #header><h3 class="font-semibold">Display</h3></template>
         <div class="flex flex-wrap gap-3">
+          <UButton
+            color="primary"
+            variant="soft"
+            icon="i-fa6-solid:message"
+            @click="router.push(`/nemoto/${deviceId}/message`)"
+          >
+            Send message
+          </UButton>
           <UButton
             color="neutral"
             variant="soft"
@@ -165,6 +158,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
+import NemotoFlapGrid from '@/components/nemoto/NemotoFlapGrid.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { devicesApi } from '@/lib/api/devices'
 import { nemotoApi, type NemotoLiveState } from '@/lib/api/nemoto'
@@ -180,7 +174,7 @@ const device = ref<NemotoDevice | null>(null)
 const state = ref<NemotoLiveState | null>(null)
 const loading = ref(true)
 const error = ref<string>()
-const busy = ref<'clear' | 'reboot' | null>(null)
+const busy = ref<'clear' | 'reboot' | 'refresh-display' | null>(null)
 const commandMsg = ref<{
   text: string
   color: 'success' | 'warning' | 'error'
@@ -225,6 +219,38 @@ function flashDelivered(delivered: boolean, successText: string) {
     flash(successText, 'success', 'i-fa6-solid:circle-check')
   } else {
     flash('Device offline — command not delivered', 'warning', 'i-fa6-solid:triangle-exclamation')
+  }
+}
+
+async function refreshDisplay() {
+  busy.value = 'refresh-display'
+  try {
+    const res = await nemotoApi.refreshDisplayState(deviceId.value)
+    if (!res.delivered) {
+      flash(
+        'Device offline — showing last known frame',
+        'warning',
+        'i-fa6-solid:triangle-exclamation',
+      )
+      return
+    }
+    // The device debounces its report ~1s and the round-trip adds more; poll
+    // until the live-state timestamp moves (bounded).
+    const before = state.value?.at
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await new Promise((r) => window.setTimeout(r, 1500))
+      const next = await nemotoApi.getState(deviceId.value)
+      state.value = next
+      if (next.at && next.at !== before) break
+    }
+  } catch (err) {
+    flash(
+      getErrorMessage(err, 'Failed to refresh display'),
+      'error',
+      'i-fa6-solid:circle-exclamation',
+    )
+  } finally {
+    busy.value = null
   }
 }
 

@@ -20,6 +20,7 @@ import NemotoDeviceView from '@/views/nemoto/NemotoDeviceView.vue'
 import NemotoDeviceSettingsView from '@/views/nemoto/NemotoDeviceSettingsView.vue'
 import NemotoPresetsView from '@/views/nemoto/NemotoPresetsView.vue'
 import NemotoPresetEditorView from '@/views/nemoto/NemotoPresetEditorView.vue'
+import NemotoMessageView from '@/views/nemoto/NemotoMessageView.vue'
 import NemotoSchedulesView from '@/views/nemoto/NemotoSchedulesView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 
@@ -156,6 +157,12 @@ const router = createRouter({
         presetId: Number(route.params.preset_id),
         mode: 'edit',
       }),
+    },
+    {
+      path: '/nemoto/:id/message',
+      name: 'nemoto-message',
+      component: NemotoMessageView,
+      props: (route) => ({ deviceId: route.params.id }),
     },
     {
       path: '/nemoto/:id/schedules',

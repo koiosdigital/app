@@ -10,6 +10,7 @@ export type NemotoPreset = components['schemas']['NemotoPresetResponseDto']
 export type NemotoSchedule = components['schemas']['NemotoScheduleResponseDto']
 export type NemotoScheduleAction = components['schemas']['NemotoScheduleActionDto']
 export type NemotoLiveState = components['schemas']['NemotoLiveStateDto']
+export type NemotoDisplayState = components['schemas']['NemotoDisplayStateDto']
 export type NemotoFlapDef = components['schemas']['NemotoFlapDefDto']
 export type NemotoActivityEvent = components['schemas']['NemotoActivityEventDto']
 export type CommandDispatchResult = components['schemas']['CommandDispatchResultDto']
@@ -176,6 +177,35 @@ export const nemotoApi = {
       { params: { path: { deviceId } }, body: { forceQuiet } },
     )
     if (error) throw new Error(getErrorMessage(error, 'Failed to clear display'))
+    return data
+  },
+
+  async displayFrame(
+    deviceId: string,
+    frame: { flaps: number[][]; effectId?: string; delayMs?: number; forceQuiet?: boolean },
+  ) {
+    const { data, error } = await apiClient.POST(
+      '/v1/devices/{deviceId}/nemoto/commands/display-frame',
+      {
+        params: { path: { deviceId } },
+        body: {
+          flaps: frame.flaps,
+          effectId: frame.effectId,
+          delayMs: frame.delayMs,
+          forceQuiet: frame.forceQuiet ?? false,
+        },
+      },
+    )
+    if (error) throw new Error(getErrorMessage(error, 'Failed to push frame'))
+    return data
+  },
+
+  async refreshDisplayState(deviceId: string) {
+    const { data, error } = await apiClient.POST(
+      '/v1/devices/{deviceId}/nemoto/commands/refresh-display-state',
+      { params: { path: { deviceId } } },
+    )
+    if (error) throw new Error(getErrorMessage(error, 'Failed to request display state'))
     return data
   },
 

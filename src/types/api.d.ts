@@ -550,7 +550,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get live device state (system, setup, fleet, OTA) */
+        /** Get live device state (system, setup, display, OTA) */
         get: operations["NemotoController_getLiveState_v1"];
         put?: never;
         post?: never;
@@ -622,6 +622,40 @@ export interface paths {
         put?: never;
         /** Clear the display now */
         post: operations["NemotoController_displayClear_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/nemoto/commands/display-frame": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Push a custom frame (message) to the display now */
+        post: operations["NemotoController_displayFrame_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/nemoto/commands/refresh-display-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask the device to re-report its current display state */
+        post: operations["NemotoController_refreshDisplayState_v1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2684,53 +2718,41 @@ export interface components {
             /** @example 6 */
             gridHeight: number;
         };
-        NemotoModuleFaultDto: {
+        NemotoDisplayStateDto: {
             /**
-             * @description 6-byte module uuid (hex)
-             * @example a1b2c3d4e5f6
+             * @description False until the first frame is shown
+             * @example true
              */
-            uuid: string;
-            /**
-             * @description Short id (0 if unassigned)
-             * @example 41
-             */
-            shortId: number;
-            /**
-             * @description Fault kind
-             * @example NEMOTO_FAULT_KIND_STALL_ERROR
-             */
-            kind: string;
-            /** @example 42 */
-            tempC: number;
-            /** @example 3 */
-            lastSeenSAgo: number;
-            /** @example stall on column 4 */
-            detail: string;
-        };
-        NemotoFleetSummaryDto: {
-            /** @example 132 */
-            total: number;
-            /** @example 132 */
-            assigned: number;
-            /** @example 131 */
-            alive: number;
-            /** @example 132 */
-            homed: number;
-            /** @example 1 */
-            inError: number;
+            valid: boolean;
             /** @example 22 */
-            gridWidth: number;
+            width: number;
             /** @example 6 */
-            gridHeight: number;
-            /** @example 132 */
-            gridMapped: number;
-            /** @description Only modules with an active fault */
-            faults: components["schemas"]["NemotoModuleFaultDto"][];
+            height: number;
             /**
-             * @description Unix seconds when generated
+             * @description Currently shown frame as rows of flap ids (0-63); null until valid
+             * @example [
+             *       [
+             *         7,
+             *         4,
+             *         11,
+             *         11,
+             *         14,
+             *         56
+             *       ]
+             *     ]
+             */
+            flaps: number[][] | null;
+            /** @example wave */
+            effectId: string;
+            /** @example 40 */
+            delayMs: number;
+            /** @example NEMOTO_CYCLE_TYPE_PARTIAL */
+            cycleType: string;
+            /**
+             * @description Unix seconds when shown (approximate)
              * @example 1765400000
              */
-            generatedAt: number;
+            shownAt: number;
         };
         NemotoOtaProgressDto: {
             /** @example NEMOTO_OTA_PHASE_FLASHING_MODULES */
@@ -2754,7 +2776,7 @@ export interface components {
         NemotoLiveStateDto: {
             system: components["schemas"]["NemotoSystemInfoDto"] | null;
             setup: components["schemas"]["NemotoSetupStatusDto"] | null;
-            fleet: components["schemas"]["NemotoFleetSummaryDto"] | null;
+            display: components["schemas"]["NemotoDisplayStateDto"] | null;
             ota: components["schemas"]["NemotoOtaProgressDto"] | null;
             /**
              * Format: date-time
@@ -2836,6 +2858,46 @@ export interface components {
             forceQuiet: boolean;
         };
         DisplayClearCommandDto: {
+            /**
+             * @description Bypass quiet hours
+             * @default false
+             * @example false
+             */
+            forceQuiet: boolean;
+        };
+        DisplayFrameCommandDto: {
+            /**
+             * @description Flap grid as rows of columns; each cell is a flap id (0-63)
+             * @example [
+             *       [
+             *         7,
+             *         4,
+             *         11,
+             *         11,
+             *         14,
+             *         56
+             *       ],
+             *       [
+             *         56,
+             *         56,
+             *         56,
+             *         56,
+             *         56,
+             *         56
+             *       ]
+             *     ]
+             */
+            flaps: number[][];
+            /**
+             * @description Effect id override for this frame (empty = device default)
+             * @example wave
+             */
+            effectId?: string;
+            /**
+             * @description Per-frame effect step delay override in ms (0 = device default)
+             * @example 40
+             */
+            delayMs?: number;
             /**
              * @description Bypass quiet hours
              * @default false
@@ -5625,6 +5687,137 @@ export interface operations {
                 "application/json": components["schemas"]["DisplayClearCommandDto"];
             };
         };
+        responses: {
+            /** @description Dispatch result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDispatchResultDto"];
+                };
+            };
+            /** @description Device is not a Nemoto device */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    NemotoController_displayFrame_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device ID */
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisplayFrameCommandDto"];
+            };
+        };
+        responses: {
+            /** @description Dispatch result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDispatchResultDto"];
+                };
+            };
+            /** @description Device is not a Nemoto device */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Unauthorized - invalid or missing token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    NemotoController_refreshDisplayState_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device ID */
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Dispatch result */
             200: {
