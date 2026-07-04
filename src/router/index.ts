@@ -16,6 +16,11 @@ import MatrxDeviceView from '@/views/matrx/MatrxDeviceView.vue'
 import MatrxDeviceSettingsView from '@/views/matrx/MatrxDeviceSettingsView.vue'
 import MatrxAppsView from '@/views/matrx/MatrxAppsView.vue'
 import InstallationEditorView from '@/views/matrx/InstallationEditorView.vue'
+import NemotoDeviceView from '@/views/nemoto/NemotoDeviceView.vue'
+import NemotoDeviceSettingsView from '@/views/nemoto/NemotoDeviceSettingsView.vue'
+import NemotoPresetsView from '@/views/nemoto/NemotoPresetsView.vue'
+import NemotoPresetEditorView from '@/views/nemoto/NemotoPresetEditorView.vue'
+import NemotoSchedulesView from '@/views/nemoto/NemotoSchedulesView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 
 const router = createRouter({
@@ -120,6 +125,42 @@ const router = createRouter({
         installationId: route.params.installation_id,
         mode: 'edit',
       }),
+    },
+    {
+      path: '/nemoto/:id',
+      name: 'nemoto-device',
+      component: NemotoDeviceView,
+    },
+    {
+      path: '/nemoto/:id/settings',
+      name: 'nemoto-device-settings',
+      component: NemotoDeviceSettingsView,
+    },
+    {
+      path: '/nemoto/:id/presets',
+      name: 'nemoto-presets',
+      component: NemotoPresetsView,
+    },
+    {
+      path: '/nemoto/:id/presets/new',
+      name: 'nemoto-preset-new',
+      component: NemotoPresetEditorView,
+      props: (route) => ({ deviceId: route.params.id, mode: 'create' }),
+    },
+    {
+      path: '/nemoto/:id/presets/:preset_id',
+      name: 'nemoto-preset-edit',
+      component: NemotoPresetEditorView,
+      props: (route) => ({
+        deviceId: route.params.id,
+        presetId: Number(route.params.preset_id),
+        mode: 'edit',
+      }),
+    },
+    {
+      path: '/nemoto/:id/schedules',
+      name: 'nemoto-schedules',
+      component: NemotoSchedulesView,
     },
   ],
 })

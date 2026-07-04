@@ -26,6 +26,10 @@ export const SECURITY2_DEFAULT_PASSWORD = 'koiosdigital'
 export const DEVICE_PREFIX_CONFIG: Record<string, DeviceUiConfig> = {
   'MATRX-': { popType: 'numeric', hasCrypto: true },
   'LANTERN-': { popType: 'color', hasCrypto: true },
+  // Nemoto uses Security2 with static SRP6a credentials (username/password
+  // "koiosdigital"), so there is no user-facing PoP. It has a crypto module
+  // for certificate provisioning + cloud claiming.
+  'NEMOTO-': { popType: 'none', hasCrypto: true },
   'CLOCK-': { popType: 'none', hasCrypto: false },
   'TRANQUIL-': { popType: 'none', hasCrypto: false },
 }

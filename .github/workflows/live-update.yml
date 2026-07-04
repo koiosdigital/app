@@ -1,0 +1,149 @@
+# Publishes an over-the-air web bundle to the Koios App Updates server on every
+# push to main (same flow as controls_webapp — see its
+# docs/live-update-server-handoff.md §12 for the reference CI flow).
+#
+# Flow (two-step ingest):
+#   1. build web assets -> dist/ (the Capacitor webDir)
+#   2. zip dist/ into a raw artifact
+#   3. mint a Koios M2M token (client_credentials) from auth.koios.sh
+#   4. create upload slot -> POST .../uploads -> { uploadId, uploadUrl }
+#   5. PUT raw artifact   -> uploadUrl  (bearer-authed, worker-mediated — NOT presigned)
+#   6. register bundle    -> POST .../bundles { uploadId } -> normalized + checksummed
+#   7. assign to channel  -> 100% rollout, which makes it the current release
+#
+# Notes:
+#   - Admin paths are under /v1/app-updates/admin/…; responses are plain JSON
+#     (camelCase fields, no { data } envelope).
+#   - We use a Koios service-account token instead of GitHub OIDC.
+#   - We ship checksum-only (sign:false) until signing is verified end-to-end.
+
+name: live-update
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+
+# Latest commit on main wins: a newer push supersedes an in-flight publish so the
+# current release always tracks HEAD.
+concurrency:
+  group: live-update-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      API_BASE: https://app-updates.api.koios.sh
+      AUTH_BASE: https://auth.koios.sh
+      APP_ID: dc8b2938-7719-4e32-aa65-8cc1215a3bd0
+      CHANNEL: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # postinstall runs `buf generate` against src/protobufs
+          submodules: true
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build web bundle
+        # `pnpm build` also runs `npx cap sync`, which needs the native
+        # toolchains — we only need the web assets here.
+        run: pnpm exec vite build
+
+      - name: Package bundle
+        id: pkg
+        run: |
+          set -euo pipefail
+          # {epoch}-{shortsha}: unique per publish, never reused (handoff §2/§3.7).
+          BUNDLE_ID="$(date +%s)-${GITHUB_SHA::8}"
+          ( cd dist && zip -qr -X ../bundle.zip . )
+          echo "bundle_id=$BUNDLE_ID" >> "$GITHUB_OUTPUT"
+          echo "Packaged bundle $BUNDLE_ID ($(du -h bundle.zip | cut -f1))"
+
+      - name: Mint Koios M2M token
+        id: auth
+        env:
+          CLIENT_ID: ${{ secrets.UPDATE_AUTH_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.UPDATE_AUTH_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          TOKEN=$(curl -fsS -X POST "$AUTH_BASE/api/oauth/token" \
+            -H 'content-type: application/x-www-form-urlencoded' \
+            --data-urlencode 'grant_type=client_credentials' \
+            --data-urlencode "client_id=$CLIENT_ID" \
+            --data-urlencode "client_secret=$CLIENT_SECRET" \
+            | jq -r '.access_token // empty')
+          if [ -z "$TOKEN" ]; then
+            echo "::error::Failed to obtain access token from $AUTH_BASE"
+            exit 1
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Init upload slot
+        id: init
+        env:
+          TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          set -euo pipefail
+          RESP=$(curl -fsS -X POST \
+            "$API_BASE/v1/app-updates/admin/apps/$APP_ID/uploads" \
+            -H "authorization: Bearer $TOKEN" \
+            -H 'content-type: application/json' \
+            -d '{"filename":"bundle.zip","contentType":"application/zip"}')
+          echo "upload_url=$(echo "$RESP" | jq -r .uploadUrl)" >> "$GITHUB_OUTPUT"
+          echo "upload_id=$(echo "$RESP" | jq -r .uploadId)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload raw artifact
+        env:
+          TOKEN: ${{ steps.auth.outputs.token }}
+          UPLOAD_URL: ${{ steps.init.outputs.upload_url }}
+        run: |
+          set -euo pipefail
+          # The upload URL is a worker-mediated endpoint, not a presigned URL, so
+          # it still requires the bearer token (handoff CLAUDE.md note + admin.ts).
+          curl -fsS -X PUT "$UPLOAD_URL" \
+            -H "authorization: Bearer $TOKEN" \
+            -H 'content-type: application/zip' \
+            --data-binary @bundle.zip > /dev/null
+
+      - name: Register bundle
+        env:
+          TOKEN: ${{ steps.auth.outputs.token }}
+          BUNDLE_ID: ${{ steps.pkg.outputs.bundle_id }}
+          UPLOAD_ID: ${{ steps.init.outputs.upload_id }}
+        run: |
+          set -euo pipefail
+          # Server normalizes the upload into a canonical zip + sha256.
+          # sign:false -> checksum-only until signing is verified.
+          curl -fsS -X POST \
+            "$API_BASE/v1/app-updates/admin/apps/$APP_ID/bundles" \
+            -H "authorization: Bearer $TOKEN" \
+            -H 'content-type: application/json' \
+            -d "$(jq -nc --arg b "$BUNDLE_ID" --arg u "$UPLOAD_ID" \
+                  '{bundleId:$b, uploadId:$u, sign:false}')"
+          echo
+
+      - name: Assign to channel
+        env:
+          TOKEN: ${{ steps.auth.outputs.token }}
+          BUNDLE_ID: ${{ steps.pkg.outputs.bundle_id }}
+        run: |
+          set -euo pipefail
+          curl -fsS -X POST \
+            "$API_BASE/v1/app-updates/admin/apps/$APP_ID/releases" \
+            -H "authorization: Bearer $TOKEN" \
+            -H 'content-type: application/json' \
+            -d "$(jq -nc --arg c "$CHANNEL" --arg b "$BUNDLE_ID" \
+                  '{channel:$c, bundleId:$b, rolloutPercent:100, enabled:true}')"
+          echo "::notice::Published $BUNDLE_ID to channel '$CHANNEL' at 100% rollout"

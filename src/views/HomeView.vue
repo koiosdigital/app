@@ -24,6 +24,12 @@
             @toggle-screen="toggleScreen"
             @open-settings="openSettings"
           />
+          <NemotoDeviceCard
+            v-else-if="isNemotoDevice(device)"
+            :device="device"
+            @open="openDevice"
+            @open-settings="openSettings"
+          />
           <LanternDeviceCard
             v-else
             :device="device"
@@ -52,10 +58,11 @@ import { useHead } from '@unhead/vue'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
+import NemotoDeviceCard from '@/components/devices/NemotoDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
-import { type ApiDevice, isMatrxDevice } from '@/lib/api/mappers/deviceMapper'
+import { type ApiDevice, isMatrxDevice, isNemotoDevice } from '@/lib/api/mappers/deviceMapper'
 
 useHead({
   title: 'Devices | Koios Digital',
@@ -164,20 +171,22 @@ const handleSendTouch = async (id: string) => {
   }
 }
 
+const deviceBasePath = (device: ApiDevice) => {
+  if (device.type === 'MATRX') return '/matrx'
+  if (device.type === 'NEMOTO') return '/nemoto'
+  return '/lantern'
+}
+
 const openDevice = (id: string) => {
   const device = findDevice(id)
   if (!device) return
-
-  const basePath = device.type === 'MATRX' ? '/matrx' : '/lantern'
-  router.push(`${basePath}/${id}`)
+  router.push(`${deviceBasePath(device)}/${id}`)
 }
 
 const openSettings = (id: string) => {
   const device = findDevice(id)
   if (!device) return
-
-  const basePath = device.type === 'MATRX' ? '/matrx' : '/lantern'
-  router.push(`${basePath}/${id}/settings`)
+  router.push(`${deviceBasePath(device)}/${id}/settings`)
 }
 
 onMounted(() => {

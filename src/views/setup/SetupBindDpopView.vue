@@ -28,8 +28,11 @@
           :description="error.description"
         />
 
-        <!-- Security Level 0 - No PoP Required (auto-connecting) -->
-        <div v-if="securityLevel === 0" class="flex flex-1 items-center justify-center">
+        <!-- No PoP required (Security 0, or Security2 with static credentials) — auto-connecting -->
+        <div
+          v-if="securityLevel === 0 || deviceConfig.popType === 'none'"
+          class="flex flex-1 items-center justify-center"
+        >
           <div class="space-y-3 text-center">
             <UIcon
               name="i-fa6-solid:spinner"

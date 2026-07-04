@@ -12,7 +12,11 @@
       >
         <div v-if="banner" class="rounded-xl border p-4" :class="bannerStyle.container">
           <div class="flex items-center gap-3">
-            <UIcon :name="bannerStyle.icon" class="h-5 w-5 shrink-0" :class="bannerStyle.iconColor" />
+            <UIcon
+              :name="bannerStyle.icon"
+              class="h-5 w-5 shrink-0"
+              :class="bannerStyle.iconColor"
+            />
             <p class="flex-1 text-sm" :class="bannerStyle.textColor">
               {{ banner.message }}
             </p>
@@ -82,12 +86,7 @@
 
         <template v-if="profileLoaded" #footer>
           <div class="flex flex-wrap justify-end gap-2">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              :disabled="savingProfile"
-              @click="cancelEdit"
-            >
+            <UButton color="neutral" variant="ghost" :disabled="savingProfile" @click="cancelEdit">
               Cancel
             </UButton>
             <UButton
@@ -246,7 +245,60 @@
           <dd class="text-right text-white/80">{{ appVersion }}</dd>
           <dt class="text-white/50">Channel</dt>
           <dd class="text-right capitalize text-white/80">{{ appChannel }}</dd>
+          <template v-if="isNative">
+            <dt class="text-white/50">Current bundle</dt>
+            <dd class="break-all text-right font-mono text-xs/5 text-white/80">
+              {{ currentBundleId ?? 'Built-in' }}
+            </dd>
+            <dt class="text-white/50">Pending bundle</dt>
+            <dd class="break-all text-right font-mono text-xs/5 text-white/80">
+              {{ nextBundleId ?? '—' }}
+            </dd>
+            <dt class="text-white/50">Update channel</dt>
+            <dd class="text-right text-white/80">{{ updateChannel ?? 'production' }}</dd>
+            <dt class="text-white/50">Device ID</dt>
+            <dd class="flex min-w-0 items-center justify-end gap-1 text-white/80">
+              <span class="truncate font-mono text-xs">{{ updateDeviceId ?? '—' }}</span>
+              <UButton
+                v-if="updateDeviceId"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                icon="i-fa6-regular:copy"
+                square
+                aria-label="Copy device ID"
+                @click="copyDeviceId"
+              />
+            </dd>
+          </template>
         </dl>
+        <div v-if="isNative" class="flex flex-wrap items-center gap-2">
+          <UButton
+            size="sm"
+            color="neutral"
+            variant="soft"
+            icon="i-fa6-solid:arrows-rotate"
+            :loading="checkingUpdate"
+            @click="checkForUpdates"
+          >
+            Check for updates
+          </UButton>
+          <UButton
+            v-if="pendingBundleId"
+            size="sm"
+            color="primary"
+            variant="soft"
+            icon="i-fa6-solid:rotate-left"
+            :loading="reloadingUpdate"
+            @click="reloadNow"
+          >
+            Reload to apply
+          </UButton>
+        </div>
+        <p v-if="pendingBundleId" class="text-xs text-white/50">
+          Update <span class="font-mono">{{ pendingBundleId }}</span> downloaded. It applies on the
+          next app launch, or reload now.
+        </p>
         <div class="flex flex-wrap gap-2 pt-2">
           <UButton size="sm" variant="ghost" icon="i-fa6-solid:circle-info" @click="openDocs">
             Support
@@ -275,8 +327,10 @@ import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { Capacitor } from '@capacitor/core'
+import { App as CapacitorApp } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { Device, type DeviceInfo } from '@capacitor/device'
+import { LiveUpdate } from '@capawesome/capacitor-live-update'
 import { InAppBrowser } from '@capacitor/inappbrowser'
 import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
@@ -300,7 +354,11 @@ const route = useRoute()
 const authStore = useAuthStore()
 const { setHeader } = usePageHeader()
 
-const appVersion = ENV.appVersion
+const isNative = Capacitor.isNativePlatform()
+
+// On native the installed binary is the source of truth for the version; the
+// ENV constant is only the web fallback (see loadNativeBuildInfo).
+const appVersion = ref<string>(ENV.appVersion)
 const appChannel = ENV.appChannel
 
 // --- Banner ---
@@ -409,8 +467,7 @@ function cancelEdit() {
 
 async function saveProfile() {
   if (savingProfile.value) return
-  const emailChanged =
-    form.email.trim().toLowerCase() !== originalForm.email.trim().toLowerCase()
+  const emailChanged = form.email.trim().toLowerCase() !== originalForm.email.trim().toLowerCase()
 
   savingProfile.value = true
   try {
@@ -588,6 +645,88 @@ function contactSupport() {
   window.location.href = `mailto:${ENV.supportEmail}`
 }
 
+// --- Live update (OTA, native only) ---
+const currentBundleId = ref<string | null>(null)
+const nextBundleId = ref<string | null>(null)
+const updateChannel = ref<string | null>(null)
+const updateDeviceId = ref<string | null>(null)
+const pendingBundleId = ref<string | null>(null)
+const checkingUpdate = ref(false)
+const reloadingUpdate = ref(false)
+
+async function loadNativeBuildInfo() {
+  try {
+    const info = await CapacitorApp.getInfo()
+    appVersion.value = `${info.version} (${info.build})`
+  } catch (error) {
+    console.warn('Failed to read native app info', error)
+  }
+}
+
+async function loadUpdateInfo() {
+  try {
+    const [cur, next, ch, dev] = await Promise.all([
+      LiveUpdate.getCurrentBundle(),
+      LiveUpdate.getNextBundle(),
+      LiveUpdate.getChannel(),
+      LiveUpdate.getDeviceId(),
+    ])
+    currentBundleId.value = cur.bundleId
+    nextBundleId.value = next.bundleId
+    updateChannel.value = ch.channel
+    updateDeviceId.value = dev.deviceId
+    // The background auto-sync may already have staged a bundle before this
+    // view opened — offer "Reload to apply" for it, not just manual syncs.
+    if (next.bundleId && next.bundleId !== cur.bundleId) {
+      pendingBundleId.value = next.bundleId
+    }
+  } catch (error) {
+    console.warn('Failed to load live-update info', error)
+  }
+}
+
+async function checkForUpdates() {
+  checkingUpdate.value = true
+  try {
+    const { nextBundleId: next } = await LiveUpdate.sync()
+    if (next) {
+      pendingBundleId.value = next
+      nextBundleId.value = next
+      showBanner('success', 'Update downloaded.')
+    } else {
+      showBanner('success', 'Already up to date.')
+    }
+  } catch (error) {
+    console.warn('Live-update sync failed', error)
+    showBanner('error', 'Update check failed.')
+  } finally {
+    checkingUpdate.value = false
+  }
+}
+
+async function reloadNow() {
+  reloadingUpdate.value = true
+  try {
+    // Applies the pending bundle by reloading the web view; on success the
+    // page is replaced, so we only clear the spinner on failure.
+    await LiveUpdate.reload()
+  } catch (error) {
+    console.warn('Live-update reload failed', error)
+    showBanner('error', 'Could not reload.')
+    reloadingUpdate.value = false
+  }
+}
+
+async function copyDeviceId() {
+  if (!updateDeviceId.value) return
+  try {
+    await navigator.clipboard.writeText(updateDeviceId.value)
+    showBanner('success', 'Device ID copied.')
+  } catch {
+    showBanner('error', 'Could not copy.')
+  }
+}
+
 // --- Delete account (kc_action flow) ---
 const deleteModalOpen = ref(false)
 const startingDelete = ref(false)
@@ -721,5 +860,9 @@ onMounted(() => {
   loadProfile()
   loadSessions()
   loadCurrentDeviceInfo()
+  if (isNative) {
+    loadNativeBuildInfo()
+    loadUpdateInfo()
+  }
 })
 </script>

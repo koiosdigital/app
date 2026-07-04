@@ -62,3 +62,12 @@ if (Capacitor.isNativePlatform()) {
 }
 
 app.mount('#app')
+
+if (Capacitor.isNativePlatform()) {
+  // Live-update (OTA): mark this bundle healthy so it isn't auto-rolled-back
+  // after `readyTimeout`. With autoUpdateStrategy:'background' the plugin syncs
+  // and downloads new bundles on its own — here we only confirm readiness.
+  import('@capawesome/capacitor-live-update')
+    .then(({ LiveUpdate }) => LiveUpdate.ready())
+    .catch((err) => console.warn('LiveUpdate.ready() failed', err))
+}
