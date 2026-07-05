@@ -22,6 +22,17 @@ export function useNemotoFlaps() {
     return map
   })
 
+  // 56 is the well-known blank id in the shipped flap set; the find() keeps
+  // us correct if the set is ever rearranged.
+  const blankId = computed(() => flaps.value.find((f) => f.type === 'blank')?.id ?? 56)
+
+  const groups = computed(() => ({
+    glyphs: flaps.value.filter(
+      (f) => f.type === 'letter' || f.type === 'digit' || f.type === 'special',
+    ),
+    colors: flaps.value.filter((f) => f.type === 'color'),
+  }))
+
   async function ensureLoaded() {
     if (loaded) return
     if (!inflight) {
@@ -38,5 +49,5 @@ export function useNemotoFlaps() {
     await inflight
   }
 
-  return { flaps, byId, byGlyph, ensureLoaded }
+  return { flaps, byId, byGlyph, blankId, groups, ensureLoaded }
 }

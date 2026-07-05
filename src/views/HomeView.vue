@@ -28,6 +28,7 @@
             v-else-if="isNemotoDevice(device)"
             :device="device"
             @open="openDevice"
+            @send-message="openMessage"
             @open-settings="openSettings"
           />
           <LanternDeviceCard
@@ -187,6 +188,10 @@ const openSettings = (id: string) => {
   const device = findDevice(id)
   if (!device) return
   router.push(`${deviceBasePath(device)}/${id}/settings`)
+}
+
+const openMessage = (id: string) => {
+  router.push(`/nemoto/${id}/message`)
 }
 
 onMounted(() => {

@@ -22,48 +22,8 @@
         </UFormField>
       </div>
 
-      <!-- Canvas -->
-      <UCard class="bg-white/5">
-        <template #header><h3 class="text-sm font-semibold text-white/70">Canvas</h3></template>
-        <div
-          class="nemoto-canvas mx-auto"
-          :style="{
-            gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
-            maxWidth: `${width * 28}px`,
-          }"
-          @pointerup="painting = false"
-          @pointerleave="painting = false"
-        >
-          <button
-            v-for="(cell, idx) in flatCells"
-            :key="idx"
-            type="button"
-            class="nemoto-canvas__cell"
-            @pointerdown="startPaint(idx)"
-            @pointerenter="dragPaint(idx)"
-          >
-            <NemotoFlap :id="cell" />
-          </button>
-        </div>
-      </UCard>
-
-      <!-- Palette -->
-      <UCard class="bg-white/5">
-        <template #header><h3 class="text-sm font-semibold text-white/70">Brush</h3></template>
-        <div class="flex flex-wrap gap-1.5">
-          <button
-            v-for="flap in flaps"
-            :key="flap.id"
-            type="button"
-            class="nemoto-swatch"
-            :class="{ 'nemoto-swatch--active': flap.id === brush }"
-            :title="flap.label"
-            @click="brush = flap.id"
-          >
-            <NemotoFlap :id="flap.id" />
-          </button>
-        </div>
-      </UCard>
+      <!-- Board editor (type / paint / erase, same as the on-device UI) -->
+      <NemotoGridEditor v-model="grid" />
     </div>
 
     <Teleport to="#app-footer">
@@ -84,10 +44,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
-import NemotoFlap from '@/components/nemoto/NemotoFlap.vue'
+import NemotoGridEditor from '@/components/nemoto/NemotoGridEditor.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import { nemotoApi } from '@/lib/api/nemoto'
@@ -101,25 +61,20 @@ const props = defineProps<{
 
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const { flaps, ensureLoaded } = useNemotoFlaps()
-
-const BLANK = 56 // blank flap id
+const { blankId, ensureLoaded } = useNemotoFlaps()
 
 const name = ref('')
 const width = ref(22)
 const height = ref(6)
 const grid = ref<number[][]>([])
-const brush = ref(0)
-const painting = ref(false)
 
 const loading = ref(true)
 const saving = ref(false)
 const error = ref<string>()
 
-const flatCells = computed(() => grid.value.flat())
-
 function blankGrid(w: number, h: number): number[][] {
-  return Array.from({ length: h }, () => Array.from({ length: w }, () => BLANK))
+  const bl = blankId.value
+  return Array.from({ length: h }, () => Array.from({ length: w }, () => bl))
 }
 
 function resize() {
@@ -128,25 +83,10 @@ function resize() {
   const next = blankGrid(w, h)
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      next[y][x] = grid.value[y]?.[x] ?? BLANK
+      next[y][x] = grid.value[y]?.[x] ?? blankId.value
     }
   }
   grid.value = next
-}
-
-function paintAt(index: number) {
-  const x = index % width.value
-  const y = Math.floor(index / width.value)
-  if (grid.value[y]) grid.value[y][x] = brush.value
-}
-
-function startPaint(index: number) {
-  painting.value = true
-  paintAt(index)
-}
-
-function dragPaint(index: number) {
-  if (painting.value) paintAt(index)
 }
 
 async function save() {
@@ -193,33 +133,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.nemoto-canvas {
-  display: grid;
-  gap: 2px;
-  width: 100%;
-  touch-action: none;
-}
-
-.nemoto-canvas__cell {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.nemoto-swatch {
-  width: 26px;
-  height: 39px;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-}
-
-.nemoto-swatch--active {
-  border-color: var(--ui-primary, #3b82f6);
-}
-</style>

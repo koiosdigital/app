@@ -14,112 +14,46 @@
       </UCard>
     </div>
 
-    <div v-else class="flex flex-col gap-5 px-5 py-6">
-      <!-- Quick navigation -->
-      <div class="grid grid-cols-2 gap-3">
-        <UButton
-          color="neutral"
-          variant="soft"
-          size="lg"
-          icon="i-fa6-solid:table-cells"
-          block
-          @click="router.push(`/nemoto/${deviceId}/presets`)"
-        >
-          Presets
-        </UButton>
-        <UButton
-          color="neutral"
-          variant="soft"
-          size="lg"
-          icon="i-fa6-solid:calendar"
-          block
-          @click="router.push(`/nemoto/${deviceId}/schedules`)"
-        >
-          Schedules
-        </UButton>
-      </div>
-
-      <!-- Command feedback -->
-      <UAlert
-        v-if="commandMsg"
-        :color="commandMsg.color"
-        :icon="commandMsg.icon"
-        :title="commandMsg.text"
-      />
-
-      <!-- Live status -->
-      <UCard class="bg-white/5">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Status</h3>
-            <UBadge :color="device?.online ? 'success' : 'neutral'" variant="soft">
-              {{ device?.online ? 'Online' : 'Offline' }}
-            </UBadge>
-          </div>
-        </template>
-
-        <div v-if="state?.setup" class="mb-4 flex items-center gap-2 text-sm">
-          <UIcon name="i-fa6-solid:circle-nodes" class="h-4 w-4 text-white/50" />
-          <span class="text-white/70">Setup phase</span>
-          <UBadge color="primary" variant="soft">{{ formatPhase(state.setup.phase) }}</UBadge>
+    <div v-else class="flex flex-1 flex-col">
+      <!-- Now showing (hero preview) -->
+      <section class="flex flex-col items-center gap-4 border-b border-white/10 px-5 py-8">
+        <div class="flex items-center gap-2">
+          <p class="text-xs uppercase tracking-widest text-white/50">Now showing</p>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            square
+            icon="i-fa6-solid:rotate"
+            :loading="busy === 'refresh-display'"
+            @click="refreshDisplay"
+          />
         </div>
 
-        <dl v-if="state?.system" class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <div>
-            <dt class="text-white/50">Firmware</dt>
-            <dd>{{ state.system.firmwareVersion }}</dd>
-          </div>
-          <div>
-            <dt class="text-white/50">Variant</dt>
-            <dd>{{ state.system.hwVariant }}</dd>
-          </div>
-          <div>
-            <dt class="text-white/50">IP</dt>
-            <dd>{{ state.system.ip }}</dd>
-          </div>
-          <div>
-            <dt class="text-white/50">Wi-Fi</dt>
-            <dd>{{ state.system.wifiSsid }} ({{ state.system.wifiRssi }} dBm)</dd>
-          </div>
-          <div>
-            <dt class="text-white/50">Uptime</dt>
-            <dd>{{ formatUptime(state.system.uptimeS) }}</dd>
-          </div>
-          <div>
-            <dt class="text-white/50">Free heap</dt>
-            <dd>{{ formatBytes(state.system.freeHeap) }}</dd>
-          </div>
-        </dl>
-
-        <p v-else class="text-sm text-white/50">No live telemetry reported yet.</p>
-      </UCard>
-
-      <!-- Currently displayed frame -->
-      <UCard class="bg-white/5">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Now showing</h3>
-            <UButton
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              icon="i-fa6-solid:rotate"
-              :loading="busy === 'refresh-display'"
-              @click="refreshDisplay"
+        <div class="now-showing-container">
+          <div class="now-showing-frame">
+            <NemotoFlapGrid
+              v-if="state?.display?.valid && state.display.flaps"
+              :flaps="state.display.flaps"
             />
+            <div v-else class="empty-preview-screen">
+              <UIcon name="i-fa6-solid:table-cells" class="h-6 w-6 text-white/30" />
+            </div>
           </div>
-        </template>
+        </div>
+        <p v-if="!state?.display?.valid" class="text-sm text-white/50">Nothing displayed yet.</p>
+      </section>
 
-        <NemotoFlapGrid
-          v-if="state?.display?.valid && state.display.flaps"
-          :flaps="state.display.flaps"
+      <section class="flex flex-col gap-5 px-5 py-6">
+        <!-- Command feedback -->
+        <UAlert
+          v-if="commandMsg"
+          :color="commandMsg.color"
+          :icon="commandMsg.icon"
+          :title="commandMsg.text"
         />
-        <p v-else class="text-sm text-white/50">Nothing displayed yet.</p>
-      </UCard>
 
-      <!-- Commands -->
-      <UCard class="bg-white/5">
-        <template #header><h3 class="font-semibold">Display</h3></template>
+        <!-- Primary display actions -->
         <div class="flex flex-wrap gap-3">
           <UButton
             color="primary"
@@ -149,7 +83,31 @@
             Reboot
           </UButton>
         </div>
-      </UCard>
+
+        <!-- Navigation -->
+        <div class="grid grid-cols-2 gap-3">
+          <UButton
+            color="neutral"
+            variant="soft"
+            size="lg"
+            icon="i-fa6-solid:table-cells"
+            block
+            @click="router.push(`/nemoto/${deviceId}/presets`)"
+          >
+            Presets
+          </UButton>
+          <UButton
+            color="neutral"
+            variant="soft"
+            size="lg"
+            icon="i-fa6-solid:calendar"
+            block
+            @click="router.push(`/nemoto/${deviceId}/schedules`)"
+          >
+            Schedules
+          </UButton>
+        </div>
+      </section>
     </div>
   </PageLayout>
 </template>
@@ -282,29 +240,6 @@ async function reboot() {
   }
 }
 
-function formatPhase(raw: string): string {
-  return raw
-    .replace(/^NEMOTO_[A-Z]+_(KIND_|PHASE_)?/, '')
-    .replace(/_/g, ' ')
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
-function formatUptime(seconds: number): string {
-  const d = Math.floor(seconds / 86400)
-  const h = Math.floor((seconds % 86400) / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (d) return `${d}d ${h}h`
-  if (h) return `${h}h ${m}m`
-  return `${m}m`
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`
-  return `${bytes} B`
-}
-
 function syncHeader() {
   setHeader({
     title: device.value?.settings?.displayName || device.value?.id || 'Nemoto',
@@ -325,3 +260,27 @@ onMounted(() => {
   load()
 })
 </script>
+
+<style scoped>
+.now-showing-container {
+  width: min(80vw, 480px);
+  max-width: 100%;
+}
+
+.now-showing-frame {
+  width: 100%;
+  padding: 10px;
+  background: #18181b;
+  border-radius: 0.75rem;
+}
+
+.empty-preview-screen {
+  width: 100%;
+  aspect-ratio: 22 / 6;
+  background: black;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

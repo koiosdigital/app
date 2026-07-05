@@ -18,59 +18,33 @@
         />
       </UFormField>
 
-      <!-- Canvas (paintable, same interaction as the preset editor) -->
+      <!-- Board editor (type / paint / erase, same as the on-device UI) -->
+      <NemotoGridEditor v-model="grid" />
+
+      <!-- Transition effect override for this push -->
       <UCard class="bg-white/5">
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-white/70">Preview ({{ width }}×{{ height }})</h3>
-            <UButton
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              icon="i-fa6-solid:eraser"
-              @click="clearGrid"
-            >
-              Clear
-            </UButton>
+            <h3 class="text-sm font-semibold text-white/70">Transition effect</h3>
+            <USwitch v-model="overrideEnabled" />
           </div>
         </template>
-        <div
-          class="nemoto-canvas mx-auto"
-          :style="{
-            gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
-            maxWidth: `${width * 28}px`,
-          }"
-          @pointerup="painting = false"
-          @pointerleave="painting = false"
-        >
-          <button
-            v-for="(cell, idx) in flatCells"
-            :key="idx"
-            type="button"
-            class="nemoto-canvas__cell"
-            @pointerdown="startPaint(idx)"
-            @pointerenter="dragPaint(idx)"
-          >
-            <NemotoFlap :id="cell" />
-          </button>
-        </div>
-      </UCard>
-
-      <!-- Palette -->
-      <UCard class="bg-white/5">
-        <template #header><h3 class="text-sm font-semibold text-white/70">Brush</h3></template>
-        <div class="flex flex-wrap gap-1.5">
-          <button
-            v-for="flap in flaps"
-            :key="flap.id"
-            type="button"
-            class="nemoto-swatch"
-            :class="{ 'nemoto-swatch--active': flap.id === brush }"
-            :title="flap.label"
-            @click="brush = flap.id"
-          >
-            <NemotoFlap :id="flap.id" />
-          </button>
+        <p v-if="!overrideEnabled" class="text-sm text-white/50">
+          Uses the device's default effect. Turn on to override for this push.
+        </p>
+        <div v-else class="flex flex-col gap-4">
+          <UFormField label="Effect">
+            <USelectMenu
+              v-model="overrideEffect"
+              :items="effectItems"
+              value-key="value"
+              :search-input="false"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField label="Step delay (ms, 0 = device default)">
+            <UInputNumber v-model="overrideDelay" :min="0" :max="500" />
+          </UFormField>
         </div>
       </UCard>
 
@@ -96,20 +70,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import PageLayout from '@/layouts/PageLayout.vue'
-import NemotoFlap from '@/components/nemoto/NemotoFlap.vue'
+import NemotoGridEditor from '@/components/nemoto/NemotoGridEditor.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
+import { NEMOTO_EFFECT_ITEMS } from '@/lib/nemoto/effects'
 import { nemotoApi } from '@/lib/api/nemoto'
 import { getErrorMessage } from '@/lib/api/errors'
 
 const props = defineProps<{ deviceId: string }>()
 
 const { setHeader } = usePageHeader()
-const { flaps, byGlyph, ensureLoaded } = useNemotoFlaps()
-
-const BLANK = 56 // blank flap id
+const { byGlyph, blankId, ensureLoaded } = useNemotoFlaps()
 
 const text = ref('')
 // Sized from the device's reported grid on mount; the frame must match the
@@ -117,23 +90,21 @@ const text = ref('')
 const width = ref(22)
 const height = ref(6)
 const grid = ref<number[][]>([])
-const brush = ref(0)
-const painting = ref(false)
 const forceQuiet = ref(false)
+
+const effectItems = NEMOTO_EFFECT_ITEMS
+const overrideEnabled = ref(false)
+const overrideEffect = ref('none')
+const overrideDelay = ref(0)
 
 const loading = ref(true)
 const sending = ref(false)
 const error = ref<string>()
 const sentMsg = ref<{ text: string; color: 'success' | 'warning'; icon: string } | null>(null)
 
-const flatCells = computed(() => grid.value.flat())
-
 function blankGrid(w: number, h: number): number[][] {
-  return Array.from({ length: h }, () => Array.from({ length: w }, () => BLANK))
-}
-
-function clearGrid() {
-  grid.value = blankGrid(width.value, height.value)
+  const bl = blankId.value
+  return Array.from({ length: h }, () => Array.from({ length: w }, () => bl))
 }
 
 // Word-wrap the message onto the board, centered horizontally and vertically.
@@ -161,25 +132,10 @@ function layoutText() {
     const chars = lines[i]
     const colOffset = Math.max(0, Math.floor((width.value - chars.length) / 2))
     for (let j = 0; j < chars.length && colOffset + j < width.value; j++) {
-      next[rowOffset + i][colOffset + j] = byGlyph.value.get(chars[j]) ?? BLANK
+      next[rowOffset + i][colOffset + j] = byGlyph.value.get(chars[j]) ?? blankId.value
     }
   }
   grid.value = next
-}
-
-function paintAt(index: number) {
-  const x = index % width.value
-  const y = Math.floor(index / width.value)
-  if (grid.value[y]) grid.value[y][x] = brush.value
-}
-
-function startPaint(index: number) {
-  painting.value = true
-  paintAt(index)
-}
-
-function dragPaint(index: number) {
-  if (painting.value) paintAt(index)
 }
 
 function framesMatch(a: number[][], b: number[][]): boolean {
@@ -194,6 +150,8 @@ async function send() {
   try {
     const res = await nemotoApi.displayFrame(props.deviceId, {
       flaps: grid.value,
+      effectId: overrideEnabled.value ? overrideEffect.value : undefined,
+      delayMs: overrideEnabled.value && overrideDelay.value > 0 ? overrideDelay.value : undefined,
       forceQuiet: forceQuiet.value,
     })
     if (!res.delivered) {
@@ -254,33 +212,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.nemoto-canvas {
-  display: grid;
-  gap: 2px;
-  width: 100%;
-  touch-action: none;
-}
-
-.nemoto-canvas__cell {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.nemoto-swatch {
-  width: 26px;
-  height: 39px;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-}
-
-.nemoto-swatch--active {
-  border-color: var(--ui-primary, #3b82f6);
-}
-</style>
