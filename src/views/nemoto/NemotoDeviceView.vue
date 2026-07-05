@@ -16,21 +16,21 @@
 
     <div v-else class="flex flex-1 flex-col">
       <!-- Now showing (hero preview) -->
-      <section class="flex flex-col items-center gap-4 border-b border-white/10 px-5 py-8">
-        <div class="flex items-center gap-2">
-          <p class="text-xs uppercase tracking-widest text-white/50">Now showing</p>
-          <UButton
-            color="neutral"
-            variant="ghost"
-            size="xs"
-            square
-            icon="i-fa6-solid:rotate"
-            :loading="busy === 'refresh-display'"
-            @click="refreshDisplay"
-          />
-        </div>
+      <section class="flex flex-col items-center gap-5 border-b border-white/10 px-5 py-8">
+        <p class="text-xs uppercase tracking-widest text-white/50">Now showing</p>
 
-        <div class="now-showing-container">
+        <div class="now-showing-container relative">
+          <!-- Edit current display -->
+          <UButton
+            class="absolute right-2 top-2 z-10"
+            color="neutral"
+            variant="soft"
+            size="sm"
+            square
+            icon="i-fa6-solid:pencil"
+            aria-label="Edit display"
+            @click="router.push(`/nemoto/${deviceId}/message`)"
+          />
           <div class="now-showing-frame">
             <NemotoFlapGrid
               v-if="state?.display?.valid && state.display.flaps"
@@ -42,27 +42,9 @@
           </div>
         </div>
         <p v-if="!state?.display?.valid" class="text-sm text-white/50">Nothing displayed yet.</p>
-      </section>
 
-      <section class="flex flex-col gap-5 px-5 py-6">
-        <!-- Command feedback -->
-        <UAlert
-          v-if="commandMsg"
-          :color="commandMsg.color"
-          :icon="commandMsg.icon"
-          :title="commandMsg.text"
-        />
-
-        <!-- Primary display actions -->
-        <div class="flex flex-wrap gap-3">
-          <UButton
-            color="primary"
-            variant="soft"
-            icon="i-fa6-solid:message"
-            @click="router.push(`/nemoto/${deviceId}/message`)"
-          >
-            Send message
-          </UButton>
+        <!-- Clear (centered below preview) -->
+        <div class="flex items-center justify-center gap-2">
           <UButton
             color="neutral"
             variant="soft"
@@ -73,16 +55,26 @@
             Clear
           </UButton>
           <UButton
-            v-if="isOwner"
-            color="warning"
-            variant="soft"
-            icon="i-fa6-solid:power-off"
-            :loading="busy === 'reboot'"
-            @click="reboot"
-          >
-            Reboot
-          </UButton>
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            square
+            icon="i-fa6-solid:rotate"
+            :loading="busy === 'refresh-display'"
+            aria-label="Refresh display"
+            @click="refreshDisplay"
+          />
         </div>
+      </section>
+
+      <section class="flex flex-col gap-5 px-5 py-6">
+        <!-- Command feedback -->
+        <UAlert
+          v-if="commandMsg"
+          :color="commandMsg.color"
+          :icon="commandMsg.icon"
+          :title="commandMsg.text"
+        />
 
         <!-- Navigation -->
         <div class="grid grid-cols-2 gap-3">
@@ -132,14 +124,12 @@ const device = ref<NemotoDevice | null>(null)
 const state = ref<NemotoLiveState | null>(null)
 const loading = ref(true)
 const error = ref<string>()
-const busy = ref<'clear' | 'reboot' | 'refresh-display' | null>(null)
+const busy = ref<'clear' | 'refresh-display' | null>(null)
 const commandMsg = ref<{
   text: string
   color: 'success' | 'warning' | 'error'
   icon: string
 } | null>(null)
-
-const isOwner = computed(() => device.value?.accessLevel === 'OWNER')
 
 async function load() {
   loading.value = true
@@ -228,18 +218,6 @@ async function clearDisplay() {
   }
 }
 
-async function reboot() {
-  busy.value = 'reboot'
-  try {
-    const res = await nemotoApi.reboot(deviceId.value)
-    flashDelivered(res.delivered, 'Reboot requested')
-  } catch (err) {
-    flash(getErrorMessage(err, 'Failed to reboot'), 'error', 'i-fa6-solid:circle-exclamation')
-  } finally {
-    busy.value = null
-  }
-}
-
 function syncHeader() {
   setHeader({
     title: device.value?.settings?.displayName || device.value?.id || 'Nemoto',
@@ -263,7 +241,7 @@ onMounted(() => {
 
 <style scoped>
 .now-showing-container {
-  width: min(80vw, 480px);
+  width: min(92vw, 560px);
   max-width: 100%;
 }
 

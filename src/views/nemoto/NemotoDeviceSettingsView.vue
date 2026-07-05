@@ -195,6 +195,26 @@
         </dl>
       </UCard>
 
+      <!-- Reboot (owner only) -->
+      <div v-if="isOwner" class="flex flex-col gap-3">
+        <UAlert
+          v-if="rebootMsg"
+          :color="rebootMsg.color"
+          :icon="rebootMsg.icon"
+          :title="rebootMsg.text"
+        />
+        <UButton
+          color="warning"
+          variant="soft"
+          icon="i-fa6-solid:power-off"
+          block
+          :loading="rebooting"
+          @click="reboot"
+        >
+          Reboot Device
+        </UButton>
+      </div>
+
       <UButton
         color="error"
         variant="soft"
@@ -253,6 +273,15 @@ const saveError = ref<string>()
 // Live telemetry for the read-only Device info section.
 const state = ref<NemotoLiveState | null>(null)
 const deviceOnline = ref(false)
+const isOwner = ref(false)
+
+// Reboot (owner-only device action).
+const rebooting = ref(false)
+const rebootMsg = ref<{
+  text: string
+  color: 'success' | 'warning' | 'error'
+  icon: string
+} | null>(null)
 
 const presetItems = ref<Array<{ label: string; value: number }>>([{ label: 'None', value: 0 }])
 
@@ -325,7 +354,10 @@ async function load() {
       devicesApi.getDevice(deviceId.value).catch(() => null),
       nemotoApi.getState(deviceId.value).catch(() => null),
     ])
-    if (device && isNemotoDevice(device)) deviceOnline.value = device.online
+    if (device && isNemotoDevice(device)) {
+      deviceOnline.value = device.online
+      isOwner.value = device.accessLevel === 'OWNER'
+    }
     state.value = live
     Object.assign(form, {
       deviceName: config.deviceName,
@@ -392,6 +424,30 @@ async function save() {
     saveError.value = getErrorMessage(err, 'Failed to save settings')
   } finally {
     saving.value = false
+  }
+}
+
+async function reboot() {
+  rebooting.value = true
+  rebootMsg.value = null
+  try {
+    const res = await nemotoApi.reboot(deviceId.value)
+    rebootMsg.value = res.delivered
+      ? { text: 'Reboot requested', color: 'success', icon: 'i-fa6-solid:circle-check' }
+      : {
+          text: 'Device offline — command not delivered',
+          color: 'warning',
+          icon: 'i-fa6-solid:triangle-exclamation',
+        }
+  } catch (err) {
+    rebootMsg.value = {
+      text: getErrorMessage(err, 'Failed to reboot'),
+      color: 'error',
+      icon: 'i-fa6-solid:circle-exclamation',
+    }
+  } finally {
+    rebooting.value = false
+    window.setTimeout(() => (rebootMsg.value = null), 4000)
   }
 }
 
