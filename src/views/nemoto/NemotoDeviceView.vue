@@ -241,7 +241,7 @@ onMounted(() => {
 
 <style scoped>
 .now-showing-container {
-  width: min(92vw, 560px);
+  width: min(92vw, 860px);
   max-width: 100%;
 }
 

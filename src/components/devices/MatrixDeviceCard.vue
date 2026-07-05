@@ -98,7 +98,7 @@ const handleOpen = () => {
 
 <style scoped>
 .preview-container {
-  width: 280px;
+  width: 380px;
   max-width: 100%;
 }
 
