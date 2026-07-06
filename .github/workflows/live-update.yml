@@ -12,7 +12,7 @@
 #   7. assign to channel  -> 100% rollout, which makes it the current release
 #
 # Notes:
-#   - Admin paths are under /v1/app-updates/admin/…; responses are plain JSON
+#   - Admin paths are bare /v1/… (service identity is the hostname); responses are plain JSON
 #     (camelCase fields, no { data } envelope).
 #   - We use a Koios service-account token instead of GitHub OIDC.
 #   - We ship checksum-only (sign:false) until signing is verified end-to-end.
@@ -97,7 +97,7 @@ jobs:
         run: |
           set -euo pipefail
           RESP=$(curl -fsS -X POST \
-            "$API_BASE/v1/app-updates/admin/apps/$APP_ID/uploads" \
+            "$API_BASE/v1/apps/$APP_ID/uploads" \
             -H "authorization: Bearer $TOKEN" \
             -H 'content-type: application/json' \
             -d '{"filename":"bundle.zip","contentType":"application/zip"}')
@@ -127,7 +127,7 @@ jobs:
           # Server normalizes the upload into a canonical zip + sha256.
           # sign:false -> checksum-only until signing is verified.
           curl -fsS -X POST \
-            "$API_BASE/v1/app-updates/admin/apps/$APP_ID/bundles" \
+            "$API_BASE/v1/apps/$APP_ID/bundles" \
             -H "authorization: Bearer $TOKEN" \
             -H 'content-type: application/json' \
             -d "$(jq -nc --arg b "$BUNDLE_ID" --arg u "$UPLOAD_ID" \
@@ -141,7 +141,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsS -X POST \
-            "$API_BASE/v1/app-updates/admin/apps/$APP_ID/releases" \
+            "$API_BASE/v1/apps/$APP_ID/releases" \
             -H "authorization: Bearer $TOKEN" \
             -H 'content-type: application/json' \
             -d "$(jq -nc --arg c "$CHANNEL" --arg b "$BUNDLE_ID" \
