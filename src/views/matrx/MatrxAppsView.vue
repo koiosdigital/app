@@ -271,7 +271,7 @@ async function loadApps(reset = false) {
       order: sortOrder.value,
     })
 
-    if (!response) {
+    if (!response?.data) {
       throw new Error('No response from server')
     }
 
@@ -281,7 +281,7 @@ async function loadApps(reset = false) {
       apps.value = [...apps.value, ...response.data]
     }
 
-    pagination.value = response.meta
+    pagination.value = response.meta ?? null
   } catch (err) {
     error.value = getErrorMessage(err, 'Failed to load apps')
     console.error('Failed to load apps:', err)

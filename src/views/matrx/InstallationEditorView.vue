@@ -268,10 +268,7 @@ const deviceHeight = computed(() => device.value?.settings?.height ?? 32)
 
 // Merged schema: base schema + dynamic fields from generated handlers
 const mergedSchema = computed(() => {
-  console.log('[InstallationEditor] mergedSchema recomputing...')
-  console.log('[InstallationEditor] dynamicFields size:', dynamicFields.value.size)
   if (!schema.value?.schema) {
-    console.log('[InstallationEditor] mergedSchema: no base schema')
     return []
   }
 
@@ -280,14 +277,9 @@ const mergedSchema = computed(() => {
     result.push(field)
     // Insert dynamic fields after their source generated field
     if (field.type === 'generated' && dynamicFields.value.has(field.id)) {
-      const dynFields = dynamicFields.value.get(field.id)!
-      console.log(
-        `[InstallationEditor] mergedSchema: adding ${dynFields.length} dynamic fields after ${field.id}`,
-      )
-      result.push(...dynFields)
+      result.push(...dynamicFields.value.get(field.id)!)
     }
   }
-  console.log(`[InstallationEditor] mergedSchema: total ${result.length} fields`)
   return result
 })
 
@@ -415,18 +407,10 @@ async function triggerGeneratedHandlersOnLoad() {
 }
 
 function handleFieldUpdate(fieldId: string, value: unknown) {
-  console.log(`[InstallationEditor] handleFieldUpdate: ${fieldId} =`, value)
-  console.log(`[InstallationEditor] current form values:`, JSON.stringify(formState.values.value))
   formState.updateValue(fieldId, value)
-  console.log(
-    `[InstallationEditor] after update, form values:`,
-    JSON.stringify(formState.values.value),
-  )
 
   // Trigger generated field handlers
-  const generatedFields = formState.getGeneratedFieldsForSource(fieldId)
-  console.log(`[InstallationEditor] generated fields for ${fieldId}:`, generatedFields)
-  for (const genFieldId of generatedFields) {
+  for (const genFieldId of formState.getGeneratedFieldsForSource(fieldId)) {
     triggerGeneratedHandler(genFieldId)
   }
 }
@@ -440,48 +424,19 @@ function buildConfig(): Record<string, string> {
 }
 
 async function triggerGeneratedHandler(fieldId: string) {
-  console.log(`[InstallationEditor] triggerGeneratedHandler: ${fieldId}`)
   const field = schema.value?.schema.find((f) => f.id === fieldId)
-  if (!field || field.type !== 'generated') {
-    console.log(
-      `[InstallationEditor] triggerGeneratedHandler: field not found or not generated type`,
-    )
-    return
-  }
-  if (!('handler' in field) || !('source' in field)) {
-    console.log(`[InstallationEditor] triggerGeneratedHandler: no handler or source`)
-    return
-  }
+  if (!field || field.type !== 'generated') return
+  if (!('handler' in field) || !('source' in field)) return
   if (!field.handler || !field.source) return
 
   const sourceValue = formState.values.value[field.source]
-  console.log(
-    `[InstallationEditor] triggerGeneratedHandler: source field ${field.source} value =`,
-    sourceValue,
-  )
   if (!sourceValue) {
-    // Clear dynamic fields when source is empty
-    console.log(
-      `[InstallationEditor] triggerGeneratedHandler: source is empty, clearing dynamic fields`,
-    )
-    dynamicFields.value.delete(fieldId)
-    dynamicFields.value = new Map(dynamicFields.value)
+    // Clear dynamic fields when source is empty (e.g. OAuth disconnect)
+    setDynamicFields(fieldId, [])
     return
   }
 
-  let finalValue = sourceValue
-  if (typeof sourceValue === 'object') {
-    finalValue = JSON.stringify(sourceValue)
-  }
-
-  console.log(
-    `[InstallationEditor] triggerGeneratedHandler: calling handler ${field.handler} with:`,
-    finalValue,
-  )
-  console.log(
-    `[InstallationEditor] BEFORE handler call, form values:`,
-    JSON.stringify(formState.values.value),
-  )
+  const finalValue = typeof sourceValue === 'object' ? JSON.stringify(sourceValue) : sourceValue
 
   try {
     const response = await appsApi.callHandler(
@@ -491,48 +446,25 @@ async function triggerGeneratedHandler(fieldId: string) {
       finalValue as string,
     )
 
-    console.log(
-      `[InstallationEditor] AFTER handler call, form values:`,
-      JSON.stringify(formState.values.value),
-    )
-    console.log(`[InstallationEditor] triggerGeneratedHandler: response =`, response)
-
     if (response?.result) {
       // Parse the double-encoded JSON response
       try {
         const parsed = JSON.parse(response.result)
-        console.log(`[InstallationEditor] triggerGeneratedHandler: parsed result =`, parsed)
-        if (parsed.schema && Array.isArray(parsed.schema)) {
-          console.log(
-            `[InstallationEditor] triggerGeneratedHandler: setting ${parsed.schema.length} dynamic fields`,
-          )
-          // Store dynamic fields and trigger reactivity
-          dynamicFields.value.set(fieldId, parsed.schema as AppSchemaField[])
-          dynamicFields.value = new Map(dynamicFields.value)
-
-          console.log(
-            `[InstallationEditor] AFTER dynamicFields update, form values:`,
-            JSON.stringify(formState.values.value),
-          )
+        // The Go renderer wraps generated results as {version, schema: [...]};
+        // the TS renderer returns the handler's bare SchemaField[].
+        const fields = Array.isArray(parsed) ? parsed : parsed?.schema
+        if (Array.isArray(fields)) {
+          setDynamicFields(fieldId, fields as AppSchemaField[])
 
           // Initialize default values for new dynamic fields
-          for (const dynamicField of parsed.schema) {
+          for (const dynamicField of fields) {
             if (
               dynamicField.default !== undefined &&
               formState.values.value[dynamicField.id] === undefined
             ) {
-              console.log(
-                `[InstallationEditor] Setting default for dynamic field ${dynamicField.id}:`,
-                dynamicField.default,
-              )
               formState.updateValue(dynamicField.id, dynamicField.default)
             }
           }
-
-          console.log(
-            `[InstallationEditor] AFTER setting dynamic field defaults, form values:`,
-            JSON.stringify(formState.values.value),
-          )
         }
       } catch (parseErr) {
         console.error(`Failed to parse generated field result for ${fieldId}:`, parseErr)
@@ -541,6 +473,33 @@ async function triggerGeneratedHandler(fieldId: string) {
   } catch (err) {
     console.error(`Handler error for ${fieldId}:`, err)
   }
+}
+
+/**
+ * Replace the dynamic fields produced by a generated field, pruning form
+ * values of fields that no longer exist so they don't get saved into the
+ * installation config (e.g. a station picked before an OAuth disconnect).
+ */
+function setDynamicFields(fieldId: string, fields: AppSchemaField[]) {
+  const previous = dynamicFields.value.get(fieldId) ?? []
+  const kept = new Set(fields.map((f) => f.id))
+  const removed = previous.filter(
+    (f) => !kept.has(f.id) && formState.values.value[f.id] !== undefined,
+  )
+  if (removed.length > 0) {
+    const next = { ...formState.values.value }
+    for (const f of removed) {
+      delete next[f.id]
+    }
+    formState.values.value = next
+  }
+
+  if (fields.length === 0) {
+    dynamicFields.value.delete(fieldId)
+  } else {
+    dynamicFields.value.set(fieldId, fields)
+  }
+  dynamicFields.value = new Map(dynamicFields.value)
 }
 
 function handleHandlerResult(fieldId: string, result: unknown) {
@@ -691,7 +650,9 @@ async function checkOAuthRestoration() {
         )
 
         if (result?.result) {
-          formState.updateValue(fieldId, result.result)
+          // Route through handleFieldUpdate so generated fields sourced from
+          // this OAuth field re-run their handlers (matches the web popup path)
+          handleFieldUpdate(fieldId, result.result)
         }
       } catch (err) {
         console.error('OAuth handler error:', err)
