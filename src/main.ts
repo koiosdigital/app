@@ -51,7 +51,17 @@ if (Capacitor.isNativePlatform()) {
         return
       }
 
-      const path = `${parsed.pathname}${parsed.search}${parsed.hash}`
+      // Custom-scheme deep links (net.koiosdigital.app://oauth/callback) get
+      // their first path segment parsed as the URL "host" — so pathname is only
+      // "/callback" and "oauth" lives in parsed.host. Fold the host back into
+      // the path so it resolves to the real route (/oauth/callback). Universal
+      // links (https://app.koiosdigital.net/...) carry the real domain in the
+      // host and must keep dropping it.
+      const isUniversalLink = parsed.protocol === 'https:' || parsed.protocol === 'http:'
+      const pathname =
+        !isUniversalLink && parsed.host ? `/${parsed.host}${parsed.pathname}` : parsed.pathname
+
+      const path = `${pathname}${parsed.search}${parsed.hash}`
       if (path) {
         router.push(path)
       }
