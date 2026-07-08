@@ -127,9 +127,12 @@ async function initPKCE() {
 onMounted(initPKCE)
 
 function getRedirectUri(): string {
-  let baseUrl = Capacitor.isNativePlatform() ? 'net.koiosdigital.app:/' : window.location.origin
+  // Native must use the exact registered custom-scheme URI — the token exchange
+  // (InstallationEditorView.checkOAuthRestoration) has to send an identical
+  // redirect_uri, so both derive it from this one constant.
+  if (Capacitor.isNativePlatform()) return ENV.oauth.nativeRedirectUrl
   // OAuth providers often don't accept localhost - use 127.0.0.1 instead
-  baseUrl = baseUrl.replace('://localhost', '://127.0.0.1')
+  const baseUrl = window.location.origin.replace('://localhost', '://127.0.0.1')
   return `${baseUrl}/oauth/callback`
 }
 

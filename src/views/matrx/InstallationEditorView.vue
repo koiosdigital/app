@@ -604,9 +604,12 @@ const oauthFlow = useOAuthFlow({
 })
 
 function getRedirectUri(): string {
-  let baseUrl = Capacitor.isNativePlatform() ? ENV.appNativeUrl : window.location.origin
+  // Must exactly match the redirect_uri sent in the authorization request
+  // (SchemaOAuthField.getRedirectUri) — OAuth token exchange requires it. Both
+  // derive the native value from this one constant.
+  if (Capacitor.isNativePlatform()) return ENV.oauth.nativeRedirectUrl
   // OAuth providers often don't accept localhost - use 127.0.0.1 instead
-  baseUrl = baseUrl.replace('://localhost', '://127.0.0.1')
+  const baseUrl = window.location.origin.replace('://localhost', '://127.0.0.1')
   return `${baseUrl}/oauth/callback`
 }
 
