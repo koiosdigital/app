@@ -502,6 +502,12 @@ async function checkCryptoStatus() {
     const status = await bleStore.console.getCryptoStatus()
     cryptoStatus.value = status
 
+    // Device crypto credentials are corrupted and cannot be recovered
+    if (status === KDCryptoStatus.BAD_DS_PARAMS) {
+      router.replace('/setup/failed')
+      return
+    }
+
     // If device has no cert or CSR, device is still initializing
     if (status === KDCryptoStatus.UNINITIALIZED || status === KDCryptoStatus.KEY_GENERATED) {
       isCheckingStatus.value = false

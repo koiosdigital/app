@@ -6,7 +6,7 @@ import SettingsView from '@/views/SettingsView.vue'
 import SetupNewView from '@/views/setup/SetupNewView.vue'
 import SetupBindDpopView from '@/views/setup/SetupBindDpopView.vue'
 import SetupCryptoView from '@/views/setup/SetupCryptoView.vue'
-import SetupEnciphermentParamsView from '@/views/setup/SetupEnciphermentParamsView.vue'
+import SetupFailedView from '@/views/setup/SetupFailedView.vue'
 import SetupNetworkView from '@/views/setup/SetupNetworkView.vue'
 import SetupSuccessfulView from '@/views/setup/SetupSuccessfulView.vue'
 import SetupLicenseCallbackView from '@/views/setup/SetupLicenseCallbackView.vue'
@@ -58,9 +58,9 @@ const router = createRouter({
       component: SetupCryptoView,
     },
     {
-      path: '/setup/encipherment_params',
-      name: 'setup-encipherment-params',
-      component: SetupEnciphermentParamsView,
+      path: '/setup/failed',
+      name: 'setup-failed',
+      component: SetupFailedView,
     },
     {
       path: '/setup/network',

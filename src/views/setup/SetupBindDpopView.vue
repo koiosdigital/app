@@ -251,8 +251,8 @@ const error = ref<{ title: string; description: string } | undefined>(undefined)
  */
 function getNextRoute(): string {
   if (deviceConfig.value.hasCrypto) {
-    // Device has crypto module - go to encipherment params
-    return '/setup/encipherment_params'
+    // Device has crypto module - verify its security credentials
+    return '/setup/crypto'
   } else {
     // Device has no crypto module - skip to network setup
     return '/setup/network'

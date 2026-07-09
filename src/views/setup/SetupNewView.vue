@@ -222,7 +222,7 @@ async function selectDevice(device: BleDevice) {
     // (e.g. Improv). Methods that do need one still flow through bind_dpop.
     const caps = bleStore.connection.capabilities
     if (caps && !caps.needsSession) {
-      router.push(caps.hasCrypto ? '/setup/encipherment_params' : '/setup/network')
+      router.push(caps.hasCrypto ? '/setup/crypto' : '/setup/network')
     } else {
       router.push('/setup/bind_dpop')
     }
