@@ -87,10 +87,10 @@ export const appsApi = {
     id: string,
     options?: { width?: number; height?: number },
   ): Promise<string | null> {
-    const dimensions = `${options?.width ?? 64}x${options?.height ?? 32}`
-    const { data, error } = await apiClient.GET('/v1/apps/{id}/preview/{dimensions}.webp', {
+    const dims = `${options?.width ?? 64}x${options?.height ?? 32}.webp`
+    const { data, error } = await apiClient.GET('/v1/apps/{id}/preview/{dims}', {
       params: {
-        path: { id, dimensions },
+        path: { id, dims },
       },
       parseAs: 'arrayBuffer',
     })

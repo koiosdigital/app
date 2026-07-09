@@ -81,7 +81,6 @@ export const devicesApi = {
       params: {
         path: { id },
       },
-      // @ts-expect-error - API types may not be regenerated yet
       body: { type: 'MATRX', ...settings },
     })
 
@@ -204,7 +203,7 @@ export const devicesApi = {
       params: {
         path: { deviceId },
       },
-      body: { installations },
+      body: { items: installations },
     })
 
     if (error) {
@@ -326,12 +325,14 @@ export const devicesApi = {
    * expose /v1/shares/accept. Remove the casts once the schema catches up.
    */
   async acceptShareInvite(token: string): Promise<AcceptShareResult> {
-    const { data, error } = await (apiClient as unknown as {
-      POST: (
-        path: string,
-        init: { body: unknown },
-      ) => Promise<{ data?: AcceptShareResult; error?: unknown }>
-    }).POST('/v1/shares/accept', {
+    const { data, error } = await (
+      apiClient as unknown as {
+        POST: (
+          path: string,
+          init: { body: unknown },
+        ) => Promise<{ data?: AcceptShareResult; error?: unknown }>
+      }
+    ).POST('/v1/shares/accept', {
       body: { token },
     })
 

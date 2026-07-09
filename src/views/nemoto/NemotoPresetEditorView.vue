@@ -118,9 +118,14 @@ onMounted(async () => {
   try {
     if (props.mode === 'edit' && props.presetId != null) {
       const preset = await nemotoApi.getPreset(props.deviceId, props.presetId)
+      if (preset.source === 'url' || !preset.flaps) {
+        // URL presets have no flap grid to paint — they're edited from the list.
+        router.replace(`/nemoto/${props.deviceId}/presets`)
+        return
+      }
       name.value = preset.name
-      width.value = preset.width
-      height.value = preset.height
+      width.value = preset.width ?? 22
+      height.value = preset.height ?? 6
       grid.value = preset.flaps.map((row) => [...row])
     } else {
       grid.value = blankGrid(width.value, height.value)

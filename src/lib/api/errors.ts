@@ -6,12 +6,10 @@ type ErrorResponseDto = components['schemas']['ErrorResponseDto']
  * Type guard to check if an object is an ErrorResponseDto
  */
 function isErrorResponse(error: unknown): error is ErrorResponseDto {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof (error as ErrorResponseDto).message === 'string'
-  )
+  if (typeof error !== 'object' || error === null) return false
+  const e = error as ErrorResponseDto
+  // device-api returns `{ error }`; other services used `{ message }`.
+  return typeof e.message === 'string' || typeof e.error === 'string'
 }
 
 /**
@@ -30,7 +28,7 @@ export function getErrorMessage(error: unknown, fallback = 'An unexpected error 
 
   // Handle ErrorResponseDto from API
   if (isErrorResponse(error)) {
-    return error.message
+    return error.message ?? error.error ?? fallback
   }
 
   // Handle standard Error objects

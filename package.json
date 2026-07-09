@@ -14,7 +14,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,vue,js,json,css}\"",
     "typecheck": "vue-tsc -p ./tsconfig.app.json",
     "postinstall": "buf generate",
-    "generate:api": "openapi-typescript http://localhost:9090/docs-json -o src/types/api.d.ts",
+    "generate:api": "openapi-typescript ../device-api/openapi.json -o src/types/api.d.ts",
     "generate:provisioning-api": "openapi-typescript https://provisioning.api.koiosdigital.net/swagger.json -o src/types/provisioning-api.d.ts"
   },
   "dependencies": {
