@@ -28,6 +28,10 @@ export async function fetchProtoVersion(
   }
 
   try {
+    // First GATT op right after service discovery can fail sporadically on
+    // some stacks (Chrome on macOS/Windows) — give the link a moment to settle.
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
     const request = new Uint8Array([0xee])
     await BleClient.write(
       deviceId,
