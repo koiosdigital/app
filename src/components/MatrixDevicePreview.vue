@@ -1,7 +1,7 @@
 <template>
   <div class="matrix-frame" :class="{ 'has-frame': showFrame }">
     <div class="matrix-screen" :style="screenStyle">
-      <img :src="src" :alt="alt" class="matrix-image" :style="imageStyle" />
+      <img :src="src" :alt="alt" class="matrix-image" />
     </div>
   </div>
 </template>
@@ -37,39 +37,26 @@ const screenStyle = computed(() => ({
   aspectRatio: `${props.width} / ${props.height}`,
 }))
 
-const imageStyle = computed(() => ({
-  // Image is scaled via CSS to fill container
-  // The mask will tile based on the LED pixel count
-  '--led-cols': props.width,
-  '--led-rows': props.height,
-}))
-
 /**
- * Generate an SVG data URL for a single LED dot mask tile.
+ * Generate an SVG data URL for the full LED dot grid mask.
+ * A single SVG covering the whole matrix (one dot per LED cell) is scaled
+ * as one image, so it stays aligned with the scaled image at any size —
+ * unlike a tiled mask, where per-tile pixel rounding drifts on mobile.
  * The dot takes up ~75% of each cell with a small gap.
  */
 const dotMaskUrl = computed(() => {
   const dotRatio = 0.75 // dot size relative to cell
-  const center = 0.5
-
-  if (props.roundDots) {
-    const radius = dotRatio / 2
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1">
-      <circle cx="${center}" cy="${center}" r="${radius}" fill="white"/>
-    </svg>`
-    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
-  } else {
-    const offset = (1 - dotRatio) / 2
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1">
-      <rect x="${offset}" y="${offset}" width="${dotRatio}" height="${dotRatio}" fill="white"/>
-    </svg>`
-    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
-  }
+  const dot = props.roundDots
+    ? `<circle cx="0.5" cy="0.5" r="${dotRatio / 2}" fill="white"/>`
+    : `<rect x="${(1 - dotRatio) / 2}" y="${(1 - dotRatio) / 2}" width="${dotRatio}" height="${dotRatio}" fill="white"/>`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${props.width} ${props.height}" preserveAspectRatio="none">
+    <defs>
+      <pattern id="dot" width="1" height="1" patternUnits="userSpaceOnUse">${dot}</pattern>
+    </defs>
+    <rect width="${props.width}" height="${props.height}" fill="url(#dot)"/>
+  </svg>`
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
 })
-
-// Mask size as percentage of container - one tile per LED pixel
-const maskSizeX = computed(() => `${100 / props.width}%`)
-const maskSizeY = computed(() => `${100 / props.height}%`)
 </script>
 
 <style scoped>
@@ -100,16 +87,14 @@ const maskSizeY = computed(() => `${100 / props.height}%`)
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  /* LED dot mask - tiles based on LED pixel count */
+  /* LED dot mask - single full-grid SVG scaled with the image */
   mask-image: v-bind(dotMaskUrl);
-  mask-repeat: repeat;
-  mask-size: v-bind(maskSizeX) v-bind(maskSizeY);
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
   mask-position: 0 0;
-  mask-origin: content-box;
   -webkit-mask-image: v-bind(dotMaskUrl);
-  -webkit-mask-repeat: repeat;
-  -webkit-mask-size: v-bind(maskSizeX) v-bind(maskSizeY);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
   -webkit-mask-position: 0 0;
-  -webkit-mask-origin: content-box;
 }
 </style>

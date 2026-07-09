@@ -443,8 +443,7 @@ onUnmounted(() => {
 <style scoped>
 /* Now playing container - provides size constraints while child fills it */
 .now-playing-container {
-  width: min(80vw, 860px); /* Explicit width - uses 80vw or 400px, whichever is smaller */
-  max-height: 40vh;
+  width: min(80vw, 560px); /* Explicit width - uses 80vw or 400px, whichever is smaller */
   max-width: 40vw;
 }
 
