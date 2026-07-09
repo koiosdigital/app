@@ -66,6 +66,14 @@ export const devicesApi = {
         screenBrightness?: number
         autoBrightnessEnabled?: boolean
         screenOffLux?: number
+        quietWindows?: Array<{
+          dayMask: number
+          startHour: number
+          startMin: number
+          endHour: number
+          endMin: number
+          enabled: boolean
+        }>
       }
     },
   ) {

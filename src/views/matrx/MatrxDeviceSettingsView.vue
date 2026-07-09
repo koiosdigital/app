@@ -109,6 +109,83 @@
           </div>
         </div>
 
+        <!-- Quiet Hours -->
+        <div class="border-t border-white/10 pt-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-medium text-white/70">Quiet Hours</h3>
+              <p class="text-xs text-white/50">Turn the screen off on a schedule</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <UBadge v-if="isQuietNow" color="primary" variant="soft">Quiet now</UBadge>
+              <UButton
+                size="xs"
+                color="neutral"
+                variant="soft"
+                icon="i-fa6-solid:plus"
+                :disabled="quietWindows.length >= 7"
+                @click="addWindow"
+              >
+                Add
+              </UButton>
+            </div>
+          </div>
+
+          <p v-if="!quietWindows.length" class="text-sm text-white/50">
+            No quiet hours configured. The screen stays on around the clock.
+          </p>
+
+          <div
+            v-for="(w, i) in quietWindows"
+            :key="i"
+            class="space-y-3 rounded-lg bg-white/5 p-3"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex flex-wrap gap-1">
+                <button
+                  v-for="(label, bit) in dayLabels"
+                  :key="bit"
+                  type="button"
+                  class="h-7 w-7 rounded-full text-xs font-semibold transition-colors"
+                  :class="isDay(w, bit) ? 'bg-primary-500 text-white' : 'bg-white/10 text-white/60'"
+                  :aria-label="dayFull[bit]"
+                  @click="toggleDay(w, bit)"
+                >
+                  {{ label }}
+                </button>
+              </div>
+              <UButton
+                color="error"
+                variant="ghost"
+                size="xs"
+                square
+                icon="i-fa6-solid:trash"
+                @click="quietWindows.splice(i, 1)"
+              />
+            </div>
+
+            <div class="flex items-center gap-2 text-sm">
+              <UInput
+                type="time"
+                :model-value="fmtTime(w.startHour, w.startMin)"
+                class="w-28"
+                aria-label="Start"
+                @update:model-value="setStart(w, String($event))"
+              />
+              <span class="text-white/50">→</span>
+              <UInput
+                type="time"
+                :model-value="fmtTime(w.endHour, w.endMin)"
+                class="w-28"
+                aria-label="End"
+                @update:model-value="setEnd(w, String($event))"
+              />
+              <div class="flex-1" />
+              <USwitch v-model="w.enabled" />
+            </div>
+          </div>
+        </div>
+
         <!-- Device Info -->
         <div class="border-t border-white/10 pt-6 space-y-3">
           <h3 class="text-sm font-medium text-white/50 uppercase tracking-wider">Device Info</h3>
@@ -363,17 +440,74 @@ const deleting = ref(false)
 
 const isOwner = computed(() => device.value?.accessLevel === 'OWNER')
 
+// A quiet-hours window. Times are the device's local wall clock; a window
+// where end < start wraps past midnight. Matches the device-api MatrxSettings.
+interface MatrxQuietWindow {
+  dayMask: number // bit0 = Sunday .. bit6 = Saturday
+  startHour: number
+  startMin: number
+  endHour: number
+  endMin: number
+  enabled: boolean
+}
+
+const dayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+const dayFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
 // Editable settings
 const displayName = ref('')
 const screenBrightness = ref(200)
 const autoBrightnessEnabled = ref(false)
 const screenOffLux = ref(3)
+const quietWindows = ref<MatrxQuietWindow[]>([])
+// Device-reported: whether the device is currently inside a quiet window.
+const isQuietNow = ref(false)
 
 // Original values for change detection
 const originalDisplayName = ref('')
 const originalScreenBrightness = ref(200)
 const originalAutoBrightnessEnabled = ref(false)
 const originalScreenOffLux = ref(3)
+const originalQuietWindows = ref('[]') // JSON snapshot for dirty-tracking
+
+function isDay(w: MatrxQuietWindow, bit: number): boolean {
+  return (w.dayMask & (1 << bit)) !== 0
+}
+function toggleDay(w: MatrxQuietWindow, bit: number) {
+  w.dayMask ^= 1 << bit
+}
+function fmtTime(hour: number, min: number): string {
+  return `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`
+}
+function parseTime(v: string): { hour: number; min: number } | null {
+  const [h, m] = v.split(':').map(Number)
+  if (!Number.isInteger(h) || !Number.isInteger(m)) return null
+  return { hour: h, min: m }
+}
+function setStart(w: MatrxQuietWindow, v: string) {
+  const t = parseTime(v)
+  if (t) {
+    w.startHour = t.hour
+    w.startMin = t.min
+  }
+}
+function setEnd(w: MatrxQuietWindow, v: string) {
+  const t = parseTime(v)
+  if (t) {
+    w.endHour = t.hour
+    w.endMin = t.min
+  }
+}
+function addWindow() {
+  quietWindows.value.push({
+    dayMask: 0x7f, // every day (bit0=Sun .. bit6=Sat)
+    startHour: 22,
+    startMin: 0,
+    endHour: 7,
+    endMin: 0,
+    enabled: true,
+  })
+}
 
 const deviceWidth = computed(() => device.value?.settings?.width ?? 64)
 const deviceHeight = computed(() => device.value?.settings?.height ?? 32)
@@ -386,7 +520,8 @@ const hasChanges = computed(() => {
     displayName.value !== originalDisplayName.value ||
     screenBrightness.value !== originalScreenBrightness.value ||
     autoBrightnessEnabled.value !== originalAutoBrightnessEnabled.value ||
-    screenOffLux.value !== originalScreenOffLux.value
+    screenOffLux.value !== originalScreenOffLux.value ||
+    JSON.stringify(quietWindows.value) !== originalQuietWindows.value
   )
 })
 
@@ -420,12 +555,26 @@ async function loadDevice() {
     screenBrightness.value = settings?.typeSettings?.screenBrightness ?? 200
     autoBrightnessEnabled.value = settings?.typeSettings?.autoBrightnessEnabled ?? false
     screenOffLux.value = settings?.typeSettings?.screenOffLux ?? 3
+    // quietWindows / isQuietNow aren't in the generated DTO yet; read via cast.
+    const ts = settings?.typeSettings as
+      | { quietWindows?: MatrxQuietWindow[]; isQuietNow?: boolean }
+      | undefined
+    quietWindows.value = (ts?.quietWindows ?? []).map((w) => ({
+      dayMask: w.dayMask,
+      startHour: w.startHour,
+      startMin: w.startMin,
+      endHour: w.endHour,
+      endMin: w.endMin,
+      enabled: w.enabled,
+    }))
+    isQuietNow.value = ts?.isQuietNow ?? false
 
     // Store original values
     originalDisplayName.value = displayName.value
     originalScreenBrightness.value = screenBrightness.value
     originalAutoBrightnessEnabled.value = autoBrightnessEnabled.value
     originalScreenOffLux.value = screenOffLux.value
+    originalQuietWindows.value = JSON.stringify(quietWindows.value)
   } catch (err) {
     error.value = getErrorMessage(err, 'Failed to load device')
     console.error('Failed to load device:', err)
@@ -441,10 +590,13 @@ async function saveSettings() {
   try {
     // Build settings update payload
     const displayNameChanged = displayName.value !== originalDisplayName.value
+    const quietWindowsChanged =
+      JSON.stringify(quietWindows.value) !== originalQuietWindows.value
     const typeSettingsChanged =
       screenBrightness.value !== originalScreenBrightness.value ||
       autoBrightnessEnabled.value !== originalAutoBrightnessEnabled.value ||
-      screenOffLux.value !== originalScreenOffLux.value
+      screenOffLux.value !== originalScreenOffLux.value ||
+      quietWindowsChanged
 
     if (displayNameChanged || typeSettingsChanged) {
       await devicesApi.updateMatrxSettings(deviceId.value, {
@@ -454,6 +606,7 @@ async function saveSettings() {
             screenBrightness: screenBrightness.value,
             autoBrightnessEnabled: autoBrightnessEnabled.value,
             screenOffLux: screenOffLux.value,
+            quietWindows: quietWindows.value.map((w) => ({ ...w })),
           },
         }),
       })
@@ -464,6 +617,7 @@ async function saveSettings() {
     originalScreenBrightness.value = screenBrightness.value
     originalAutoBrightnessEnabled.value = autoBrightnessEnabled.value
     originalScreenOffLux.value = screenOffLux.value
+    originalQuietWindows.value = JSON.stringify(quietWindows.value)
 
     router.back()
   } catch (err) {
