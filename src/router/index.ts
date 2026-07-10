@@ -22,7 +22,12 @@ import NemotoPresetsView from '@/views/nemoto/NemotoPresetsView.vue'
 import NemotoPresetEditorView from '@/views/nemoto/NemotoPresetEditorView.vue'
 import NemotoMessageView from '@/views/nemoto/NemotoMessageView.vue'
 import NemotoSchedulesView from '@/views/nemoto/NemotoSchedulesView.vue'
+import TranquilDeviceView from '@/views/tranquil/TranquilDeviceView.vue'
+import TranquilPatternsView from '@/views/tranquil/TranquilPatternsView.vue'
+import TranquilStoreView from '@/views/tranquil/TranquilStoreView.vue'
+import TranquilSettingsView from '@/views/tranquil/TranquilSettingsView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
+import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -169,6 +174,28 @@ const router = createRouter({
       name: 'nemoto-schedules',
       component: NemotoSchedulesView,
     },
+    {
+      // LAN-direct Tranquil table, keyed by its mDNS service name. The active
+      // connection is set up in HomeView.openLocalDevice before navigation.
+      path: '/tranquil/local/:id',
+      name: 'tranquil-local-device',
+      component: TranquilDeviceView,
+    },
+    {
+      path: '/tranquil/local/:id/patterns',
+      name: 'tranquil-local-patterns',
+      component: TranquilPatternsView,
+    },
+    {
+      path: '/tranquil/local/:id/store',
+      name: 'tranquil-local-store',
+      component: TranquilStoreView,
+    },
+    {
+      path: '/tranquil/local/:id/settings',
+      name: 'tranquil-local-settings',
+      component: TranquilSettingsView,
+    },
   ],
 })
 
@@ -200,6 +227,17 @@ router.beforeEach(async (to) => {
   }
 
   return true
+})
+
+// Own the LAN-direct Tranquil connection at the section level: it persists while
+// the user moves between a table's controls/patterns/store/settings pages and is
+// torn down only when they leave the device entirely. (connect() happens in
+// HomeView.openLocalDevice.)
+const TRANQUIL_PREFIX = '/tranquil/local/'
+router.afterEach((to, from) => {
+  if (from.path.startsWith(TRANQUIL_PREFIX) && !to.path.startsWith(TRANQUIL_PREFIX)) {
+    useTranquilLocalStore().disconnect()
+  }
 })
 
 export default router

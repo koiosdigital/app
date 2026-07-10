@@ -1,6 +1,23 @@
 <template>
   <PageLayout :on-refresh="loadDevices">
     <section class="flex flex-col gap-6 px-5 py-6">
+      <!-- Native-only: Koios devices found on the LAN via mDNS. Hidden on web
+           and whenever nothing has been discovered yet. -->
+      <div
+        v-if="localDevicesStore.supported && localDevicesStore.devices.length"
+        class="flex flex-col gap-3"
+      >
+        <h2 class="text-xs uppercase tracking-[0.35em] text-white/50">On your network</h2>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <LocalDeviceCard
+            v-for="local in localDevicesStore.devices"
+            :key="local.id"
+            :device="local"
+            @open="openLocalDevice"
+          />
+        </div>
+      </div>
+
       <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <UCard v-for="i in 3" :key="i" class="bg-white/5">
           <USkeleton class="h-32 w-full" />
@@ -53,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import PageLayout from '@/layouts/PageLayout.vue'
@@ -61,9 +78,13 @@ import { usePageHeader } from '@/composables/usePageHeader'
 import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
 import NemotoDeviceCard from '@/components/devices/NemotoDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
+import LocalDeviceCard from '@/components/devices/LocalDeviceCard.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import { type ApiDevice, isMatrxDevice, isNemotoDevice } from '@/lib/api/mappers/deviceMapper'
+import { useLocalDevicesStore } from '@/stores/localDevices'
+import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { type LocalDevice, normalizeKoiosType } from '@/lib/mdns/discovery'
 
 useHead({
   title: 'Devices | Koios Digital',
@@ -72,6 +93,8 @@ useHead({
 
 const router = useRouter()
 const { setHeader } = usePageHeader()
+const localDevicesStore = useLocalDevicesStore()
+const tranquilLocal = useTranquilLocalStore()
 
 const devices = ref<ApiDevice[]>([])
 const loading = ref(false)
@@ -194,6 +217,19 @@ const openMessage = (id: string) => {
   router.push(`/nemoto/${id}/message`)
 }
 
+const openLocalDevice = (device: LocalDevice) => {
+  // Tranquil is LAN-direct controlled: establish the connection here (while the
+  // mDNS list is still in memory) before navigating to the device page, which
+  // then drives the already-active connection.
+  if (normalizeKoiosType(device.typeRaw) === 'TRANQUIL') {
+    tranquilLocal.connect(device)
+    router.push(`/tranquil/local/${encodeURIComponent(device.id)}`)
+    return
+  }
+  // TODO(fold-in): other device families' LAN pages not built yet.
+  console.info('Open local device', device.type, device.name, device.baseUrl)
+}
+
 onMounted(() => {
   setHeader({
     title: 'Devices',
@@ -203,5 +239,11 @@ onMounted(() => {
     ],
   })
   loadDevices()
+  // Native-only; a no-op on web (store.supported === false).
+  localDevicesStore.start()
+})
+
+onUnmounted(() => {
+  localDevicesStore.stop()
 })
 </script>

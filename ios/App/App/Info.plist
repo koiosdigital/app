@@ -39,6 +39,20 @@
 	<string>This app uses Bluetooth to connect and setup your Koios Digital devices.</string>
 	<key>NSBluetoothWhileInUseUsageDescription</key>
 	<string>This app uses Bluetooth to connect and setup your Koios Digital devices.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app discovers your Koios Digital devices on your local network to control them directly.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_koiosdigital._tcp</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Allow http/ws to devices on the local network (Tranquil tables serve
+		     their control API over plain HTTP on the LAN). Covers .local hosts
+		     and private/link-local IP ranges without disabling ATS globally. -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

@@ -25,6 +25,8 @@ PODS:
     - OSInAppBrowserLib (~> 2.3.1)
   - CapacitorPreferences (8.0.0):
     - Capacitor
+  - CapacitorZeroconf (4.0.0):
+    - Capacitor
   - CapawesomeCapacitorLiveUpdate (8.2.3):
     - Alamofire (~> 5.10.2)
     - Capacitor
@@ -46,6 +48,7 @@ DEPENDENCIES:
   - "CapacitorGeolocation (from `../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation`)"
   - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser`)"
   - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences`)"
+  - "CapacitorZeroconf (from `../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.0.0_bonjour@3.5.1/node_modules/capacitor-zeroconf`)"
   - "CapawesomeCapacitorLiveUpdate (from `../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update`)"
   - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+578374_d597849d0ea3b4f45ffc89b034aedfae/node_modules/@capawesome-team/capacitor-oauth`)"
 
@@ -76,6 +79,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser"
   CapacitorPreferences:
     :path: "../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences"
+  CapacitorZeroconf:
+    :path: "../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.0.0_bonjour@3.5.1/node_modules/capacitor-zeroconf"
   CapawesomeCapacitorLiveUpdate:
     :path: "../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update"
   CapawesomeTeamCapacitorOauth:
@@ -93,12 +98,13 @@ SPEC CHECKSUMS:
   CapacitorGeolocation: 7132de914f9d853ec4642dc1d36e4e2018a4e8a8
   CapacitorInappbrowser: 66fc8cc3ff414c2393fe5dcfd52815cf8b6a046f
   CapacitorPreferences: 443fabe9670226200e595658a87ef0b1566716d4
+  CapacitorZeroconf: 32e19c259908ca1b97af27aeff25c26b8e948021
   CapawesomeCapacitorLiveUpdate: dddec08ed1086d61328823e20fdc52946241796f
   CapawesomeTeamCapacitorOauth: a6bf817db15bbd82c59f59ac0bc760cdf4bf3a07
   IONGeolocationLib: a5e40b54edc2ee9902036eda5aaa41ddf07bb68d
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 2c023653c5a0dc210118858cfa6187d625d51401
+PODFILE CHECKSUM: 183a8a5251f6ac49e80ea6c79e9dbd51bf654c6d
 
 COCOAPODS: 1.16.2

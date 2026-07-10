@@ -20,6 +20,7 @@ def capacitor_pods
   pod 'CapacitorPreferences', :path => '../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences'
   pod 'CapawesomeTeamCapacitorOauth', :path => '../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+578374_d597849d0ea3b4f45ffc89b034aedfae/node_modules/@capawesome-team/capacitor-oauth'
   pod 'CapawesomeCapacitorLiveUpdate', :path => '../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update'
+  pod 'CapacitorZeroconf', :path => '../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.0.0_bonjour@3.5.1/node_modules/capacitor-zeroconf'
 end
 
 target 'App' do
