@@ -239,9 +239,11 @@ export interface Schedule {
 }
 
 // LED
+// Effect IDs are string slugs ('SOLID', 'RAINBOW', ...) — the firmware's
+// effect engine registers effects by name; there are no numeric IDs.
 export interface LEDEffect {
   name: string
-  id: number
+  id: string
 }
 
 export interface LEDChannelInfo {
@@ -256,7 +258,7 @@ export interface LEDConfigResponse {
 }
 
 export interface LEDChannelState {
-  effect_id: number
+  effect_id: string
   brightness: number
   speed: number
   on: boolean
@@ -264,7 +266,7 @@ export interface LEDChannelState {
 }
 
 export interface LEDChannelUpdate {
-  effect_id?: number
+  effect_id?: string
   brightness?: number
   speed?: number
   on?: boolean

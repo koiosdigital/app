@@ -86,24 +86,22 @@
         />
       </div>
 
-      <!-- Speed -->
+      <!-- Speed (device scale 1..5; shown as turtle→rabbit, no numbers) -->
       <UCard class="bg-white/5">
         <div class="flex flex-col gap-2">
-          <div class="flex items-center justify-between text-sm">
-            <span class="font-medium">Speed</span>
-            <span class="text-white/60">{{ feedRate.toFixed(2) }}x</span>
-          </div>
-          <input
-            type="range"
-            min="0.25"
-            max="2"
-            step="0.25"
-            :value="feedRate"
-            class="w-full accent-primary-500"
-            @change="onSpeedChange"
-          />
-          <div class="flex justify-between text-xs text-white/40">
-            <span>0.25x</span><span>1x</span><span>2x</span>
+          <span class="text-sm font-medium">Speed</span>
+          <div class="flex items-center gap-3">
+            <UIcon name="i-lucide:turtle" class="h-5 w-5 shrink-0 text-white/60" aria-label="Slower" />
+            <input
+              type="range"
+              min="1"
+              max="5"
+              step="0.25"
+              :value="feedRate"
+              class="w-full accent-primary-500"
+              @change="onSpeedChange"
+            />
+            <UIcon name="i-lucide:rabbit" class="h-5 w-5 shrink-0 text-white/60" aria-label="Faster" />
           </div>
         </div>
       </UCard>
@@ -181,7 +179,7 @@ const sections = [
 
 const playerState = computed(() => store.playerState)
 const progressPercent = computed(() => playerState.value?.progress_percent ?? 0)
-const feedRate = computed(() => playerState.value?.feed_rate ?? 1)
+const feedRate = computed(() => playerState.value?.feed_rate ?? 3)
 const isPlaying = computed(() => playerState.value?.state === 'PLAYING')
 const isStopped = computed(() => !playerState.value || playerState.value.state === 'STOPPED')
 const isPlaylist = computed(

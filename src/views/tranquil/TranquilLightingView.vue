@@ -79,7 +79,7 @@
       </UCard>
 
       <!-- Animation speed (animated effects only) -->
-      <UCard v-if="channel.effect_id !== 0" class="bg-white/5">
+      <UCard v-if="isAnimatedEffect" class="bg-white/5">
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between text-sm">
             <span class="font-medium">Animation speed</span>
@@ -132,12 +132,15 @@ const config = ref<LEDConfigResponse | null>(null)
 const effects = ref<LEDEffect[]>([])
 
 const channel = reactive<LEDChannelState>({
-  effect_id: 0,
+  effect_id: 'SOLID',
   brightness: 255,
   speed: 128,
   on: true,
   color: '#ffffff',
 })
+
+// Solid is static — the speed slider only applies to animated effects
+const isAnimatedEffect = computed(() => channel.effect_id.toUpperCase() !== 'SOLID')
 
 const hasLEDs = computed(() => (config.value?.channels.length ?? 0) > 0)
 const ledCount = computed(() => config.value?.channels[0]?.num_leds ?? 0)
@@ -180,7 +183,7 @@ async function apply(update: Partial<LEDChannelState>) {
 }
 
 const setOn = (on: boolean) => apply({ on })
-const setEffect = (effect_id: number) => apply({ effect_id })
+const setEffect = (effect_id: string) => apply({ effect_id })
 const onBrightness = (e: Event) =>
   apply({ brightness: Math.round((Number((e.target as HTMLInputElement).value) / 100) * 255) })
 const onSpeed = (e: Event) => apply({ speed: Number((e.target as HTMLInputElement).value) })
