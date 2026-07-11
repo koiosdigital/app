@@ -28,15 +28,13 @@
         </div>
       </UCard>
 
-      <!-- Color -->
+      <!-- Color (matrx-schema style: presets + custom picker) -->
       <UCard class="bg-white/5">
-        <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
           <span class="font-medium">Color</span>
-          <input
-            type="color"
-            :value="channel.color"
-            class="h-20 w-full cursor-pointer rounded-lg border-0 bg-transparent"
-            @change="onColor"
+          <TranquilColorPicker
+            :model-value="channel.color || '#ffffff'"
+            @update:model-value="onColor"
           />
         </div>
       </UCard>
@@ -114,6 +112,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
+import TranquilColorPicker from '@/components/tranquil/TranquilColorPicker.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
@@ -185,7 +184,7 @@ const setEffect = (effect_id: number) => apply({ effect_id })
 const onBrightness = (e: Event) =>
   apply({ brightness: Math.round((Number((e.target as HTMLInputElement).value) / 100) * 255) })
 const onSpeed = (e: Event) => apply({ speed: Number((e.target as HTMLInputElement).value) })
-const onColor = (e: Event) => apply({ color: (e.target as HTMLInputElement).value })
+const onColor = (color: string) => apply({ color })
 
 onMounted(() => {
   setHeader({
@@ -195,18 +194,3 @@ onMounted(() => {
   void load()
 })
 </script>
-
-<style scoped>
-input[type='color'] {
-  -webkit-appearance: none;
-  appearance: none;
-  padding: 0;
-}
-input[type='color']::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-input[type='color']::-webkit-color-swatch {
-  border: none;
-  border-radius: 0.5rem;
-}
-</style>

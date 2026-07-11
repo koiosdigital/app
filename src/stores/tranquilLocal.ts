@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, watch, type WatchStopHandle } from 'vue'
 import { create } from '@bufbuild/protobuf'
-import { TranquilMessageSchema } from '@/types/proto/kd/v1/tranquil_pb'
+import {
+  TranquilMessageSchema,
+  PlayerState_PlaybackState,
+  PlayerState_PlayMode,
+} from '@/types/proto/kd/v1/tranquil_pb'
 import type { LocalDevice } from '@/lib/mdns/discovery'
 import { createTranquilRest, type TranquilRestClient } from '@/lib/tranquil/local/rest'
 import { TranquilWebSocket } from '@/lib/tranquil/local/ws'
@@ -182,16 +186,24 @@ function mapPlayerState(ps: {
   shuffle: boolean
   loop: boolean
 }): PlayerState {
+  // Map by proto enum, not raw numbers: 0 is UNSPECIFIED, so a numeric
+  // mapping starting at 0 is shifted by one (PLAYING rendered as PAUSED,
+  // STOPPED as PLAYING).
   return {
-    state: ps.state === 0 ? 'STOPPED' : ps.state === 1 ? 'PLAYING' : 'PAUSED',
+    state:
+      ps.state === PlayerState_PlaybackState.PLAYING
+        ? 'PLAYING'
+        : ps.state === PlayerState_PlaybackState.PAUSED
+          ? 'PAUSED'
+          : 'STOPPED',
     mode:
-      ps.mode === 0
-        ? 'SINGLE_PATTERN'
-        : ps.mode === 1
-          ? 'PLAYLIST'
-          : ps.mode === 2
-            ? 'PLAYLIST_LOOP'
-            : 'PLAYLIST_SHUFFLE',
+      ps.mode === PlayerState_PlayMode.PLAYLIST
+        ? 'PLAYLIST'
+        : ps.mode === PlayerState_PlayMode.PLAYLIST_LOOP
+          ? 'PLAYLIST_LOOP'
+          : ps.mode === PlayerState_PlayMode.PLAYLIST_SHUFFLE
+            ? 'PLAYLIST_SHUFFLE'
+            : 'SINGLE_PATTERN',
     current_pattern_uuid: ps.currentPatternUuid,
     current_playlist_uuid: ps.currentPlaylistUuid,
     progress_percent: ps.progressPercent,
