@@ -36,41 +36,32 @@
         No patterns on this table yet. Upload one, or add from the store.
       </div>
 
-      <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div
-          v-for="pattern in patterns"
-          :key="pattern.uuid"
-          class="group relative overflow-hidden rounded-lg border border-white/10 bg-white/5"
-        >
-          <button class="block w-full" @click="play(pattern)">
-            <div class="relative aspect-square w-full bg-black/40">
-              <img
-                :src="thumbUrl(pattern.uuid)"
-                :alt="pattern.name"
-                class="h-full w-full object-cover"
-                loading="lazy"
-              />
-              <UBadge
-                v-if="pattern.encrypted"
-                color="neutral"
-                variant="solid"
-                size="sm"
-                icon="i-fa6-solid:lock"
-                class="absolute right-1.5 top-1.5"
-              />
-            </div>
-            <p class="truncate px-2 py-1.5 text-left text-sm">{{ pattern.name }}</p>
+      <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div v-for="pattern in patterns" :key="pattern.uuid" class="group flex flex-col gap-1.5">
+          <button class="relative block w-full" @click="play(pattern)">
+            <TranquilPatternThumb :src="thumbUrl(pattern.uuid)" :alt="pattern.name" />
+            <UBadge
+              v-if="pattern.encrypted"
+              color="neutral"
+              variant="solid"
+              size="sm"
+              icon="i-fa6-solid:lock"
+              class="absolute right-1.5 top-1.5"
+            />
           </button>
-          <UButton
-            v-if="!pattern.encrypted"
-            color="error"
-            variant="ghost"
-            size="xs"
-            icon="i-fa6-solid:trash"
-            square
-            class="absolute bottom-1 right-1 opacity-0 transition-opacity group-hover:opacity-100"
-            @click.stop="remove(pattern)"
-          />
+          <div class="flex items-center justify-between gap-1">
+            <p class="truncate text-sm">{{ pattern.name }}</p>
+            <UButton
+              v-if="!pattern.encrypted"
+              color="error"
+              variant="ghost"
+              size="xs"
+              icon="i-fa6-solid:trash"
+              square
+              class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+              @click.stop="remove(pattern)"
+            />
+          </div>
         </div>
       </div>
 
@@ -96,6 +87,7 @@ import { usePageHeader } from '@/composables/usePageHeader'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern } from '@/lib/tranquil/local/types'
+import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 
 const route = useRoute()
 const router = useRouter()

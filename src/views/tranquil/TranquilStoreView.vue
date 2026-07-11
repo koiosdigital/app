@@ -55,14 +55,39 @@
               </p>
             </div>
             <UButton
+              v-if="downloadPct(pattern.uuid) === undefined"
               color="primary"
               variant="soft"
               size="xs"
               icon="i-fa6-solid:down-to-bracket"
               block
+              :disabled="!tranquilLocal.connected"
               @click="addToTable(pattern)"
             >
               Add to table
+            </UButton>
+            <UButton
+              v-else-if="downloadPct(pattern.uuid)! < 100"
+              color="primary"
+              variant="soft"
+              size="xs"
+              icon="i-fa6-solid:spinner"
+              :ui="{ leadingIcon: 'animate-spin' }"
+              block
+              disabled
+            >
+              Sending… {{ downloadPct(pattern.uuid) }}%
+            </UButton>
+            <UButton
+              v-else
+              color="success"
+              variant="soft"
+              size="xs"
+              icon="i-fa6-solid:circle-check"
+              block
+              disabled
+            >
+              On your table
             </UButton>
           </div>
         </div>
@@ -88,6 +113,7 @@ import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useAuthStore } from '@/stores/auth/auth'
+import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import TranquilStoreThumb from '@/components/tranquil/TranquilStoreThumb.vue'
 import {
   tranquilStore,
@@ -100,6 +126,7 @@ const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const authStore = useAuthStore()
+const tranquilLocal = useTranquilLocalStore()
 
 const routeId = computed(() => route.params.id as string)
 
@@ -134,11 +161,23 @@ async function fetchPage(next: number) {
 const refresh = () => fetchPage(1)
 const loadMore = () => fetchPage(page.value + 1)
 
-// TODO(3f-download): getting a purchased/store pattern onto THIS table needs the
-// cloud encrypt-for-device step + a firmware "download this" trigger over the
-// LAN — an orchestration slice of its own (needs the firmware endpoint verified).
+// Tell the table to fetch this pattern from the cloud. The device does the
+// encrypt-for-device + download itself over its device-plane link; we just send
+// the uuid and watch progress via tranquilLocal.downloads.
+const downloadPct = (uuid: string): number | undefined => tranquilLocal.downloads[uuid]
+
 function addToTable(pattern: StorePattern) {
-  notice.value = `“${pattern.name}” — sending patterns to your table is coming soon.`
+  notice.value = null
+  if (!tranquilLocal.connected) {
+    notice.value = 'Connect to your table on your network to add patterns.'
+    return
+  }
+  try {
+    tranquilLocal.requestPatternDownload(pattern.uuid)
+    notice.value = `Sending “${pattern.name}” to your table…`
+  } catch {
+    notice.value = 'Could not reach your table. Try again.'
+  }
 }
 
 onMounted(() => {

@@ -1,31 +1,18 @@
 <template>
-  <div class="relative aspect-square w-full bg-black/40">
-    <img
-      v-if="blobUrl"
-      :src="blobUrl"
-      :alt="alt ?? ''"
-      class="h-full w-full object-cover"
-      loading="lazy"
-    />
-    <div v-else class="flex h-full w-full items-center justify-center text-white/30">
-      <UIcon
-        :name="loading ? 'i-fa6-solid:spinner' : 'i-fa6-solid:image'"
-        class="h-6 w-6"
-        :class="{ 'animate-spin': loading }"
-      />
-    </div>
-  </div>
+  <TranquilPatternThumb :src="blobUrl" :alt="alt" :loading="loading" />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAuthenticatedImage } from '@/composables/useAuthenticatedImage'
 import { tranquilStore } from '@/lib/tranquil/cloudStore'
+import TranquilPatternThumb from './TranquilPatternThumb.vue'
 
 const props = defineProps<{ uuid: string; alt?: string }>()
 
 // Store thumbnails are behind device-api's gated /v1/store/* — they need the
-// user bearer, so they can't be a plain <img src>.
+// user bearer, so they can't be a plain <img src>. Fetch to a blob, then render
+// it over the shared sand disc.
 const { blobUrl, loading } = useAuthenticatedImage(
   computed(() => tranquilStore.thumbUrl(props.uuid)),
 )

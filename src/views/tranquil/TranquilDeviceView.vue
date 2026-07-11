@@ -18,25 +18,17 @@
       </div>
 
       <!-- Now playing -->
-      <UCard class="overflow-hidden bg-white/5" :ui="{ body: 'p-0' }">
-        <div class="relative aspect-square w-full bg-black/40">
-          <img
-            v-if="thumbnailUrl"
-            :src="thumbnailUrl"
-            alt="Current pattern"
-            class="h-full w-full object-cover"
-          />
-          <div v-else class="flex h-full w-full items-center justify-center text-white/40">
-            <UIcon name="i-fa6-solid:record-vinyl" class="h-10 w-10" />
-          </div>
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-full max-w-xs px-6">
+          <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
         </div>
-        <div class="p-4">
+        <div class="text-center">
           <h2 class="text-lg font-semibold">{{ currentPattern?.name ?? 'Not playing' }}</h2>
           <p v-if="currentPattern?.creator" class="text-sm text-white/60">
             by {{ currentPattern.creator }}
           </p>
         </div>
-      </UCard>
+      </div>
 
       <!-- Progress -->
       <div class="flex flex-col gap-1">
@@ -145,24 +137,16 @@
       <!-- Section navigation -->
       <div class="grid grid-cols-2 gap-3 pt-2">
         <UButton
+          v-for="nav in sections"
+          :key="nav.to"
           color="neutral"
           variant="soft"
           size="lg"
-          icon="i-fa6-solid:table-cells-large"
+          :icon="nav.icon"
           block
-          @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/patterns`)"
+          @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/${nav.to}`)"
         >
-          Patterns
-        </UButton>
-        <UButton
-          color="neutral"
-          variant="soft"
-          size="lg"
-          icon="i-fa6-solid:store"
-          block
-          @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/store`)"
-        >
-          Store
+          {{ nav.label }}
         </UButton>
       </div>
     </div>
@@ -176,6 +160,7 @@ import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import type { Pattern } from '@/lib/tranquil/local/types'
+import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -186,6 +171,13 @@ const routeId = computed(() => route.params.id as string)
 // The connection is established by HomeView.openLocalDevice before navigation;
 // this view just drives the already-active connection.
 const isActive = computed(() => store.activeDevice?.id === routeId.value)
+
+const sections = [
+  { to: 'patterns', label: 'Patterns', icon: 'i-fa6-solid:table-cells-large' },
+  { to: 'playlists', label: 'Playlists', icon: 'i-fa6-solid:list' },
+  { to: 'lighting', label: 'Lighting', icon: 'i-fa6-solid:lightbulb' },
+  { to: 'store', label: 'Store', icon: 'i-fa6-solid:store' },
+]
 
 const playerState = computed(() => store.playerState)
 const progressPercent = computed(() => playerState.value?.progress_percent ?? 0)

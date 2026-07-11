@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch, type WatchStopHandle } from 'vue'
+import { create } from '@bufbuild/protobuf'
+import { TranquilMessageSchema } from '@/types/proto/kd/v1/tranquil_pb'
 import type { LocalDevice } from '@/lib/mdns/discovery'
 import { createTranquilRest, type TranquilRestClient } from '@/lib/tranquil/local/rest'
 import { TranquilWebSocket } from '@/lib/tranquil/local/ws'
@@ -18,11 +20,14 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
   const connected = ref(false)
   const playerState = ref<PlayerState | null>(null)
   const error = ref<string | null>(null)
+  // Live store→table download progress, keyed by pattern uuid (0-100).
+  const downloads = ref<Record<string, number>>({})
 
   // Non-reactive transport handles (class instances / unsubscribers).
   let rest: TranquilRestClient | null = null
   let ws: TranquilWebSocket | null = null
   let unsubPlayer: (() => void) | null = null
+  let unsubDownload: (() => void) | null = null
   let stopConnWatch: WatchStopHandle | null = null
 
   function api(): TranquilRestClient {
@@ -58,16 +63,47 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
         playerState.value = mapPlayerState(msg.message.value)
       }
     })
+    unsubDownload = ws.subscribe('patternDownloadProgress', (msg) => {
+      if (msg.message?.case === 'patternDownloadProgress') {
+        const next = { ...downloads.value }
+        for (const d of msg.message.value.downloads) next[d.uuid] = d.progressPct
+        downloads.value = next
+      }
+    })
     stopConnWatch = watch(ws.connected, (v) => (connected.value = v), { immediate: true })
     ws.connect()
 
     void fetchPlayerState().catch(() => {})
   }
 
+  /**
+   * Ask the table to fetch a store pattern from the cloud. The device forwards
+   * the request over its own device-plane cloud link and downloads with its
+   * certificate — the app just names the pattern. Progress arrives on the
+   * `downloads` map via the WS `patternDownloadProgress` report.
+   */
+  function requestPatternDownload(patternUuid: string): void {
+    if (!ws) throw new TranquilError('No active table connection', ErrorCode.WsDisconnected)
+    error.value = null
+    try {
+      void ws.request(
+        create(TranquilMessageSchema, {
+          message: { case: 'requestPatternDownload', value: { patternUuid } },
+        }),
+      )
+      downloads.value = { ...downloads.value, [patternUuid]: 0 }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to start download'
+      throw e
+    }
+  }
+
   /** Tear down the active connection. Safe to call when already disconnected. */
   function disconnect(): void {
     unsubPlayer?.()
     unsubPlayer = null
+    unsubDownload?.()
+    unsubDownload = null
     stopConnWatch?.()
     stopConnWatch = null
     ws?.disconnect()
@@ -75,6 +111,7 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
     rest = null
     connected.value = false
     playerState.value = null
+    downloads.value = {}
     activeDevice.value = null
   }
 
@@ -114,11 +151,13 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
     connected,
     playerState,
     error,
+    downloads,
     api,
     baseUrl,
     connect,
     disconnect,
     fetchPlayerState,
+    requestPatternDownload,
     play,
     pause,
     resume,
