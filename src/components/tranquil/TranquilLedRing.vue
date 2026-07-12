@@ -3,7 +3,7 @@
        Fills its (relatively-positioned) parent; purely decorative. -->
   <canvas
     ref="canvasEl"
-    class="pointer-events-none absolute inset-0 h-full w-full mix-blend-screen"
+    class="pointer-events-none absolute inset-0 h-full w-full opacity-60 mix-blend-screen"
     aria-hidden="true"
   />
 </template>
@@ -65,21 +65,22 @@ function paint() {
   ctx.clip()
   ctx.globalCompositeOperation = 'lighter' // adjacent LEDs blend smoothly
 
-  // Each LED casts a soft cone of light from the rim inward. Sample down to keep
-  // the per-frame gradient work bounded; the large soft blobs overlap into a
-  // continuous wash regardless.
-  const blobR = R * 0.72
-  const step = Math.max(1, Math.round(n / 72))
+  // Each LED casts a soft cone of light from the rim toward (and past) the
+  // centre. Sample sparsely: many overlapping additive blobs pile up in the
+  // middle, so keep the count low and the per-blob alpha gentle — the large
+  // soft blobs still overlap into a continuous wash.
+  const blobR = R * 1.35 // reaches the centre with a faint tail
+  const step = Math.max(1, Math.round(n / 24))
   for (let i = 0; i < n; i += step) {
     let r = frame[i * 4]
     let g = frame[i * 4 + 1]
     let b = frame[i * 4 + 2]
     const w = frame[i * 4 + 3]
-    // Fold the RGBW white channel in as warm white.
+    // Fold the RGBW white channel in as warm white (gently — it brightens).
     if (w) {
-      r = Math.min(255, r + w * 0.9)
-      g = Math.min(255, g + w * 0.85)
-      b = Math.min(255, b + w * 0.7)
+      r = Math.min(255, r + w * 0.6)
+      g = Math.min(255, g + w * 0.55)
+      b = Math.min(255, b + w * 0.4)
     }
     if (r + g + b < MIN_LUMA) continue
 
@@ -88,7 +89,9 @@ function paint() {
     const px = cx + R * Math.cos(angle)
     const py = cy + R * Math.sin(angle)
     const grad = ctx.createRadialGradient(px, py, 0, px, py, blobR)
-    grad.addColorStop(0, `rgba(${r | 0},${g | 0},${b | 0},0.5)`)
+    // Rim-weighted falloff: bright at the LED, faint by the middle.
+    grad.addColorStop(0, `rgba(${r | 0},${g | 0},${b | 0},0.16)`)
+    grad.addColorStop(0.4, `rgba(${r | 0},${g | 0},${b | 0},0.04)`)
     grad.addColorStop(1, 'rgba(0,0,0,0)')
     ctx.fillStyle = grad
     ctx.fillRect(px - blobR, py - blobR, blobR * 2, blobR * 2)
