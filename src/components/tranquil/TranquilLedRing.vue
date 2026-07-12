@@ -3,7 +3,7 @@
        Fills its (relatively-positioned) parent; purely decorative. -->
   <canvas
     ref="canvasEl"
-    class="pointer-events-none absolute inset-0 h-full w-full"
+    class="pointer-events-none absolute inset-0 h-full w-full mix-blend-screen"
     aria-hidden="true"
   />
 </template>
@@ -55,11 +55,22 @@ function paint() {
 
   const cx = cssW / 2
   const cy = cssH / 2
-  const radius = (Math.min(cssW, cssH) / 2) * 0.9 // just inside the disc
-  const dot = Math.max(1.5, Math.min(5, (2 * Math.PI * radius) / n / 2.4))
-  ctx.globalCompositeOperation = 'lighter' // additive glow
+  const R = Math.min(cssW, cssH) / 2
 
-  for (let i = 0; i < n; i++) {
+  ctx.save()
+  // Confine the light to the sand bed; the canvas is screen-blended over the
+  // pattern beneath, so this reads as colored light washing onto the sand.
+  ctx.beginPath()
+  ctx.arc(cx, cy, R, 0, 2 * Math.PI)
+  ctx.clip()
+  ctx.globalCompositeOperation = 'lighter' // adjacent LEDs blend smoothly
+
+  // Each LED casts a soft cone of light from the rim inward. Sample down to keep
+  // the per-frame gradient work bounded; the large soft blobs overlap into a
+  // continuous wash regardless.
+  const blobR = R * 0.72
+  const step = Math.max(1, Math.round(n / 72))
+  for (let i = 0; i < n; i += step) {
     let r = frame[i * 4]
     let g = frame[i * 4 + 1]
     let b = frame[i * 4 + 2]
@@ -74,17 +85,15 @@ function paint() {
 
     // index 0 at top, clockwise (per-model start/direction calibration TODO).
     const angle = -Math.PI / 2 + (2 * Math.PI * i) / n
-    const x = cx + radius * Math.cos(angle)
-    const y = cy + radius * Math.sin(angle)
-    const color = `rgb(${r | 0},${g | 0},${b | 0})`
-    ctx.shadowBlur = dot * 2.5
-    ctx.shadowColor = color
-    ctx.fillStyle = color
-    ctx.beginPath()
-    ctx.arc(x, y, dot, 0, 2 * Math.PI)
-    ctx.fill()
+    const px = cx + R * Math.cos(angle)
+    const py = cy + R * Math.sin(angle)
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, blobR)
+    grad.addColorStop(0, `rgba(${r | 0},${g | 0},${b | 0},0.5)`)
+    grad.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = grad
+    ctx.fillRect(px - blobR, py - blobR, blobR * 2, blobR * 2)
   }
-  ctx.shadowBlur = 0
+  ctx.restore()
 }
 
 async function start() {
