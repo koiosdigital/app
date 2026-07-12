@@ -24,6 +24,18 @@
       <UAlert v-if="error" color="error" icon="i-fa6-solid:circle-exclamation" :title="error" />
       <UAlert v-if="actionMsg" color="success" icon="i-fa6-solid:circle-check" :title="actionMsg" />
 
+      <!-- Emergency stop — halt the table's motion immediately. -->
+      <UButton
+        color="error"
+        size="xl"
+        block
+        icon="i-fa6-solid:hand"
+        :loading="stopping"
+        @click="emergencyStop"
+      >
+        Emergency stop
+      </UButton>
+
       <!-- Network -->
       <UCard class="bg-white/5">
         <template #header><h3 class="font-semibold">Network</h3></template>
@@ -142,6 +154,7 @@ const isActive = computed(() => store.activeDevice?.id === routeId.value)
 const loading = ref(true)
 const saving = ref(false)
 const homing = ref(false)
+const stopping = ref(false)
 const resetting = ref(false)
 const error = ref<string | null>(null)
 const resetError = ref<string | null>(null)
@@ -208,6 +221,19 @@ async function save() {
     error.value = formatTranquilError(e)
   } finally {
     saving.value = false
+  }
+}
+
+async function emergencyStop() {
+  stopping.value = true
+  error.value = null
+  try {
+    await store.stop(true)
+    actionMsg.value = 'Table stopped.'
+  } catch (e) {
+    error.value = formatTranquilError(e)
+  } finally {
+    stopping.value = false
   }
 }
 

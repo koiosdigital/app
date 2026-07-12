@@ -140,7 +140,9 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
     )
   const pause = () => run((r) => r.player.patch({ is_paused: true }), 'Failed to pause')
   const resume = () => run((r) => r.player.patch({ is_paused: false }), 'Failed to resume')
-  const stop = () => run((r) => r.player.stop(), 'Failed to stop')
+  // emergency=true is the e-stop: halt motion immediately (not a graceful stop).
+  const stop = (emergency = false) =>
+    run((r) => r.player.stop(emergency ? { emergency_stop: true } : undefined), 'Failed to stop')
   // Firmware has no previous-track; skip is next-only.
   const skip = () => run((r) => r.player.skip(), 'Failed to skip')
   const setFeedRate = (rate: number) =>

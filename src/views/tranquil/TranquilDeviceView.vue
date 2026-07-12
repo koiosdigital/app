@@ -17,38 +17,53 @@
         Connecting to the table…
       </div>
 
-      <!-- Now playing -->
+      <!-- Now playing — preview ringed by radial playback progress -->
       <div class="flex flex-col items-center gap-4">
-        <div class="w-full max-w-xs px-6">
-          <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
+        <div class="relative mx-auto w-full max-w-xs">
+          <svg
+            class="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
+            viewBox="0 0 100 100"
+            aria-hidden="true"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              :r="RING_R"
+              fill="none"
+              stroke="rgba(255,255,255,0.1)"
+              stroke-width="2.5"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              :r="RING_R"
+              fill="none"
+              class="text-primary-500"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              :stroke-dasharray="RING_CIRC"
+              :stroke-dashoffset="ringOffset"
+              style="transition: stroke-dashoffset 0.3s ease"
+            />
+          </svg>
+          <div class="p-[5%]">
+            <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
+          </div>
         </div>
         <div class="text-center">
           <h2 class="text-lg font-semibold">{{ currentPattern?.name ?? 'Not playing' }}</h2>
           <p v-if="currentPattern?.creator" class="text-sm text-white/60">
             by {{ currentPattern.creator }}
           </p>
+          <p v-if="isPlaylist" class="mt-1 text-xs text-white/50">
+            {{ (playerState?.pattern_index ?? 0) + 1 }} / {{ playerState?.playlist_size ?? 0 }}
+          </p>
         </div>
       </div>
 
-      <!-- Progress -->
-      <div class="flex flex-col gap-1">
-        <div class="h-1 overflow-hidden rounded-full bg-white/10">
-          <div
-            class="h-full bg-primary-500 transition-all duration-300"
-            :style="{ width: `${progressPercent}%` }"
-          />
-        </div>
-        <div class="flex justify-between text-xs text-white/50">
-          <span>{{ progressPercent }}%</span>
-          <span v-if="isPlaylist"
-            >{{ (playerState?.pattern_index ?? 0) + 1 }} /
-            {{ playerState?.playlist_size ?? 0 }}</span
-          >
-        </div>
-      </div>
-
-      <!-- Playback controls -->
-      <div class="flex items-center justify-center gap-3">
+      <!-- Playback controls — play/pause centered, flanked by skip in playlists -->
+      <div class="flex items-center justify-center gap-8">
         <UButton
           v-if="isPlaylist"
           color="neutral"
@@ -67,15 +82,6 @@
           @click="togglePlayPause"
         />
         <UButton
-          v-if="!isStopped"
-          color="neutral"
-          variant="ghost"
-          size="xl"
-          icon="i-fa6-solid:stop"
-          square
-          @click="store.stop()"
-        />
-        <UButton
           v-if="isPlaylist"
           color="neutral"
           variant="ghost"
@@ -91,7 +97,11 @@
         <div class="flex flex-col gap-2">
           <span class="text-sm font-medium">Speed</span>
           <div class="flex items-center gap-3">
-            <UIcon name="i-lucide:turtle" class="h-5 w-5 shrink-0 text-white/60" aria-label="Slower" />
+            <UIcon
+              name="i-lucide:turtle"
+              class="h-5 w-5 shrink-0 text-white/60"
+              aria-label="Slower"
+            />
             <input
               type="range"
               min="1"
@@ -101,7 +111,11 @@
               class="w-full accent-primary-500"
               @change="onSpeedChange"
             />
-            <UIcon name="i-lucide:rabbit" class="h-5 w-5 shrink-0 text-white/60" aria-label="Faster" />
+            <UIcon
+              name="i-lucide:rabbit"
+              class="h-5 w-5 shrink-0 text-white/60"
+              aria-label="Faster"
+            />
           </div>
         </div>
       </UCard>
@@ -179,6 +193,11 @@ const sections = [
 
 const playerState = computed(() => store.playerState)
 const progressPercent = computed(() => playerState.value?.progress_percent ?? 0)
+
+// Radial progress ring around the preview (SVG viewBox 0..100).
+const RING_R = 47
+const RING_CIRC = 2 * Math.PI * RING_R
+const ringOffset = computed(() => RING_CIRC * (1 - progressPercent.value / 100))
 const feedRate = computed(() => playerState.value?.feed_rate ?? 3)
 const isPlaying = computed(() => playerState.value?.state === 'PLAYING')
 const isStopped = computed(() => !playerState.value || playerState.value.state === 'STOPPED')
