@@ -48,7 +48,11 @@
             />
           </svg>
           <div class="p-[5%]">
-            <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
+            <div class="relative">
+              <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
+              <!-- Live LED strip projected inside the disc -->
+              <TranquilLedRing />
+            </div>
           </div>
         </div>
         <div class="text-center">
@@ -173,6 +177,7 @@ import { usePageHeader } from '@/composables/usePageHeader'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import type { Pattern } from '@/lib/tranquil/local/types'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
+import TranquilLedRing from '@/components/tranquil/TranquilLedRing.vue'
 
 const route = useRoute()
 const router = useRouter()
