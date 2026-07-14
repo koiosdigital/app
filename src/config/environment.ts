@@ -2,7 +2,10 @@
  * Centralized environment configuration
  */
 
+import { Capacitor } from '@capacitor/core'
+
 const isDev = import.meta.env.DEV && false
+const isIOS = Capacitor.getPlatform() === 'ios'
 
 export const ENV = {
   /** App URLs */
@@ -31,13 +34,19 @@ export const ENV = {
     redirectPath: '/login/callback',
     postLogoutRedirectPath: '/login',
     /**
-     * Custom-scheme redirect URLs used by ASWebAuthenticationSession /
-     * Chrome Custom Tabs on native. Must be registered as valid redirect URIs
-     * on the Keycloak client. The scheme is declared in iOS Info.plist
-     * (CFBundleURLSchemes) and Android intent filters.
+     * Redirect URLs used by ASWebAuthenticationSession (iOS) / Chrome Custom
+     * Tabs (Android) on native. Must be registered as valid redirect URIs on
+     * the Keycloak client.
+     *
+     * iOS uses HTTPS callbacks (ASWebAuthenticationSession.Callback.https,
+     * iOS 17.4+): the session intercepts the redirect itself — no universal
+     * link or custom scheme involved. Requires app.koiosdigital.net to be a
+     * `webcredentials` associated domain with a matching AASA file.
+     *
+     * Android keeps the custom scheme, declared in its intent filters.
      */
-    nativeRedirectUrl: 'net.koiosdigital.app://oauth/callback',
-    nativePostLogoutRedirectUrl: 'net.koiosdigital.app://oauth/logout',
+    nativeRedirectUrl: 'https://app.koiosdigital.net/login/callback',
+    nativePostLogoutRedirectUrl: 'https://app.koiosdigital.net/login',
     scope: 'openid profile email offline_access',
   },
 } as const
