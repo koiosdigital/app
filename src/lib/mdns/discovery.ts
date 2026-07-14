@@ -5,8 +5,8 @@ import { ZeroConf, type ZeroConfWatchResult, type ZeroConfService } from 'capaci
  * Local device discovery over mDNS / Bonjour.
  *
  * Every Koios device (firmware `kd_common`) advertises `_koiosdigital._tcp` on
- * port 80 with TXT records `model`, `type`, `version`. This module browses that
- * service so the app can reach devices LAN-direct by IP.
+ * port 80 with TXT records `model`, `type`, `version`, `device_id`. This module
+ * browses that service so the app can reach devices LAN-direct by IP.
  *
  * Native-only: mDNS browsing requires the OS Bonjour/NSD APIs and isn't available
  * in a browser. On web this module is inert (discovery is unsupported and the
@@ -42,6 +42,8 @@ export interface LocalDevice {
   model: string
   /** TXT `version` — firmware app version. */
   version: string
+  /** TXT `device_id` — cloud device id, for deduping against account devices. */
+  deviceId: string | null
   /** Base URL for the device's local HTTP API, or null without an address. */
   baseUrl: string | null
 }
@@ -85,6 +87,7 @@ function toLocalDevice(service: ZeroConfService): LocalDevice | null {
     typeRaw: (txt.type ?? '').trim(),
     model: (txt.model ?? '').trim(),
     version: (txt.version ?? '').trim(),
+    deviceId: (txt.device_id ?? '').trim() || null,
     baseUrl: address ? `http://${address}:${port}` : null,
   }
 }

@@ -3,7 +3,7 @@
        Fills its (relatively-positioned) parent; purely decorative. -->
   <canvas
     ref="canvasEl"
-    class="pointer-events-none absolute inset-0 h-full w-full opacity-60 mix-blend-screen"
+    class="pointer-events-none absolute inset-0 h-full w-full opacity-100 mix-blend-screen"
     aria-hidden="true"
   />
 </template>
@@ -69,7 +69,7 @@ function paint() {
   // centre. Sample sparsely: many overlapping additive blobs pile up in the
   // middle, so keep the count low and the per-blob alpha gentle — the large
   // soft blobs still overlap into a continuous wash.
-  const blobR = R * 1.35 // reaches the centre with a faint tail
+  const blobR = R * 1.45 // reaches the centre with a faint tail
   const step = Math.max(1, Math.round(n / 24))
   for (let i = 0; i < n; i += step) {
     let r = frame[i * 4]

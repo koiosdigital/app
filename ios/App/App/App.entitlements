@@ -5,6 +5,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:app.koiosdigital.net</string>
+		<string>webcredentials:app.koiosdigital.net</string>
 	</array>
 </dict>
 </plist>

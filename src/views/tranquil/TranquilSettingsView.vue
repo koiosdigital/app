@@ -70,13 +70,15 @@
 
       <!-- Calibration -->
       <UCard class="bg-white/5">
-        <template #header><h3 class="font-semibold">Calibration</h3></template>
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2 text-sm">
+        <template #header
+          ><div class="flex justify-between">
+            <h3 class="font-semibold">Calibration</h3>
             <UBadge :color="info?.is_homed ? 'success' : 'warning'" variant="soft">
               {{ info?.is_homed ? 'Homed' : 'Not homed' }}
             </UBadge>
           </div>
+        </template>
+        <div class="flex flex-col gap-4">
           <div class="flex gap-3">
             <UButton
               color="primary"

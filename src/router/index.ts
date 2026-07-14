@@ -24,10 +24,12 @@ import NemotoMessageView from '@/views/nemoto/NemotoMessageView.vue'
 import NemotoSchedulesView from '@/views/nemoto/NemotoSchedulesView.vue'
 import TranquilDeviceView from '@/views/tranquil/TranquilDeviceView.vue'
 import TranquilPatternsView from '@/views/tranquil/TranquilPatternsView.vue'
+import TranquilPatternDetailView from '@/views/tranquil/TranquilPatternDetailView.vue'
 import TranquilPlaylistsView from '@/views/tranquil/TranquilPlaylistsView.vue'
 import TranquilPlaylistEditorView from '@/views/tranquil/TranquilPlaylistEditorView.vue'
 import TranquilLightingView from '@/views/tranquil/TranquilLightingView.vue'
 import TranquilStoreView from '@/views/tranquil/TranquilStoreView.vue'
+import TranquilStorePlaylistView from '@/views/tranquil/TranquilStorePlaylistView.vue'
 import TranquilSettingsView from '@/views/tranquil/TranquilSettingsView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
@@ -190,6 +192,11 @@ const router = createRouter({
       component: TranquilPatternsView,
     },
     {
+      path: '/tranquil/local/:id/patterns/:uuid',
+      name: 'tranquil-local-pattern-detail',
+      component: TranquilPatternDetailView,
+    },
+    {
       path: '/tranquil/local/:id/playlists',
       name: 'tranquil-local-playlists',
       component: TranquilPlaylistsView,
@@ -208,6 +215,11 @@ const router = createRouter({
       path: '/tranquil/local/:id/store',
       name: 'tranquil-local-store',
       component: TranquilStoreView,
+    },
+    {
+      path: '/tranquil/local/:id/store/playlists/:uuid',
+      name: 'tranquil-local-store-playlist',
+      component: TranquilStorePlaylistView,
     },
     {
       path: '/tranquil/local/:id/settings',

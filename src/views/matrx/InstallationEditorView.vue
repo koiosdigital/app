@@ -294,7 +294,6 @@ const {
   loading: previewLoading,
   error: previewError,
   errorType: previewErrorType,
-  refresh: refreshPreview,
 } = useSchemaPreview(
   toRef(() => resolvedAppId.value),
   formState.values,
@@ -376,9 +375,8 @@ async function loadData() {
       // Form already initialized from schema defaults by useSchemaForm
     }
 
-    // Mark data as loaded and trigger preview fetch
+    // Mark data as loaded; the enabled watcher in useSchemaPreview fetches once
     dataLoaded.value = true
-    refreshPreview()
   } catch (err) {
     loadError.value = getErrorMessage(err, 'Failed to load')
     console.error('Load error:', err)

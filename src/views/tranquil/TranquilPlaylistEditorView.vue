@@ -19,6 +19,14 @@
       </template>
     </UModal>
 
+    <DangerConfirmModal
+      v-model="showDelete"
+      title="Delete playlist"
+      :message="`Delete “${playlist?.name ?? ''}”? Patterns stay on the table.`"
+      confirm-text="Delete"
+      @confirm="confirmDelete"
+    />
+
     <div v-if="!isActive" class="flex flex-col items-center gap-4 px-5 py-16 text-center">
       <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-white/30" />
       <p class="text-white/70">This table isn't connected. Open it from your device list.</p>
@@ -29,10 +37,29 @@
       <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
     </div>
 
-    <div v-else-if="playlist" class="flex flex-col gap-4 px-5 py-6 pb-28">
+    <div v-else-if="playlist" class="flex flex-col gap-6 px-5 py-6 pb-28">
       <UAlert v-if="error" color="error" icon="i-fa6-solid:circle-exclamation" :title="error" />
 
-      <p class="text-sm text-white/50">{{ playlistPatterns.length }} patterns</p>
+      <div class="mx-auto w-full max-w-xs">
+        <TranquilPatternThumb :src="featuredThumb" :alt="playlist.name" />
+      </div>
+
+      <div class="text-center">
+        <h2 class="text-xl font-semibold">{{ playlist.name }}</h2>
+        <p class="text-sm text-white/50">{{ playlistPatterns.length }} patterns</p>
+      </div>
+
+      <UButton
+        color="primary"
+        size="lg"
+        block
+        icon="i-fa6-solid:play"
+        :disabled="!playlistPatterns.length"
+        :loading="playing"
+        @click="playAll"
+      >
+        Play
+      </UButton>
 
       <p
         v-if="!playlistPatterns.length"
@@ -98,6 +125,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
+import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
@@ -116,8 +144,10 @@ const isActive = computed(() => store.activeDevice?.id === routeId.value)
 const playlist = ref<Playlist | null>(null)
 const allPatterns = ref<Pattern[]>([])
 const loading = ref(true)
+const playing = ref(false)
 const error = ref<string | null>(null)
 const showPicker = ref(false)
+const showDelete = ref(false)
 
 const patternsByUuid = computed(() => new Map(allPatterns.value.map((p) => [p.uuid, p])))
 
@@ -140,6 +170,12 @@ function thumbUrl(uuid: string): string {
   return base ? `${base}/api/pattern_thumbs/${uuid}.png` : ''
 }
 
+const featuredThumb = computed(() => {
+  const pl = playlist.value
+  const uuid = pl ? pl.featured_pattern || pl.pattern_uuids[0] : undefined
+  return uuid ? thumbUrl(uuid) : ''
+})
+
 async function load() {
   if (!isActive.value) {
     loading.value = false
@@ -157,11 +193,37 @@ async function load() {
     setHeader({
       title: pl.name,
       backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}/playlists`,
+      actions: [{ icon: 'i-fa6-solid:trash', onClick: () => (showDelete.value = true) }],
     })
   } catch (e) {
     error.value = formatTranquilError(e)
   } finally {
     loading.value = false
+  }
+}
+
+async function playAll() {
+  if (!playlist.value) return
+  playing.value = true
+  try {
+    await store.play(undefined, playlist.value.uuid)
+    router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}`)
+  } catch (e) {
+    error.value = formatTranquilError(e)
+  } finally {
+    playing.value = false
+  }
+}
+
+async function confirmDelete() {
+  if (!playlist.value) return
+  try {
+    await store.api().playlists.delete(playlist.value.uuid)
+    router.replace(`/tranquil/local/${encodeURIComponent(routeId.value)}/playlists`)
+  } catch (e) {
+    error.value = formatTranquilError(e)
+  } finally {
+    showDelete.value = false
   }
 }
 

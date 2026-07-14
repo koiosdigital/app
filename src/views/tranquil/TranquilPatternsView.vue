@@ -14,7 +14,8 @@
       <UButton color="primary" variant="soft" @click="router.replace('/')">Go to devices</UButton>
     </div>
 
-    <div v-else class="flex flex-col gap-4 px-5 py-6">
+    <!-- pb clears the fixed bottom tab bar -->
+    <div v-else class="flex flex-col gap-4 px-5 pt-6 pb-28">
       <UAlert v-if="error" color="error" icon="i-fa6-solid:circle-exclamation" :title="error" />
 
       <div
@@ -37,32 +38,16 @@
       </div>
 
       <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div v-for="pattern in patterns" :key="pattern.uuid" class="group flex flex-col gap-1.5">
-          <button class="relative block w-full" @click="play(pattern)">
-            <TranquilPatternThumb :src="thumbUrl(pattern.uuid)" :alt="pattern.name" />
-            <UBadge
-              v-if="pattern.encrypted"
-              color="neutral"
-              variant="solid"
-              size="sm"
-              icon="i-fa6-solid:lock"
-              class="absolute right-1.5 top-1.5"
-            />
-          </button>
-          <div class="flex items-center justify-between gap-1">
-            <p class="truncate text-sm">{{ pattern.name }}</p>
-            <UButton
-              v-if="!pattern.encrypted"
-              color="error"
-              variant="ghost"
-              size="xs"
-              icon="i-fa6-solid:trash"
-              square
-              class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-              @click.stop="remove(pattern)"
-            />
-          </div>
-        </div>
+        <button
+          v-for="pattern in patterns"
+          :key="pattern.uuid"
+          type="button"
+          class="flex flex-col gap-1.5 text-left"
+          @click="openDetail(pattern)"
+        >
+          <TranquilPatternThumb :src="thumbUrl(pattern.uuid)" :alt="pattern.name" />
+          <p class="w-full truncate text-sm">{{ pattern.name }}</p>
+        </button>
       </div>
 
       <UButton
@@ -76,6 +61,8 @@
         Load more
       </UButton>
     </div>
+
+    <TranquilTabBar />
   </PageLayout>
 </template>
 
@@ -88,6 +75,7 @@ import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern } from '@/lib/tranquil/local/types'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
+import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -131,22 +119,8 @@ async function fetchPage(next: number) {
 const refresh = () => fetchPage(0)
 const loadMore = () => fetchPage(page.value + 1)
 
-async function play(pattern: Pattern) {
-  try {
-    await store.play(pattern.uuid)
-    router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}`)
-  } catch (e) {
-    error.value = formatTranquilError(e)
-  }
-}
-
-async function remove(pattern: Pattern) {
-  try {
-    await store.api().patterns.delete(pattern.uuid)
-    patterns.value = patterns.value.filter((p) => p.uuid !== pattern.uuid)
-  } catch (e) {
-    error.value = formatTranquilError(e)
-  }
+function openDetail(pattern: Pattern) {
+  router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/patterns/${pattern.uuid}`)
 }
 
 function triggerUpload() {

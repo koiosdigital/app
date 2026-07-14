@@ -2878,7 +2878,7 @@ export interface components {
              */
             version: string;
             /** @description List of configurable fields (empty array if no configuration required) */
-            schema: (components["schemas"]["AppSchemaColorFieldDto"] | components["schemas"]["AppSchemaDatetimeFieldDto"] | components["schemas"]["AppSchemaDropdownFieldDto"] | components["schemas"]["AppSchemaGeneratedFieldDto"] | components["schemas"]["AppSchemaLocationFieldDto"] | components["schemas"]["AppSchemaLocationBasedFieldDto"] | components["schemas"]["AppSchemaOnOffFieldDto"] | components["schemas"]["AppSchemaRadioFieldDto"] | components["schemas"]["AppSchemaTextFieldDto"] | components["schemas"]["AppSchemaTypeaheadFieldDto"] | components["schemas"]["AppSchemaOAuth2FieldDto"] | components["schemas"]["AppSchemaOAuth1FieldDto"] | components["schemas"]["AppSchemaPNGFieldDto"] | components["schemas"]["AppSchemaNotificationFieldDto"] | components["schemas"]["AppSchemaGeoJSONFieldDto"])[];
+            schema: (components["schemas"]["AppSchemaColorFieldDto"] | components["schemas"]["AppSchemaDatetimeFieldDto"] | components["schemas"]["AppSchemaDropdownFieldDto"] | components["schemas"]["AppSchemaMultiSelectFieldDto"] | components["schemas"]["AppSchemaGeneratedFieldDto"] | components["schemas"]["AppSchemaLocationFieldDto"] | components["schemas"]["AppSchemaLocationBasedFieldDto"] | components["schemas"]["AppSchemaOnOffFieldDto"] | components["schemas"]["AppSchemaRadioFieldDto"] | components["schemas"]["AppSchemaTextFieldDto"] | components["schemas"]["AppSchemaTypeaheadFieldDto"] | components["schemas"]["AppSchemaOAuth2FieldDto"] | components["schemas"]["AppSchemaOAuth1FieldDto"] | components["schemas"]["AppSchemaPNGFieldDto"] | components["schemas"]["AppSchemaNotificationFieldDto"] | components["schemas"]["AppSchemaGeoJSONFieldDto"])[];
             /** @description Notification field definitions */
             notifications?: components["schemas"]["AppSchemaNotificationFieldDto"][];
         };
@@ -3026,6 +3026,41 @@ export interface components {
              * @example seattle
              */
             value: string;
+        };
+        AppSchemaMultiSelectFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for multi-select field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "multiselect";
+            /** @description Selectable options */
+            options: components["schemas"]["AppSchemaOptionDto"][];
         };
         AppSchemaGeneratedFieldDto: {
             /**

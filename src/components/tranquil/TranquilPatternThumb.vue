@@ -11,12 +11,6 @@
       loading="lazy"
       @error="onError"
     />
-    <UIcon
-      v-else
-      :name="loading ? 'i-fa6-solid:spinner' : 'i-fa6-solid:record-vinyl'"
-      class="tranquil-thumb__icon"
-      :class="{ 'animate-spin': loading }"
-    />
   </div>
 </template>
 

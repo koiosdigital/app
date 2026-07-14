@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:ios": "CAP_DEV_SERVER_URL=http://${CAP_DEV_HOST:-10.0.4.57}:5173 npx cap sync ios && npx cap open ios",
     "build": "vite build && npx cap sync",
     "ios": "npx cap sync ios && npx cap open ios",
     "android": "npx cap sync android && npx cap open android",

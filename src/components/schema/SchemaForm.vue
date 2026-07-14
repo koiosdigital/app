@@ -23,6 +23,7 @@ import type { components } from '@/types/api'
 import SchemaFieldWrapper from './SchemaFieldWrapper.vue'
 import SchemaTextField from './fields/SchemaTextField.vue'
 import SchemaDropdownField from './fields/SchemaDropdownField.vue'
+import SchemaMultiSelectField from './fields/SchemaMultiSelectField.vue'
 import SchemaRadioField from './fields/SchemaRadioField.vue'
 import SchemaOnOffField from './fields/SchemaOnOffField.vue'
 import SchemaColorField from './fields/SchemaColorField.vue'
@@ -59,6 +60,7 @@ const emit = defineEmits<{
 const fieldComponentMap: Record<string, Component> = {
   text: SchemaTextField,
   dropdown: SchemaDropdownField,
+  multiselect: SchemaMultiSelectField,
   radio: SchemaRadioField,
   onoff: SchemaOnOffField,
   color: SchemaColorField,

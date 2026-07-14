@@ -8,7 +8,8 @@
       <UButton color="primary" variant="soft" @click="router.replace('/')">Go to devices</UButton>
     </div>
 
-    <div v-else class="flex flex-col gap-4 px-5 py-6">
+    <!-- pb clears the fixed bottom tab bar -->
+    <div v-else class="flex flex-col gap-4 px-5 pt-6 pb-28">
       <div
         v-if="!store.connected"
         class="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-300"
@@ -24,6 +25,7 @@
             class="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
             viewBox="0 0 100 100"
             aria-hidden="true"
+            v-if="playerState?.state !== 'STOPPED'"
           >
             <circle
               cx="50"
@@ -52,52 +54,72 @@
               <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
               <!-- Live LED strip projected inside the disc -->
               <TranquilLedRing />
+              <!-- Play/pause overlaid on the disc center -->
+              <button
+                type="button"
+                class="absolute inset-0 z-10 m-auto flex h-16 w-16 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/55 disabled:opacity-40"
+                :disabled="isStopped"
+                :aria-label="isPlaying ? 'Pause' : 'Play'"
+                @click="togglePlayPause"
+              >
+                <UIcon
+                  :name="isPlaying ? 'i-fa6-solid:pause' : 'i-fa6-solid:play'"
+                  class="h-7 w-7"
+                />
+              </button>
             </div>
           </div>
         </div>
-        <div class="text-center">
-          <h2 class="text-lg font-semibold">{{ currentPattern?.name ?? 'Not playing' }}</h2>
-          <p v-if="currentPattern?.creator" class="text-sm text-white/60">
-            by {{ currentPattern.creator }}
-          </p>
-          <p v-if="isPlaylist" class="mt-1 text-xs text-white/50">
-            {{ (playerState?.pattern_index ?? 0) + 1 }} / {{ playerState?.playlist_size ?? 0 }}
+        <div class="text-center" v-if="playerState?.state !== 'STOPPED'">
+          <h2 class="text-lg font-semibold">
+            {{ currentPattern?.name }}
+          </h2>
+          <p v-if="currentPattern?.creator" class="text-xs text-white/60">
+            {{ currentPattern.creator }}
           </p>
         </div>
       </div>
 
-      <!-- Playback controls — play/pause centered, flanked by skip in playlists -->
-      <div class="flex items-center justify-center gap-8">
-        <UButton
-          v-if="isPlaylist"
-          color="neutral"
-          variant="ghost"
-          size="xl"
-          icon="i-fa6-solid:backward-step"
-          square
-          disabled
-        />
-        <UButton
-          color="primary"
-          size="xl"
-          class="h-16 w-16 justify-center rounded-full"
-          :icon="isPlaying ? 'i-fa6-solid:pause' : 'i-fa6-solid:play'"
-          :disabled="isStopped"
-          @click="togglePlayPause"
-        />
-        <UButton
-          v-if="isPlaylist"
-          color="neutral"
-          variant="ghost"
-          size="xl"
-          icon="i-fa6-solid:forward-step"
-          square
-          @click="store.skip()"
-        />
+      <!-- Shuffle / repeat pill with skip alongside -->
+      <div v-if="isPlaylist" class="flex items-center justify-center gap-3">
+        <div class="flex items-center gap-6 rounded-full bg-white/10 px-5 py-1.5">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="lg"
+            square
+            icon="i-fa6-solid:shuffle"
+            :class="playerState?.shuffle ? 'text-yellow-400' : 'text-white/60'"
+            aria-label="Shuffle"
+            @click="store.setShuffle(!playerState?.shuffle)"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="lg"
+            square
+            icon="i-fa6-solid:repeat"
+            :class="playerState?.loop ? 'text-yellow-400' : 'text-white/60'"
+            aria-label="Repeat"
+            @click="store.setLoop(!playerState?.loop)"
+          />
+        </div>
+        <div class="rounded-full bg-white/10 p-1.5">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="lg"
+            square
+            icon="i-fa6-solid:forward-step"
+            class="text-white/60"
+            aria-label="Skip"
+            @click="store.skip()"
+          />
+        </div>
       </div>
 
       <!-- Speed (device scale 1..5; shown as turtle→rabbit, no numbers) -->
-      <UCard class="bg-white/5">
+      <div class="space-y-4 mx-auto w-[70vw]">
         <div class="flex flex-col gap-2">
           <span class="text-sm font-medium">Speed</span>
           <div class="flex items-center gap-3">
@@ -122,50 +144,51 @@
             />
           </div>
         </div>
-      </UCard>
 
-      <!-- Shuffle / repeat (playlist mode only) -->
-      <div v-if="isPlaylist" class="flex gap-3">
+        <div class="flex flex-col gap-2">
+          <span class="text-sm font-medium">Brightness</span>
+          <div class="flex items-center gap-3">
+            <UIcon
+              name="i-lucide:sun-dim"
+              class="h-5 w-5 shrink-0 text-white/60"
+              aria-label="Dimmer"
+            />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              :value="ledBrightness"
+              class="w-full accent-primary-500"
+              @change="onBrightnessChange"
+            />
+            <UIcon
+              name="i-lucide:sun"
+              class="h-5 w-5 shrink-0 text-white/60"
+              aria-label="Brighter"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Full lighting controls (color, effects) -->
+      <div class="mx-auto rounded-full bg-white/10 p-1.5">
         <UButton
-          block
-          class="flex-1"
-          :color="playerState?.shuffle ? 'primary' : 'neutral'"
-          :variant="playerState?.shuffle ? 'solid' : 'soft'"
-          icon="i-fa6-solid:shuffle"
-          @click="store.setShuffle(!playerState?.shuffle)"
-        >
-          Shuffle
-        </UButton>
-        <UButton
-          block
-          class="flex-1"
-          :color="playerState?.loop ? 'primary' : 'neutral'"
-          :variant="playerState?.loop ? 'solid' : 'soft'"
-          icon="i-fa6-solid:repeat"
-          @click="store.setLoop(!playerState?.loop)"
-        >
-          Repeat
-        </UButton>
+          color="neutral"
+          variant="ghost"
+          size="lg"
+          square
+          icon="i-fa6-solid:lightbulb"
+          class="text-white/60"
+          aria-label="Lighting"
+          @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/lighting`)"
+        />
       </div>
 
       <p v-if="store.error" class="text-center text-sm text-red-400">{{ store.error }}</p>
-
-      <!-- Section navigation -->
-      <div class="grid grid-cols-2 gap-3 pt-2">
-        <UButton
-          v-for="nav in sections"
-          :key="nav.to"
-          color="neutral"
-          variant="soft"
-          size="lg"
-          :icon="nav.icon"
-          block
-          @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/${nav.to}`)"
-        >
-          {{ nav.label }}
-        </UButton>
-      </div>
     </div>
+
+    <TranquilTabBar />
   </PageLayout>
 </template>
 
@@ -178,6 +201,7 @@ import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import type { Pattern } from '@/lib/tranquil/local/types'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import TranquilLedRing from '@/components/tranquil/TranquilLedRing.vue'
+import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -188,13 +212,6 @@ const routeId = computed(() => route.params.id as string)
 // The connection is established by HomeView.openLocalDevice before navigation;
 // this view just drives the already-active connection.
 const isActive = computed(() => store.activeDevice?.id === routeId.value)
-
-const sections = [
-  { to: 'patterns', label: 'Patterns', icon: 'i-fa6-solid:table-cells-large' },
-  { to: 'playlists', label: 'Playlists', icon: 'i-fa6-solid:list' },
-  { to: 'lighting', label: 'Lighting', icon: 'i-fa6-solid:lightbulb' },
-  { to: 'store', label: 'Store', icon: 'i-fa6-solid:store' },
-]
 
 const playerState = computed(() => store.playerState)
 const progressPercent = computed(() => playerState.value?.progress_percent ?? 0)
@@ -235,6 +252,32 @@ watch(
   { immediate: true },
 )
 
+// LED brightness for channel 0, shown as 0-100% (device scale 0-255).
+// null until a strip is confirmed — no LEDs means no slider.
+const ledBrightness = ref<number | null>(null)
+
+async function loadBrightness() {
+  if (!isActive.value) return
+  try {
+    const cfg = await store.api().led.getConfig()
+    if (!cfg.channels.length) return
+    const channel = await store.api().led.getChannel(0)
+    ledBrightness.value = Math.round((channel.brightness / 255) * 100)
+  } catch {
+    ledBrightness.value = null
+  }
+}
+
+async function onBrightnessChange(e: Event) {
+  const pct = Number((e.target as HTMLInputElement).value)
+  ledBrightness.value = pct
+  try {
+    await store.api().led.setChannel(0, { brightness: Math.round((pct / 100) * 255) })
+  } catch {
+    // Leave the slider where the user put it; next refresh resyncs from the device
+  }
+}
+
 async function togglePlayPause() {
   if (isPlaying.value) await store.pause()
   else if (playerState.value?.state === 'PAUSED') await store.resume()
@@ -246,7 +289,8 @@ function onSpeedChange(e: Event) {
 }
 
 async function refresh() {
-  if (isActive.value) await store.fetchPlayerState().catch(() => {})
+  if (!isActive.value) return
+  await Promise.all([store.fetchPlayerState().catch(() => {}), loadBrightness()])
 }
 
 function syncHeader() {
@@ -255,6 +299,10 @@ function syncHeader() {
     title: d?.model || d?.name || 'Sand Table',
     backRoute: '/',
     actions: [
+      {
+        icon: 'i-fa6-solid:lightbulb',
+        onClick: () => router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/lighting`),
+      },
       {
         icon: 'i-fa6-solid:gear',
         onClick: () => router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/settings`),

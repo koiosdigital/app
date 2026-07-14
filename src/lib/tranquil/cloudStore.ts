@@ -30,6 +30,19 @@ export interface StorePatternPage {
   pagination: { total: number; page: number; per_page: number; total_pages: number }
 }
 
+export interface StorePlaylist {
+  uuid: string
+  name: string
+  description: string
+  featured_pattern_uuid?: string | null
+  patterns: StorePattern[]
+}
+
+export interface StorePlaylistPage {
+  data: StorePlaylist[]
+  pagination: { total: number; page: number; per_page: number; total_pages: number }
+}
+
 export type StoreErrorKind = 'unauthorized' | 'forbidden' | 'http' | 'network'
 
 export class StoreError extends Error {
@@ -62,16 +75,44 @@ async function authFetch(path: string): Promise<Response> {
   return res
 }
 
+export type StoreSort = 'popularity' | 'name' | 'created_at'
+
+export interface StoreListQuery {
+  search?: string
+  sort?: StoreSort
+  order?: 'asc' | 'desc'
+}
+
+function pageQuery(page: number, perPage: number, query?: StoreListQuery): string {
+  const params = new URLSearchParams({ page: String(page), per_page: String(perPage) })
+  if (query?.search?.trim()) params.set('search', query.search.trim())
+  if (query?.sort) params.set('sort', query.sort)
+  if (query?.order) params.set('order', query.order)
+  return params.toString()
+}
+
 export const tranquilStore = {
   /** Paginated catalog. NOTE: the store is 1-based (unlike the local device). */
-  async listPatterns(page = 1, perPage = 24): Promise<StorePatternPage> {
-    const res = await authFetch(`/patterns?page=${page}&per_page=${perPage}`)
+  async listPatterns(page = 1, perPage = 24, query?: StoreListQuery): Promise<StorePatternPage> {
+    const res = await authFetch(`/patterns?${pageQuery(page, perPage, query)}`)
     return res.json() as Promise<StorePatternPage>
+  },
+
+  /** Curated playlists, each with its ordered patterns. 1-based like /patterns. */
+  async listPlaylists(page = 1, perPage = 24, query?: StoreListQuery): Promise<StorePlaylistPage> {
+    const res = await authFetch(`/playlists?${pageQuery(page, perPage, query)}`)
+    return res.json() as Promise<StorePlaylistPage>
   },
 
   async getPattern(uuid: string): Promise<StorePattern> {
     const res = await authFetch(`/patterns/${uuid}`)
     return res.json() as Promise<StorePattern>
+  },
+
+  /** Single curated playlist with its ordered patterns. */
+  async getPlaylist(uuid: string): Promise<StorePlaylist> {
+    const res = await authFetch(`/playlists/${uuid}`)
+    return res.json() as Promise<StorePlaylist>
   },
 
   /** Authenticated thumbnail URL — fetch with a bearer (see useAuthenticatedImage). */

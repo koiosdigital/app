@@ -1,66 +1,64 @@
 <template>
   <PageLayout :on-refresh="loadDevices">
     <section class="flex flex-col gap-6 px-5 py-6">
-      <!-- Native-only: Koios devices found on the LAN via mDNS. Hidden on web
-           and whenever nothing has been discovered yet. -->
+      <!-- One unified grid: LAN-discovered devices (native-only, mDNS) alongside
+           cloud account devices, deduped by device_id. -->
       <div
-        v-if="localDevicesStore.supported && localDevicesStore.devices.length"
-        class="flex flex-col gap-3"
+        v-if="loading || visibleLocalDevices.length || sortedDevices.length"
+        class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
       >
-        <h2 class="text-xs uppercase tracking-[0.35em] text-white/50">On your network</h2>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <LocalDeviceCard
-            v-for="local in localDevicesStore.devices"
-            :key="local.id"
+        <template v-for="local in visibleLocalDevices" :key="local.id">
+          <TranquilDeviceCard
+            v-if="local.type === 'TRANQUIL'"
             :device="local"
             @open="openLocalDevice"
+            @open-settings="openLocalSettings"
           />
-        </div>
-      </div>
-
-      <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <UCard v-for="i in 3" :key="i" class="bg-white/5">
-          <USkeleton class="h-32 w-full" />
-        </UCard>
+          <LocalDeviceCard v-else :device="local" @open="openLocalDevice" />
+        </template>
+        <template v-if="loading">
+          <UCard v-for="i in 3" :key="i" class="bg-white/5">
+            <USkeleton class="h-32 w-full" />
+          </UCard>
+        </template>
+        <template v-else-if="!error">
+          <template v-for="device in sortedDevices" :key="device.id">
+            <MatrixDeviceCard
+              v-if="isMatrxDevice(device)"
+              :device="device"
+              @open="openDevice"
+              @toggle-screen="toggleScreen"
+              @open-settings="openSettings"
+            />
+            <NemotoDeviceCard
+              v-else-if="isNemotoDevice(device)"
+              :device="device"
+              @open="openDevice"
+              @send-message="openMessage"
+              @open-settings="openSettings"
+            />
+            <LanternDeviceCard
+              v-else
+              :device="device"
+              @open="openDevice"
+              @toggle-power="togglePower"
+              @send-touch="handleSendTouch"
+              @open-settings="openSettings"
+            />
+          </template>
+        </template>
       </div>
 
       <div
-        v-else-if="error"
+        v-if="!loading && error"
         class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center"
       >
         <p class="text-red-400">{{ error }}</p>
         <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices"> Retry </UButton>
       </div>
 
-      <div v-else-if="sortedDevices.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <template v-for="device in sortedDevices" :key="device.id">
-          <MatrixDeviceCard
-            v-if="isMatrxDevice(device)"
-            :device="device"
-            @open="openDevice"
-            @toggle-screen="toggleScreen"
-            @open-settings="openSettings"
-          />
-          <NemotoDeviceCard
-            v-else-if="isNemotoDevice(device)"
-            :device="device"
-            @open="openDevice"
-            @send-message="openMessage"
-            @open-settings="openSettings"
-          />
-          <LanternDeviceCard
-            v-else
-            :device="device"
-            @open="openDevice"
-            @toggle-power="togglePower"
-            @send-touch="handleSendTouch"
-            @open-settings="openSettings"
-          />
-        </template>
-      </div>
-
       <div
-        v-else
+        v-else-if="!loading && !visibleLocalDevices.length && !sortedDevices.length"
         class="rounded-lg border border-dashed border-white/20 p-6 text-center text-white/70"
       >
         No devices yet. Add your first Koios Digital product to get started.
@@ -79,6 +77,7 @@ import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
 import NemotoDeviceCard from '@/components/devices/NemotoDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
 import LocalDeviceCard from '@/components/devices/LocalDeviceCard.vue'
+import TranquilDeviceCard from '@/components/devices/TranquilDeviceCard.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import { type ApiDevice, isMatrxDevice, isNemotoDevice } from '@/lib/api/mappers/deviceMapper'
@@ -100,12 +99,42 @@ const devices = ref<ApiDevice[]>([])
 const loading = ref(false)
 const error = ref<string>()
 
+// Families whose primary control path is LAN-direct. When such a device is
+// broadcasting on the network, the local card wins over any cloud twin; for
+// everything else (matrx/nemoto — cloud-only so far) the cloud card wins.
+const LOCAL_CONTROLLED = new Set<string>(['TRANQUIL'])
+
+// mDNS broadcasts keyed by the cloud device id from the `device_id` TXT record.
+const localByDeviceId = computed(() => {
+  const map = new Map<string, LocalDevice>()
+  for (const local of localDevicesStore.devices) {
+    if (local.deviceId) map.set(local.deviceId, local)
+  }
+  return map
+})
+
+// Local cards: locally-controlled families always, others only when the device
+// isn't already represented by a cloud card.
+const visibleLocalDevices = computed(() => {
+  const cloudIds = new Set(devices.value.map((d) => d.id))
+  return localDevicesStore.devices.filter(
+    (local) =>
+      LOCAL_CONTROLLED.has(local.type) || !local.deviceId || !cloudIds.has(local.deviceId),
+  )
+})
+
 const sortedDevices = computed(() => {
-  return [...devices.value].sort((a, b) => {
-    const nameA = a.settings?.displayName || a.id
-    const nameB = b.settings?.displayName || b.id
-    return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' })
-  })
+  return devices.value
+    .filter((device) => {
+      // Hide the cloud card when a locally-controlled twin is broadcasting.
+      const local = localByDeviceId.value.get(device.id)
+      return !(local && LOCAL_CONTROLLED.has(local.type))
+    })
+    .sort((a, b) => {
+      const nameA = a.settings?.displayName || a.id
+      const nameB = b.settings?.displayName || b.id
+      return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' })
+    })
 })
 
 const loadDevices = async () => {
@@ -228,6 +257,12 @@ const openLocalDevice = (device: LocalDevice) => {
   }
   // TODO(fold-in): other device families' LAN pages not built yet.
   console.info('Open local device', device.type, device.name, device.baseUrl)
+}
+
+const openLocalSettings = (device: LocalDevice) => {
+  // Same connect-then-navigate dance as openLocalDevice, straight to settings.
+  tranquilLocal.connect(device)
+  router.push(`/tranquil/local/${encodeURIComponent(device.id)}/settings`)
 }
 
 onMounted(() => {

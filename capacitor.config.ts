@@ -1,16 +1,24 @@
 /// <reference types="@capawesome/capacitor-live-update" />
 import type { CapacitorConfig } from '@capacitor/cli'
 
+// LAN live-reload: when set (see `pnpm dev:ios`), the native WebView loads the
+// Vite dev server instead of the bundled web assets, and OTA live updates are
+// switched off. Baked into the app bundle at `cap sync` time — run a plain
+// `npx cap sync ios` to go back to normal.
+const devServerUrl = process.env.CAP_DEV_SERVER_URL
+
 const config: CapacitorConfig = {
   appId: 'net.koiosdigital.app',
   appName: 'Koios Digital',
   webDir: 'dist',
-  server: {
-    hostname: 'localhost',
-    iosScheme: 'https',
-    androidScheme: 'https',
-    allowNavigation: ['app.koiosdigital.net'],
-  },
+  server: devServerUrl
+    ? { url: devServerUrl, cleartext: true }
+    : {
+        hostname: 'localhost',
+        iosScheme: 'https',
+        androidScheme: 'https',
+        allowNavigation: ['app.koiosdigital.net'],
+      },
   ios: {
     contentInset: 'never',
     backgroundColor: '#000000',
@@ -30,8 +38,10 @@ const config: CapacitorConfig = {
       // 'background' = auto-sync on load + foreground; a new bundle is downloaded
       // in the background and applied on the next cold start. Requires
       // LiveUpdate.ready() at boot (see src/main.ts) or the bundle auto-rolls-back
-      // after readyTimeout.
-      autoUpdateStrategy: 'background',
+      // after readyTimeout. Off in LAN dev mode; Xcode Debug builds additionally
+      // force it off via ios/App/disable-live-update-debug.sh regardless of what
+      // was last synced.
+      autoUpdateStrategy: devServerUrl ? 'none' : 'background',
       readyTimeout: 10000,
       autoDeleteBundles: true,
       autoBlockRolledBackBundles: true,

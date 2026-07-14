@@ -118,10 +118,14 @@ export function useSchemaPreview(
 
   const debouncedFetch = debounce(fetchPreview, options.debounceMs ?? 500)
 
-  // Watch config changes and trigger debounced preview refresh
+  // Watch config changes and trigger debounced preview refresh.
+  // Ignore mutations while disabled — those are programmatic initialization
+  // (loading saved config, schema defaults), not user edits, and the enabled
+  // watcher below already fetches once loading completes.
   watch(
     config,
     (_newConfig, oldConfig) => {
+      if (!isEnabled()) return
       // If config changed and we had an old config, user has interacted
       if (oldConfig && Object.keys(oldConfig).length > 0) {
         markInteracted()
