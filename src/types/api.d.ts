@@ -2878,7 +2878,7 @@ export interface components {
              */
             version: string;
             /** @description List of configurable fields (empty array if no configuration required) */
-            schema: (components["schemas"]["AppSchemaColorFieldDto"] | components["schemas"]["AppSchemaDatetimeFieldDto"] | components["schemas"]["AppSchemaDropdownFieldDto"] | components["schemas"]["AppSchemaMultiSelectFieldDto"] | components["schemas"]["AppSchemaGeneratedFieldDto"] | components["schemas"]["AppSchemaLocationFieldDto"] | components["schemas"]["AppSchemaLocationBasedFieldDto"] | components["schemas"]["AppSchemaOnOffFieldDto"] | components["schemas"]["AppSchemaRadioFieldDto"] | components["schemas"]["AppSchemaTextFieldDto"] | components["schemas"]["AppSchemaTypeaheadFieldDto"] | components["schemas"]["AppSchemaOAuth2FieldDto"] | components["schemas"]["AppSchemaOAuth1FieldDto"] | components["schemas"]["AppSchemaPNGFieldDto"] | components["schemas"]["AppSchemaNotificationFieldDto"] | components["schemas"]["AppSchemaGeoJSONFieldDto"])[];
+            schema: (components["schemas"]["AppSchemaColorFieldDto"] | components["schemas"]["AppSchemaDatetimeFieldDto"] | components["schemas"]["AppSchemaDropdownFieldDto"] | components["schemas"]["AppSchemaMultiSelectFieldDto"] | components["schemas"]["AppSchemaGeneratedFieldDto"] | components["schemas"]["AppSchemaLocationFieldDto"] | components["schemas"]["AppSchemaLocationBasedFieldDto"] | components["schemas"]["AppSchemaOnOffFieldDto"] | components["schemas"]["AppSchemaRadioFieldDto"] | components["schemas"]["AppSchemaTextFieldDto"] | components["schemas"]["AppSchemaTypeaheadFieldDto"] | components["schemas"]["AppSchemaOAuth2FieldDto"] | components["schemas"]["AppSchemaOAuth1FieldDto"] | components["schemas"]["AppSchemaWebCallbackFieldDto"] | components["schemas"]["AppSchemaPNGFieldDto"] | components["schemas"]["AppSchemaNotificationFieldDto"] | components["schemas"]["AppSchemaGeoJSONFieldDto"])[];
             /** @description Notification field definitions */
             notifications?: components["schemas"]["AppSchemaNotificationFieldDto"][];
         };
@@ -3413,6 +3413,59 @@ export interface components {
              * @enum {string}
              */
             type: "oauth1";
+        };
+        AppSchemaWebCallbackFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for web callback field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "webcallback";
+            /**
+             * @description Handler invoked with the callback query params (plus callback_url) as a JSON object; returns the field's config value
+             * @example sessionHandler
+             */
+            handler: string;
+            /**
+             * @description Provider login URL the popup opens (may already carry query params)
+             * @example https://www.last.fm/api/auth/?api_key=abc123
+             */
+            authorization_endpoint: string;
+            /**
+             * @description Query param the provider reads the callback URL from (last.fm: cb). Omit when the provider only redirects to a callback pre-registered with the API account.
+             * @example cb
+             */
+            redirect_param?: string;
+            /**
+             * @description Callback query param that must be present for the login to count (last.fm: token). Omit to accept any error-free callback.
+             * @example token
+             */
+            success_param?: string;
         };
         AppSchemaPNGFieldDto: {
             /**

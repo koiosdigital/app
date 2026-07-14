@@ -32,6 +32,7 @@ import SchemaLocationField from './fields/SchemaLocationField.vue'
 import SchemaLocationBasedField from './fields/SchemaLocationBasedField.vue'
 import SchemaTypeaheadField from './fields/SchemaTypeaheadField.vue'
 import SchemaOAuthField from './fields/SchemaOAuthField.vue'
+import SchemaWebCallbackField from './fields/SchemaWebCallbackField.vue'
 import SchemaPNGField from './fields/SchemaPNGField.vue'
 import SchemaNotificationField from './fields/SchemaNotificationField.vue'
 import SchemaGeoJSONField from './fields/SchemaGeoJSONField.vue'
@@ -69,6 +70,7 @@ const fieldComponentMap: Record<string, Component> = {
   locationbased: SchemaLocationBasedField,
   typeahead: SchemaTypeaheadField,
   oauth2: SchemaOAuthField,
+  webcallback: SchemaWebCallbackField,
   png: SchemaPNGField,
   notification: SchemaNotificationField,
   geojson: SchemaGeoJSONField,
@@ -93,7 +95,7 @@ const handlerProps = computed(() => ({
 }))
 
 function getExtraProps(type: string): Record<string, unknown> {
-  if (type === 'oauth2') return oauthProps.value
+  if (type === 'oauth2' || type === 'webcallback') return oauthProps.value
   if (type === 'locationbased' || type === 'typeahead') return handlerProps.value
   return {}
 }

@@ -50,13 +50,11 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { Capacitor } from '@capacitor/core'
 import type { components } from '@/types/api'
 import { appsApi } from '@/lib/api/apps'
-import { useOAuthFlow } from '@/composables/useOAuthFlow'
+import { useOAuthFlow, getOAuthCallbackUri } from '@/composables/useOAuthFlow'
 import { encodeState } from '@/utils/oauthState'
 import { generatePKCE } from '@/utils/pkce'
-import { ENV } from '@/config/environment'
 
 type OAuth2Field = components['schemas']['AppSchemaOAuth2FieldDto']
 
@@ -126,15 +124,9 @@ async function initPKCE() {
 
 onMounted(initPKCE)
 
-function getRedirectUri(): string {
-  // The redirect_uri sent to the backend handler for the token exchange must
-  // be identical to the one embedded in the authorization request. Users
-  // register this URL as the redirect URI on their own OAuth clients.
-  if (Capacitor.isNativePlatform()) return `${ENV.appNativeUrl}/oauth/callback`
-  // OAuth providers often don't accept localhost - use 127.0.0.1 instead
-  const baseUrl = window.location.origin.replace('://localhost', '://127.0.0.1')
-  return `${baseUrl}/oauth/callback`
-}
+// The redirect_uri sent to the backend handler for the token exchange must
+// be identical to the one embedded in the authorization request.
+const getRedirectUri = getOAuthCallbackUri
 
 const oauthFlow = useOAuthFlow({
   onSuccess: async (code) => {
