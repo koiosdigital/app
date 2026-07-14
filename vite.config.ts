@@ -5,80 +5,79 @@ import vue from '@vitejs/plugin-vue'
 import ui from '@nuxt/ui/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 // https://vitejs.dev/config/
 export default defineConfig({
   appType: 'spa',
-  plugins: [
-    ui({
-      ui: {
-        colors: {
-          neutral: 'zinc',
-        },
-        // Map default UI component icons to Font Awesome 6
-        // Format: i-{collection}:{icon-name} - colon separates collection from icon
-        icons: {
-          arrowDown: 'i-fa6-solid:arrow-down',
-          arrowLeft: 'i-fa6-solid:arrow-left',
-          arrowRight: 'i-fa6-solid:arrow-right',
-          arrowUp: 'i-fa6-solid:arrow-up',
-          caution: 'i-fa6-solid:triangle-exclamation',
-          check: 'i-fa6-solid:check',
-          chevronDoubleLeft: 'i-fa6-solid:angles-left',
-          chevronDoubleRight: 'i-fa6-solid:angles-right',
-          chevronDown: 'i-fa6-solid:chevron-down',
-          chevronLeft: 'i-fa6-solid:chevron-left',
-          chevronRight: 'i-fa6-solid:chevron-right',
-          chevronUp: 'i-fa6-solid:chevron-up',
-          close: 'i-fa6-solid:xmark',
-          copy: 'i-fa6-regular:copy',
-          copyCheck: 'i-fa6-solid:clipboard-check',
-          dark: 'i-fa6-solid:moon',
-          drag: 'i-fa6-solid:grip-vertical',
-          ellipsis: 'i-fa6-solid:ellipsis',
-          error: 'i-fa6-solid:circle-xmark',
-          external: 'i-fa6-solid:arrow-up-right-from-square',
-          eye: 'i-fa6-regular:eye',
-          eyeOff: 'i-fa6-regular:eye-slash',
-          file: 'i-fa6-regular:file',
-          folder: 'i-fa6-regular:folder',
-          folderOpen: 'i-fa6-regular:folder-open',
-          hash: 'i-fa6-solid:hashtag',
-          info: 'i-fa6-solid:circle-info',
-          light: 'i-fa6-solid:sun',
-          loading: 'i-fa6-solid:spinner',
-          menu: 'i-fa6-solid:bars',
-          minus: 'i-fa6-solid:minus',
-          panelClose: 'i-fa6-solid:chevron-left',
-          panelOpen: 'i-fa6-solid:chevron-right',
-          plus: 'i-fa6-solid:plus',
-          reload: 'i-fa6-solid:rotate-right',
-          search: 'i-fa6-solid:magnifying-glass',
-          stop: 'i-fa6-solid:stop',
-          success: 'i-fa6-solid:circle-check',
-          system: 'i-fa6-solid:desktop',
-          tip: 'i-fa6-solid:lightbulb',
-          upload: 'i-fa6-solid:upload',
-          warning: 'i-fa6-solid:triangle-exclamation',
-        },
-        input: {
-          slots: {
-            root: 'w-full',
-          },
-        },
-        formField: {
-          slots: {
-            root: 'w-full',
-          },
+  plugins: [ui({
+    ui: {
+      colors: {
+        neutral: 'zinc',
+      },
+      // Map default UI component icons to Font Awesome 6
+      // Format: i-{collection}:{icon-name} - colon separates collection from icon
+      icons: {
+        arrowDown: 'i-fa6-solid:arrow-down',
+        arrowLeft: 'i-fa6-solid:arrow-left',
+        arrowRight: 'i-fa6-solid:arrow-right',
+        arrowUp: 'i-fa6-solid:arrow-up',
+        caution: 'i-fa6-solid:triangle-exclamation',
+        check: 'i-fa6-solid:check',
+        chevronDoubleLeft: 'i-fa6-solid:angles-left',
+        chevronDoubleRight: 'i-fa6-solid:angles-right',
+        chevronDown: 'i-fa6-solid:chevron-down',
+        chevronLeft: 'i-fa6-solid:chevron-left',
+        chevronRight: 'i-fa6-solid:chevron-right',
+        chevronUp: 'i-fa6-solid:chevron-up',
+        close: 'i-fa6-solid:xmark',
+        copy: 'i-fa6-regular:copy',
+        copyCheck: 'i-fa6-solid:clipboard-check',
+        dark: 'i-fa6-solid:moon',
+        drag: 'i-fa6-solid:grip-vertical',
+        ellipsis: 'i-fa6-solid:ellipsis',
+        error: 'i-fa6-solid:circle-xmark',
+        external: 'i-fa6-solid:arrow-up-right-from-square',
+        eye: 'i-fa6-regular:eye',
+        eyeOff: 'i-fa6-regular:eye-slash',
+        file: 'i-fa6-regular:file',
+        folder: 'i-fa6-regular:folder',
+        folderOpen: 'i-fa6-regular:folder-open',
+        hash: 'i-fa6-solid:hashtag',
+        info: 'i-fa6-solid:circle-info',
+        light: 'i-fa6-solid:sun',
+        loading: 'i-fa6-solid:spinner',
+        menu: 'i-fa6-solid:bars',
+        minus: 'i-fa6-solid:minus',
+        panelClose: 'i-fa6-solid:chevron-left',
+        panelOpen: 'i-fa6-solid:chevron-right',
+        plus: 'i-fa6-solid:plus',
+        reload: 'i-fa6-solid:rotate-right',
+        search: 'i-fa6-solid:magnifying-glass',
+        stop: 'i-fa6-solid:stop',
+        success: 'i-fa6-solid:circle-check',
+        system: 'i-fa6-solid:desktop',
+        tip: 'i-fa6-solid:lightbulb',
+        upload: 'i-fa6-solid:upload',
+        warning: 'i-fa6-solid:triangle-exclamation',
+      },
+      input: {
+        slots: {
+          root: 'w-full',
         },
       },
-    }),
-    vue({
-      script: {
-        defineModel: true,
-        propsDestructure: true,
+      formField: {
+        slots: {
+          root: 'w-full',
+        },
       },
-    }),
-  ],
+    },
+  }), vue({
+    script: {
+      defineModel: true,
+      propsDestructure: true,
+    },
+  }), cloudflare()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

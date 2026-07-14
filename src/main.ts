@@ -31,11 +31,11 @@ if (Capacitor.isNativePlatform()) {
     try {
       const parsed = new URL(url)
 
-      // ASWebAuthenticationSession-handled OAuth callbacks (the main login
-      // flow) are delivered to the plugin's completion handler — they don't
-      // reach this listener. So everything that arrives here is from a
-      // SFSafariViewController flow or an external universal-link tap; we
-      // need to dismiss the in-app browser either way.
+      // OAuth flows (main login and app-install) run entirely inside
+      // ASWebAuthenticationSession and never reach this listener. What
+      // arrives here: license-checkout returns from the Stripe flow's
+      // SFSafariViewController, kc_action redirects, and external
+      // universal-link taps — dismiss the in-app browser either way.
       Browser.close().catch(() => {})
 
       // kc_action results (delete_account etc.) bypass the OAuth callback

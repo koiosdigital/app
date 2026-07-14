@@ -199,9 +199,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, toRef } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import { Capacitor } from '@capacitor/core'
 import MatrixDevicePreview from '@/components/MatrixDevicePreview.vue'
 import SchemaForm from '@/components/schema/SchemaForm.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
@@ -210,8 +209,6 @@ import { devicesApi, type InstallationResponse } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import { useSchemaForm } from '@/composables/useSchemaForm'
 import { useSchemaPreview } from '@/composables/useSchemaPreview'
-import { useOAuthFlow } from '@/composables/useOAuthFlow'
-import { ENV } from '@/config/environment'
 import type { components } from '@/types/api'
 
 type MatrxDevice = components['schemas']['MatrxDeviceResponseDto']
@@ -224,7 +221,6 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const route = useRoute()
 
 // Data refs
 const app = ref<AppManifest | null>(null)
@@ -594,82 +590,8 @@ async function togglePin() {
   }
 }
 
-// OAuth flow for restoration
-const oauthFlow = useOAuthFlow({
-  onSuccess: () => {
-    // OAuth success is handled by the field component
-  },
-})
-
-function getRedirectUri(): string {
-  // Must exactly match the redirect_uri sent in the authorization request
-  // (SchemaOAuthField.getRedirectUri) — OAuth token exchange requires it. Both
-  // derive the native value from this one constant.
-  if (Capacitor.isNativePlatform()) return ENV.oauth.nativeRedirectUrl
-  // OAuth providers often don't accept localhost - use 127.0.0.1 instead
-  const baseUrl = window.location.origin.replace('://localhost', '://127.0.0.1')
-  return `${baseUrl}/oauth/callback`
-}
-
-async function checkOAuthRestoration() {
-  // Check if returning from OAuth callback (native flow)
-  if (route.query.restore === 'true' && route.query.oauth_code) {
-    const session = await oauthFlow.getPendingSession()
-    if (!session) return
-
-    // Restore form state from session
-    formState.initializeFromConfig(session.formValues)
-    displayTime.value = session.displayTime
-    skippedByUser.value = session.skippedByUser
-
-    // Process OAuth code for the field
-    const code = route.query.oauth_code as string
-    const fieldId = route.query.oauth_field as string
-
-    // Find the OAuth field and call its handler
-    const field = schema.value?.schema.find((f) => f.id === fieldId)
-    if (field && field.type === 'oauth2' && 'handler' in field) {
-      try {
-        const handlerName = field.handler || `${fieldId}_handler`
-        const handlerParams: Record<string, string> = {
-          code,
-          grant_type: 'authorization_code',
-          client_id: session.clientId || (field as { client_id?: string }).client_id || '',
-          redirect_uri: getRedirectUri(),
-        }
-        if (session.codeVerifier) {
-          handlerParams.code_verifier = session.codeVerifier
-        }
-        if (session.clientSecret) {
-          handlerParams.client_secret = session.clientSecret
-        }
-        const result = await appsApi.callHandler(
-          resolvedAppId.value,
-          handlerName,
-          buildConfig(),
-          JSON.stringify(handlerParams),
-        )
-
-        if (result?.result) {
-          // Route through handleFieldUpdate so generated fields sourced from
-          // this OAuth field re-run their handlers (matches the web popup path)
-          handleFieldUpdate(fieldId, result.result)
-        }
-      } catch (err) {
-        console.error('OAuth handler error:', err)
-      }
-    }
-
-    await oauthFlow.clearPendingSession()
-
-    // Clean URL
-    router.replace({ query: {} })
-  }
-}
-
 onMounted(async () => {
   await loadData()
-  await checkOAuthRestoration()
 })
 </script>
 

@@ -8,7 +8,7 @@
     "build": "vite build && npx cap sync",
     "ios": "npx cap sync ios && npx cap open ios",
     "android": "npx cap sync android && npx cap open android",
-    "preview": "vite preview",
+    "preview": "pnpm run build && wrangler dev",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,vue,js,json,css}\"",
@@ -16,7 +16,8 @@
     "typecheck": "vue-tsc -p ./tsconfig.app.json",
     "postinstall": "buf generate",
     "generate:api": "openapi-typescript ../device-api/openapi.json -o src/types/api.d.ts",
-    "generate:provisioning-api": "openapi-typescript https://provisioning.api.koiosdigital.net/swagger.json -o src/types/provisioning-api.d.ts"
+    "generate:provisioning-api": "openapi-typescript https://provisioning.api.koiosdigital.net/swagger.json -o src/types/provisioning-api.d.ts",
+    "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.10.2",
@@ -40,7 +41,6 @@
     "@unhead/vue": "^2.1.1",
     "capacitor-zeroconf": "^4.0.0",
     "jwt-decode": "^4.0.0",
-    "oidc-client-ts": "^3.4.1",
     "openapi-fetch": "^0.15.0",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.1.18",
@@ -53,6 +53,7 @@
     "@bufbuild/protoc-gen-es": "^2.10.2",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.0.0",
+    "@cloudflare/vite-plugin": "^1.44.0",
     "@iconify-json/fa6-brands": "^1.2.6",
     "@iconify-json/fa6-regular": "^1.2.4",
     "@iconify-json/fa6-solid": "^1.2.4",
@@ -71,7 +72,8 @@
     "typescript-eslint": "^8.50.1",
     "vite": "^7.3.0",
     "vue-eslint-parser": "^10.2.0",
-    "vue-tsc": "^3.2.1"
+    "vue-tsc": "^3.2.1",
+    "wrangler": "^4.110.0"
   },
   "resolutions": {
     "unimport": "4.1.1"

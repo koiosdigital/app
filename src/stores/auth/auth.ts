@@ -117,8 +117,8 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Complete OAuth callback and store tokens (web only).
    */
-  async function completeAuthentication(callbackUrl?: string) {
-    const tokens = await KoiosOidcClient.completeAuthentication(callbackUrl)
+  async function completeAuthentication() {
+    const tokens = await KoiosOidcClient.completeAuthentication()
 
     if (!tokens.accessToken) {
       throw new Error('OIDC callback missing access token')

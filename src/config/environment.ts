@@ -2,10 +2,7 @@
  * Centralized environment configuration
  */
 
-import { Capacitor } from '@capacitor/core'
-
 const isDev = import.meta.env.DEV && false
-const isIOS = Capacitor.getPlatform() === 'ios'
 
 export const ENV = {
   /** App URLs */

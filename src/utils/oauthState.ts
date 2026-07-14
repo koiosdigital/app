@@ -9,7 +9,7 @@ export interface OAuthState {
   appId: string
   deviceId?: string
   installationId?: string
-  mode: 'install' | 'edit' | 'license'
+  mode: 'install' | 'edit'
   timestamp: number
 }
 

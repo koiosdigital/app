@@ -127,10 +127,10 @@ async function initPKCE() {
 onMounted(initPKCE)
 
 function getRedirectUri(): string {
-  // Native must use the exact registered custom-scheme URI — the token exchange
-  // (InstallationEditorView.checkOAuthRestoration) has to send an identical
-  // redirect_uri, so both derive it from this one constant.
-  if (Capacitor.isNativePlatform()) return ENV.oauth.nativeRedirectUrl
+  // The redirect_uri sent to the backend handler for the token exchange must
+  // be identical to the one embedded in the authorization request. Users
+  // register this URL as the redirect URI on their own OAuth clients.
+  if (Capacitor.isNativePlatform()) return `${ENV.appNativeUrl}/oauth/callback`
   // OAuth providers often don't accept localhost - use 127.0.0.1 instead
   const baseUrl = window.location.origin.replace('://localhost', '://127.0.0.1')
   return `${baseUrl}/oauth/callback`
@@ -212,19 +212,7 @@ function startOAuth() {
     url.searchParams.set('code_challenge_method', 'S256')
   }
 
-  oauthFlow.startFlow(url.toString(), {
-    fieldId: props.field.id,
-    appId: props.appId,
-    deviceId: props.deviceId,
-    installationId: props.installationId,
-    mode: props.mode,
-    formValues: props.formValues,
-    displayTime: props.displayTime,
-    skippedByUser: props.skippedByUser,
-    codeVerifier: codeVerifier || undefined,
-    clientId: clientId.value || undefined,
-    clientSecret: userClientSecret.value || undefined,
-  })
+  oauthFlow.startFlow(url.toString(), getRedirectUri())
 }
 
 function disconnect() {

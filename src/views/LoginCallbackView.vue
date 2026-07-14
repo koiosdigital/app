@@ -72,9 +72,7 @@ const completeLogin = async () => {
       return
     }
 
-    await authStore.completeAuthentication(
-      typeof window !== 'undefined' ? window.location.href : undefined,
-    )
+    await authStore.completeAuthentication()
     const target = consumeRedirectTarget() ?? LOGIN_DEFAULT_REDIRECT
     await router.replace(target)
   } catch (error) {

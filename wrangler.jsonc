@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kd-app",
+  "compatibility_date": "2025-09-27",
+  "assets": {
+    "not_found_handling": "single-page-application",
+  },
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "account_id": "9add4187b89e0aac0e5a951c893549dd",
+  "preview_urls": false,
+  "workers_dev": false,
+  "routes": [{ "pattern": "app.koiosdigital.net", "custom_domain": true }],
+}

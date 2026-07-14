@@ -34,3 +34,9 @@ tsconfig.node.tsbuildinfo
 
 #Generated proto files
 *_pb.ts
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

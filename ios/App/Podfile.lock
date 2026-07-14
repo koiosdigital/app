@@ -31,7 +31,7 @@ PODS:
     - Alamofire (~> 5.10.2)
     - Capacitor
     - ZIPFoundation (~> 0.9.0)
-  - CapawesomeTeamCapacitorOauth (0.1.6):
+  - CapawesomeTeamCapacitorOauth (0.2.0):
     - AppAuth (~> 2.0)
     - Capacitor
   - IONGeolocationLib (2.0.0)
@@ -100,7 +100,7 @@ SPEC CHECKSUMS:
   CapacitorPreferences: 443fabe9670226200e595658a87ef0b1566716d4
   CapacitorZeroconf: 32e19c259908ca1b97af27aeff25c26b8e948021
   CapawesomeCapacitorLiveUpdate: dddec08ed1086d61328823e20fdc52946241796f
-  CapawesomeTeamCapacitorOauth: a6bf817db15bbd82c59f59ac0bc760cdf4bf3a07
+  CapawesomeTeamCapacitorOauth: f9bc3ba2ca896bdebab51ed1ab072ca8c10664eb
   IONGeolocationLib: a5e40b54edc2ee9902036eda5aaa41ddf07bb68d
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
