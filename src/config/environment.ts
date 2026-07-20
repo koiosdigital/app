@@ -13,7 +13,7 @@ export const ENV = {
   apiBaseUrl: isDev ? 'http://localhost:9090' : 'https://api.koiosdigital.net',
 
   /** External URLs */
-  accountPortalUrl: 'https://sso.koiosdigital.net/realms/kd-prod/account',
+  accountPortalUrl: 'https://auth.koiosdigital.net/dashboard/profile',
   supportUrl: 'https://koiosdigital.net/support',
   supportEmail: 'support@koiosdigital.net',
 
@@ -26,8 +26,8 @@ export const ENV = {
 
   /** OAuth/OIDC Configuration */
   oauth: {
-    authority: 'https://sso.koiosdigital.net/realms/kd-prod',
-    clientId: 'koios-app',
+    authority: 'https://auth.koiosdigital.net',
+    clientId: '5e073f3e-89d1-4f43-89a4-bd555a1eca88',
     redirectPath: '/login/callback',
     postLogoutRedirectPath: '/login',
     /**
