@@ -99,186 +99,219 @@
           </template>
         </UCard>
 
-        <!-- Email -->
-        <UCard class="bg-white/5">
-          <template #header>
-            <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Account</p>
-              <p class="text-lg font-medium">Email address</p>
-            </div>
-          </template>
-
-          <div class="flex flex-col gap-3">
-            <div class="flex items-center justify-between gap-3">
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium">{{ form.email }}</p>
-                <p class="mt-0.5 flex items-center gap-1.5 text-xs">
-                  <template v-if="emailVerified">
-                    <UIcon name="i-fa6-solid:circle-check" class="h-3.5 w-3.5 text-green-400" />
-                    <span class="text-green-300">Verified</span>
-                  </template>
-                  <template v-else>
-                    <UIcon
-                      name="i-fa6-solid:circle-exclamation"
-                      class="h-3.5 w-3.5 text-amber-400"
-                    />
-                    <span class="text-amber-300">Not verified</span>
-                  </template>
-                </p>
-              </div>
-              <UButton
-                color="neutral"
-                variant="soft"
-                size="sm"
-                icon="i-fa6-solid:pen"
-                @click="openEmailModal"
-              >
-                Change
-              </UButton>
-            </div>
-            <UButton
-              v-if="!emailVerified"
-              color="primary"
-              variant="ghost"
-              size="sm"
-              icon="i-fa6-regular:envelope"
-              :loading="resendingVerification"
-              class="self-start"
-              @click="resendVerification"
-            >
-              Resend verification email
-            </UButton>
-          </div>
-        </UCard>
-
-        <!-- Password -->
-        <UCard v-if="hasPassword" class="bg-white/5">
-          <template #header>
-            <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Security</p>
-              <p class="text-lg font-medium">Password</p>
-            </div>
-          </template>
-
-          <div class="flex flex-col gap-4">
-            <UFormField label="Current password">
-              <UInput v-model="passwordForm.current" type="password" class="w-full" />
-            </UFormField>
-            <UFormField
-              label="New password"
-              hint="At least 10 characters, with upper & lowercase and a number"
-            >
-              <UInput v-model="passwordForm.next" type="password" class="w-full" />
-            </UFormField>
-            <UFormField label="Confirm new password">
-              <UInput v-model="passwordForm.confirm" type="password" class="w-full" />
-            </UFormField>
-          </div>
-
-          <template #footer>
-            <div class="flex justify-end">
-              <UButton
-                color="primary"
-                :loading="savingPassword"
-                :disabled="!passwordValid"
-                icon="i-fa6-solid:lock"
-                @click="savePassword"
-              >
-                Update password
-              </UButton>
-            </div>
-          </template>
-        </UCard>
-
-        <!-- Two-factor -->
-        <TwoFactorSection
-          ref="twoFactorRef"
-          :is-federated="isFederated"
-          @notify="showBanner"
-          @changed="loadProfile"
-        />
-
-        <!-- Active sessions -->
-        <UCard class="bg-white/5">
-          <template #header>
-            <div class="flex items-center justify-between gap-3">
+        <!-- Account settings -->
+        <UCollapsible v-model:open="accountSettingsOpen">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-left"
+          >
+            <div class="flex items-center gap-3">
+              <UIcon name="i-fa6-solid:user-gear" class="h-4 w-4 text-white/60" />
               <div>
-                <p class="text-xs uppercase tracking-[0.3em] text-white/60">Active sessions</p>
-                <p class="text-lg font-medium">Where you're signed in</p>
+                <p class="text-base font-medium">Account settings</p>
+                <p class="text-xs text-white/50">Email, password, two-factor & sessions</p>
               </div>
-              <UButton
-                color="neutral"
-                variant="ghost"
-                icon="i-fa6-solid:arrows-rotate"
-                square
-                :loading="loadingSessions"
-                aria-label="Refresh sessions"
-                @click="loadSessions"
-              />
             </div>
-          </template>
+            <UIcon
+              name="i-fa6-solid:chevron-down"
+              class="h-4 w-4 shrink-0 text-white/40 transition-transform duration-200"
+              :class="{ 'rotate-180': accountSettingsOpen }"
+            />
+          </button>
 
-          <div v-if="loadingSessions && !sessions.length" class="flex justify-center py-8">
-            <UIcon name="i-fa6-solid:spinner" class="h-5 w-5 animate-spin text-white/40" />
-          </div>
-          <div v-else-if="!sessions.length" class="py-2 text-center text-sm text-white/60">
-            No active browser sessions.
-          </div>
-          <ul v-else class="flex flex-col gap-2">
-            <li
-              v-for="session in sessions"
-              :key="session.id"
-              class="rounded-lg border border-white/10 bg-white/5 p-3"
-            >
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-2">
-                    <UIcon :name="sessionIcon(session)" class="h-4 w-4 shrink-0 text-white/60" />
-                    <p class="truncate text-sm font-medium">{{ sessionLabel(session) }}</p>
-                    <span
-                      v-if="session.current"
-                      class="rounded-full bg-green-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wider text-green-300"
-                    >
-                      This device
-                    </span>
+          <template #content>
+            <div class="flex flex-col gap-6 pt-6">
+              <!-- Email -->
+              <UCard class="bg-white/5">
+                <template #header>
+                  <div>
+                    <p class="text-xs uppercase tracking-[0.3em] text-white/60">Account</p>
+                    <p class="text-lg font-medium">Email address</p>
                   </div>
-                  <p class="mt-0.5 truncate text-xs text-white/60">
-                    <span v-if="session.ipAddress && session.ipAddress !== 'unknown'">
-                      {{ session.ipAddress }} ·
-                    </span>
-                    Last active {{ formatRelativeMs(session.lastActivityAt) }}
-                  </p>
-                </div>
-                <UButton
-                  v-if="!session.current"
-                  color="error"
-                  variant="ghost"
-                  icon="i-fa6-solid:right-from-bracket"
-                  size="sm"
-                  :loading="revokingSessionId === session.id"
-                  @click="revokeSession(session)"
-                >
-                  Revoke
-                </UButton>
-              </div>
-            </li>
-          </ul>
+                </template>
 
-          <template v-if="otherSessionCount > 0" #footer>
-            <div class="flex justify-end">
-              <UButton
-                color="error"
-                variant="ghost"
-                size="sm"
-                icon="i-fa6-solid:right-from-bracket"
-                :loading="revokingAll"
-                @click="revokeOtherSessions"
-              >
-                Sign out other sessions ({{ otherSessionCount }})
-              </UButton>
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-medium">{{ form.email }}</p>
+                      <p class="mt-0.5 flex items-center gap-1.5 text-xs">
+                        <template v-if="emailVerified">
+                          <UIcon
+                            name="i-fa6-solid:circle-check"
+                            class="h-3.5 w-3.5 text-green-400"
+                          />
+                          <span class="text-green-300">Verified</span>
+                        </template>
+                        <template v-else>
+                          <UIcon
+                            name="i-fa6-solid:circle-exclamation"
+                            class="h-3.5 w-3.5 text-amber-400"
+                          />
+                          <span class="text-amber-300">Not verified</span>
+                        </template>
+                      </p>
+                    </div>
+                    <UButton
+                      color="neutral"
+                      variant="soft"
+                      size="sm"
+                      icon="i-fa6-solid:pen"
+                      @click="openEmailModal"
+                    >
+                      Change
+                    </UButton>
+                  </div>
+                  <UButton
+                    v-if="!emailVerified"
+                    color="primary"
+                    variant="ghost"
+                    size="sm"
+                    icon="i-fa6-regular:envelope"
+                    :loading="resendingVerification"
+                    class="self-start"
+                    @click="resendVerification"
+                  >
+                    Resend verification email
+                  </UButton>
+                </div>
+              </UCard>
+
+              <!-- Password -->
+              <UCard v-if="hasPassword" class="bg-white/5">
+                <template #header>
+                  <div>
+                    <p class="text-xs uppercase tracking-[0.3em] text-white/60">Security</p>
+                    <p class="text-lg font-medium">Password</p>
+                  </div>
+                </template>
+
+                <div class="flex flex-col gap-4">
+                  <UFormField label="Current password">
+                    <UInput v-model="passwordForm.current" type="password" class="w-full" />
+                  </UFormField>
+                  <UFormField
+                    label="New password"
+                    hint="At least 10 characters, with upper & lowercase and a number"
+                  >
+                    <UInput v-model="passwordForm.next" type="password" class="w-full" />
+                  </UFormField>
+                  <UFormField label="Confirm new password">
+                    <UInput v-model="passwordForm.confirm" type="password" class="w-full" />
+                  </UFormField>
+                </div>
+
+                <template #footer>
+                  <div class="flex justify-end">
+                    <UButton
+                      color="primary"
+                      :loading="savingPassword"
+                      :disabled="!passwordValid"
+                      icon="i-fa6-solid:lock"
+                      @click="savePassword"
+                    >
+                      Update password
+                    </UButton>
+                  </div>
+                </template>
+              </UCard>
+
+              <!-- Two-factor -->
+              <TwoFactorSection
+                ref="twoFactorRef"
+                :is-federated="isFederated"
+                @notify="showBanner"
+                @changed="loadProfile"
+              />
+
+              <!-- Active sessions -->
+              <UCard class="bg-white/5">
+                <template #header>
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <p class="text-xs uppercase tracking-[0.3em] text-white/60">
+                        Active sessions
+                      </p>
+                      <p class="text-lg font-medium">Where you're signed in</p>
+                    </div>
+                    <UButton
+                      color="neutral"
+                      variant="ghost"
+                      icon="i-fa6-solid:arrows-rotate"
+                      square
+                      :loading="loadingSessions"
+                      aria-label="Refresh sessions"
+                      @click="loadSessions"
+                    />
+                  </div>
+                </template>
+
+                <div v-if="loadingSessions && !sessions.length" class="flex justify-center py-8">
+                  <UIcon name="i-fa6-solid:spinner" class="h-5 w-5 animate-spin text-white/40" />
+                </div>
+                <div v-else-if="!sessions.length" class="py-2 text-center text-sm text-white/60">
+                  No active browser sessions.
+                </div>
+                <ul v-else class="flex flex-col gap-2">
+                  <li
+                    v-for="session in sessions"
+                    :key="session.id"
+                    class="rounded-lg border border-white/10 bg-white/5 p-3"
+                  >
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
+                          <UIcon
+                            :name="sessionIcon(session)"
+                            class="h-4 w-4 shrink-0 text-white/60"
+                          />
+                          <p class="truncate text-sm font-medium">{{ sessionLabel(session) }}</p>
+                          <span
+                            v-if="session.current"
+                            class="rounded-full bg-green-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wider text-green-300"
+                          >
+                            This device
+                          </span>
+                        </div>
+                        <p class="mt-0.5 truncate text-xs text-white/60">
+                          <span v-if="session.ipAddress && session.ipAddress !== 'unknown'">
+                            {{ session.ipAddress }} ·
+                          </span>
+                          Last active {{ formatRelativeMs(session.lastActivityAt) }}
+                        </p>
+                      </div>
+                      <UButton
+                        v-if="!session.current"
+                        color="error"
+                        variant="ghost"
+                        icon="i-fa6-solid:right-from-bracket"
+                        size="sm"
+                        :loading="revokingSessionId === session.id"
+                        @click="revokeSession(session)"
+                      >
+                        Revoke
+                      </UButton>
+                    </div>
+                  </li>
+                </ul>
+
+                <template v-if="otherSessionCount > 0" #footer>
+                  <div class="flex justify-end">
+                    <UButton
+                      color="error"
+                      variant="ghost"
+                      size="sm"
+                      icon="i-fa6-solid:right-from-bracket"
+                      :loading="revokingAll"
+                      @click="revokeOtherSessions"
+                    >
+                      Sign out other sessions ({{ otherSessionCount }})
+                    </UButton>
+                  </div>
+                </template>
+              </UCard>
             </div>
           </template>
-        </UCard>
+        </UCollapsible>
       </template>
 
       <!-- Sign out of this device -->
@@ -291,28 +324,6 @@
       >
         Sign out
       </UButton>
-
-      <!-- Danger zone — deactivates (soft, reversible) the Koios account -->
-      <UCard v-if="profileLoaded" class="border border-red-500/30 bg-red-500/5">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-xs uppercase tracking-[0.3em] text-red-300/80">Danger zone</p>
-            <p class="text-base font-medium">Deactivate account</p>
-            <p class="mt-1 text-sm text-white/60">
-              Signs you out everywhere and disables your Koios ID. Contact support to reactivate.
-            </p>
-          </div>
-          <UButton
-            color="error"
-            variant="soft"
-            icon="i-fa6-solid:user-slash"
-            size="sm"
-            @click="openDeactivate"
-          >
-            Deactivate
-          </UButton>
-        </div>
-      </UCard>
 
       <!-- About -->
       <div class="mt-2 flex flex-col gap-3 border-t border-white/5 pt-6">
@@ -387,6 +398,28 @@
           </UButton>
         </div>
       </div>
+
+      <!-- Danger zone — deactivates (soft, reversible) the Koios account -->
+      <UCard v-if="profileLoaded" class="border border-red-500/30 bg-red-500/5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs uppercase tracking-[0.3em] text-red-300/80">Danger zone</p>
+            <p class="text-base font-medium">Deactivate account</p>
+            <p class="mt-1 text-sm text-white/60">
+              Signs you out everywhere and disables your Koios ID. Contact support to reactivate.
+            </p>
+          </div>
+          <UButton
+            color="error"
+            variant="soft"
+            icon="i-fa6-solid:user-slash"
+            size="sm"
+            @click="openDeactivate"
+          >
+            Deactivate
+          </UButton>
+        </div>
+      </UCard>
     </section>
 
     <!-- Change email modal -->
@@ -549,6 +582,9 @@ const BANNER_STYLES: Record<
 }
 
 const bannerStyle = computed(() => BANNER_STYLES[banner.value?.kind ?? 'success'])
+
+// --- Account settings disclosure ---
+const accountSettingsOpen = ref(false)
 
 function showBanner(kind: Banner['kind'], message: string) {
   banner.value = { kind, message }

@@ -158,16 +158,11 @@
               <UPinInput
                 v-model="codeDigits"
                 :length="6"
-                :separator="3"
                 type="text"
                 otp
                 placeholder="○"
                 @complete="verify"
-              >
-                <template #separator>
-                  <UIcon name="i-lucide-minus" class="size-4" />
-                </template>
-              </UPinInput>
+              />
             </div>
           </UFormField>
         </div>
