@@ -17,9 +17,7 @@
               class="h-5 w-5 shrink-0"
               :class="bannerStyle.iconColor"
             />
-            <p class="flex-1 text-sm" :class="bannerStyle.textColor">
-              {{ banner.message }}
-            </p>
+            <p class="flex-1 text-sm" :class="bannerStyle.textColor">{{ banner.message }}</p>
             <UButton
               size="xs"
               color="neutral"
@@ -40,7 +38,7 @@
         </div>
         <div class="min-w-0 flex-1">
           <p class="truncate text-lg font-semibold">{{ displayName }}</p>
-          <p class="truncate text-sm text-white/60">{{ form.email || form.username || '—' }}</p>
+          <p class="truncate text-sm text-white/60">{{ form.email || '—' }}</p>
         </div>
         <UButton
           v-if="profileLoaded && !editingProfile"
@@ -55,151 +53,233 @@
         </UButton>
       </div>
 
-      <!-- Profile (revealed by the Edit button on the hero) -->
-      <UCard v-if="editingProfile" class="bg-white/5">
-        <template #header>
-          <div>
-            <p class="text-xs uppercase tracking-[0.3em] text-white/60">Profile</p>
-            <p class="text-lg font-medium">Personal information</p>
-          </div>
-        </template>
+      <div v-if="loadingProfile && !profileLoaded" class="flex justify-center py-8">
+        <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/40" />
+      </div>
 
-        <div v-if="loadingProfile && !profileLoaded" class="flex justify-center py-8">
-          <UIcon name="i-fa6-solid:spinner" class="h-6 w-6 animate-spin text-white/40" />
-        </div>
-        <div v-else class="flex flex-col gap-4">
-          <UFormField label="First name">
-            <UInput v-model="form.firstName" class="w-full" />
-          </UFormField>
-          <UFormField label="Last name">
-            <UInput v-model="form.lastName" class="w-full" />
-          </UFormField>
-          <UFormField label="Email">
-            <div class="flex flex-col gap-1">
-              <UInput v-model="form.email" type="email" class="w-full" />
-              <p v-if="emailVerified === false" class="text-xs text-amber-300">
-                Email is not verified.
-              </p>
-            </div>
-          </UFormField>
-        </div>
-
-        <template v-if="profileLoaded" #footer>
-          <div class="flex flex-wrap justify-end gap-2">
-            <UButton color="neutral" variant="ghost" :disabled="savingProfile" @click="cancelEdit">
-              Cancel
-            </UButton>
-            <UButton
-              color="primary"
-              :loading="savingProfile"
-              :disabled="!profileDirty"
-              icon="i-fa6-solid:floppy-disk"
-              @click="saveProfile"
-            >
-              Save changes
-            </UButton>
-          </div>
-        </template>
-      </UCard>
-
-      <!-- Active sessions -->
-      <UCard class="bg-white/5">
-        <template #header>
-          <div class="flex items-center justify-between gap-3">
+      <template v-else-if="profileLoaded">
+        <!-- Profile (name) -->
+        <UCard v-if="editingProfile" class="bg-white/5">
+          <template #header>
             <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Active sessions</p>
-              <p class="text-lg font-medium">Where you're signed in</p>
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Profile</p>
+              <p class="text-lg font-medium">Personal information</p>
             </div>
-            <UButton
-              color="neutral"
-              variant="ghost"
-              icon="i-fa6-solid:arrows-rotate"
-              square
-              :loading="loadingSessions"
-              :aria-label="'Refresh sessions'"
-              @click="loadSessions"
-            />
-          </div>
-        </template>
+          </template>
 
-        <div v-if="loadingSessions && !devices.length" class="flex justify-center py-8">
-          <UIcon name="i-fa6-solid:spinner" class="h-5 w-5 animate-spin text-white/40" />
-        </div>
-        <div v-else-if="!devices.length" class="py-2 text-center text-sm text-white/60">
-          No active sessions.
-        </div>
-        <ul v-else class="flex flex-col gap-2">
-          <li
-            v-for="(device, idx) in devices"
-            :key="deviceKey(device, idx)"
-            class="rounded-lg border border-white/10 bg-white/5 p-3"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
-                  <UIcon
-                    :name="
-                      isCurrentDeviceMobile(device)
-                        ? 'i-fa6-solid:mobile-screen'
-                        : 'i-fa6-solid:desktop'
-                    "
-                    class="h-4 w-4 shrink-0 text-white/60"
-                  />
-                  <p class="truncate text-sm font-medium">{{ deviceLabel(device) }}</p>
-                  <span
-                    v-if="device.current"
-                    class="rounded-full bg-green-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wider text-green-300"
-                  >
-                    This device
-                  </span>
-                </div>
-                <p
-                  v-if="device.ipAddress || device.lastAccess"
-                  class="mt-0.5 truncate text-xs text-white/60"
-                >
-                  <span v-if="device.ipAddress">{{ device.ipAddress }}</span>
-                  <span v-if="device.ipAddress && device.lastAccess"> · </span>
-                  <span v-if="device.lastAccess">
-                    Last active {{ formatRelative(device.lastAccess) }}
-                  </span>
-                </p>
-                <p
-                  v-if="device.sessions?.length && allClientsForDevice(device)"
-                  class="mt-1 truncate text-xs text-white/40"
-                >
-                  {{ allClientsForDevice(device) }}
+          <div class="flex flex-col gap-4">
+            <UFormField label="First name">
+              <UInput v-model="form.firstName" class="w-full" />
+            </UFormField>
+            <UFormField label="Last name">
+              <UInput v-model="form.lastName" class="w-full" />
+            </UFormField>
+          </div>
+
+          <template #footer>
+            <div class="flex flex-wrap justify-end gap-2">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                :disabled="savingProfile"
+                @click="cancelEdit"
+              >
+                Cancel
+              </UButton>
+              <UButton
+                color="primary"
+                :loading="savingProfile"
+                :disabled="!profileDirty"
+                icon="i-fa6-solid:floppy-disk"
+                @click="saveProfile"
+              >
+                Save changes
+              </UButton>
+            </div>
+          </template>
+        </UCard>
+
+        <!-- Email -->
+        <UCard class="bg-white/5">
+          <template #header>
+            <div>
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Account</p>
+              <p class="text-lg font-medium">Email address</p>
+            </div>
+          </template>
+
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium">{{ form.email }}</p>
+                <p class="mt-0.5 flex items-center gap-1.5 text-xs">
+                  <template v-if="emailVerified">
+                    <UIcon name="i-fa6-solid:circle-check" class="h-3.5 w-3.5 text-green-400" />
+                    <span class="text-green-300">Verified</span>
+                  </template>
+                  <template v-else>
+                    <UIcon
+                      name="i-fa6-solid:circle-exclamation"
+                      class="h-3.5 w-3.5 text-amber-400"
+                    />
+                    <span class="text-amber-300">Not verified</span>
+                  </template>
                 </p>
               </div>
               <UButton
-                v-if="!device.current"
-                color="error"
-                variant="ghost"
-                icon="i-fa6-solid:right-from-bracket"
+                color="neutral"
+                variant="soft"
                 size="sm"
-                :loading="revokingDeviceId === deviceKey(device, idx)"
-                @click="revokeDevice(device, deviceKey(device, idx))"
+                icon="i-fa6-solid:pen"
+                @click="openEmailModal"
               >
-                Revoke
+                Change
               </UButton>
             </div>
-          </li>
-        </ul>
-
-        <template v-if="otherDeviceCount > 0" #footer>
-          <div class="flex justify-end">
             <UButton
-              color="error"
+              v-if="!emailVerified"
+              color="primary"
               variant="ghost"
               size="sm"
-              icon="i-fa6-solid:right-from-bracket"
-              :loading="revokingAll"
-              @click="revokeAllOther"
+              icon="i-fa6-regular:envelope"
+              :loading="resendingVerification"
+              class="self-start"
+              @click="resendVerification"
             >
-              Sign out other devices ({{ otherDeviceCount }})
+              Resend verification email
             </UButton>
           </div>
-        </template>
-      </UCard>
+        </UCard>
+
+        <!-- Password -->
+        <UCard v-if="hasPassword" class="bg-white/5">
+          <template #header>
+            <div>
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Security</p>
+              <p class="text-lg font-medium">Password</p>
+            </div>
+          </template>
+
+          <div class="flex flex-col gap-4">
+            <UFormField label="Current password">
+              <UInput v-model="passwordForm.current" type="password" class="w-full" />
+            </UFormField>
+            <UFormField
+              label="New password"
+              hint="At least 10 characters, with upper & lowercase and a number"
+            >
+              <UInput v-model="passwordForm.next" type="password" class="w-full" />
+            </UFormField>
+            <UFormField label="Confirm new password">
+              <UInput v-model="passwordForm.confirm" type="password" class="w-full" />
+            </UFormField>
+          </div>
+
+          <template #footer>
+            <div class="flex justify-end">
+              <UButton
+                color="primary"
+                :loading="savingPassword"
+                :disabled="!passwordValid"
+                icon="i-fa6-solid:lock"
+                @click="savePassword"
+              >
+                Update password
+              </UButton>
+            </div>
+          </template>
+        </UCard>
+
+        <!-- Two-factor -->
+        <TwoFactorSection
+          ref="twoFactorRef"
+          :is-federated="isFederated"
+          @notify="showBanner"
+          @changed="loadProfile"
+        />
+
+        <!-- Active sessions -->
+        <UCard class="bg-white/5">
+          <template #header>
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-white/60">Active sessions</p>
+                <p class="text-lg font-medium">Where you're signed in</p>
+              </div>
+              <UButton
+                color="neutral"
+                variant="ghost"
+                icon="i-fa6-solid:arrows-rotate"
+                square
+                :loading="loadingSessions"
+                aria-label="Refresh sessions"
+                @click="loadSessions"
+              />
+            </div>
+          </template>
+
+          <div v-if="loadingSessions && !sessions.length" class="flex justify-center py-8">
+            <UIcon name="i-fa6-solid:spinner" class="h-5 w-5 animate-spin text-white/40" />
+          </div>
+          <div v-else-if="!sessions.length" class="py-2 text-center text-sm text-white/60">
+            No active browser sessions.
+          </div>
+          <ul v-else class="flex flex-col gap-2">
+            <li
+              v-for="session in sessions"
+              :key="session.id"
+              class="rounded-lg border border-white/10 bg-white/5 p-3"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <UIcon :name="sessionIcon(session)" class="h-4 w-4 shrink-0 text-white/60" />
+                    <p class="truncate text-sm font-medium">{{ sessionLabel(session) }}</p>
+                    <span
+                      v-if="session.current"
+                      class="rounded-full bg-green-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wider text-green-300"
+                    >
+                      This device
+                    </span>
+                  </div>
+                  <p class="mt-0.5 truncate text-xs text-white/60">
+                    <span v-if="session.ipAddress && session.ipAddress !== 'unknown'">
+                      {{ session.ipAddress }} ·
+                    </span>
+                    Last active {{ formatRelativeMs(session.lastActivityAt) }}
+                  </p>
+                </div>
+                <UButton
+                  v-if="!session.current"
+                  color="error"
+                  variant="ghost"
+                  icon="i-fa6-solid:right-from-bracket"
+                  size="sm"
+                  :loading="revokingSessionId === session.id"
+                  @click="revokeSession(session)"
+                >
+                  Revoke
+                </UButton>
+              </div>
+            </li>
+          </ul>
+
+          <template v-if="otherSessionCount > 0" #footer>
+            <div class="flex justify-end">
+              <UButton
+                color="error"
+                variant="ghost"
+                size="sm"
+                icon="i-fa6-solid:right-from-bracket"
+                :loading="revokingAll"
+                @click="revokeOtherSessions"
+              >
+                Sign out other sessions ({{ otherSessionCount }})
+              </UButton>
+            </div>
+          </template>
+        </UCard>
+      </template>
 
       <!-- Sign out of this device -->
       <UButton
@@ -212,25 +292,24 @@
         Sign out
       </UButton>
 
-      <!-- Danger zone — account deletion has to go through Keycloak's
-           delete_account required action; no REST endpoint exists for it. -->
-      <UCard class="border border-red-500/30 bg-red-500/5">
+      <!-- Danger zone — deactivates (soft, reversible) the Koios account -->
+      <UCard v-if="profileLoaded" class="border border-red-500/30 bg-red-500/5">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-xs uppercase tracking-[0.3em] text-red-300/80">Danger zone</p>
-            <p class="text-base font-medium">Delete account</p>
+            <p class="text-base font-medium">Deactivate account</p>
             <p class="mt-1 text-sm text-white/60">
-              Permanently removes your Koios ID and all associated data. This cannot be undone.
+              Signs you out everywhere and disables your Koios ID. Contact support to reactivate.
             </p>
           </div>
           <UButton
             color="error"
             variant="soft"
-            icon="i-fa6-solid:trash"
+            icon="i-fa6-solid:user-slash"
             size="sm"
-            @click="deleteModalOpen = true"
+            @click="openDeactivate"
           >
-            Delete
+            Deactivate
           </UButton>
         </div>
       </UCard>
@@ -310,38 +389,119 @@
       </div>
     </section>
 
-    <DangerConfirmModal
-      v-model="deleteModalOpen"
-      title="Delete your account?"
-      :message="`This permanently deletes your Koios ID (${form.username || 'this account'}) and signs you out everywhere. You'll need to confirm in the next screen.`"
-      confirm-text="Continue"
-      :loading="startingDelete"
-      :error="deleteError"
-      @confirm="startDeleteAccount"
-    />
+    <!-- Change email modal -->
+    <UModal v-model:open="emailModalOpen">
+      <template #header>
+        <div class="flex items-center gap-3">
+          <UIcon name="i-fa6-regular:envelope" class="h-5 w-5 text-primary-300" />
+          <h3 class="text-lg font-semibold">Change email</h3>
+        </div>
+      </template>
+      <template #body>
+        <div class="space-y-4">
+          <UAlert
+            v-if="emailError"
+            color="error"
+            icon="i-fa6-solid:circle-exclamation"
+            :title="emailError"
+          />
+          <UFormField label="New email address">
+            <UInput v-model="emailForm.email" type="email" class="w-full" autofocus />
+          </UFormField>
+          <UFormField v-if="hasPassword" label="Current password">
+            <UInput v-model="emailForm.password" type="password" class="w-full" />
+          </UFormField>
+          <p class="text-xs text-white/50">
+            We'll send a verification link to the new address. Your current address stays active
+            until it's confirmed.
+          </p>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="savingEmail"
+            @click="emailModalOpen = false"
+          >
+            Cancel
+          </UButton>
+          <UButton
+            color="primary"
+            :loading="savingEmail"
+            :disabled="!emailFormValid"
+            @click="saveEmail"
+          >
+            Update email
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Deactivate modal -->
+    <UModal v-model:open="deactivateOpen">
+      <template #header>
+        <div class="flex items-center gap-3">
+          <UIcon name="i-fa6-solid:triangle-exclamation" class="h-5 w-5 text-red-400" />
+          <h3 class="text-lg font-semibold">Deactivate your account?</h3>
+        </div>
+      </template>
+      <template #body>
+        <div class="space-y-4">
+          <UAlert
+            v-if="deactivateError"
+            color="error"
+            icon="i-fa6-solid:circle-exclamation"
+            :title="deactivateError"
+          />
+          <p class="text-sm text-white/70">
+            This signs you out on every device and disables your Koios ID ({{ form.email }}). You'll
+            need to contact support to reactivate it.
+          </p>
+          <UFormField v-if="hasPassword" label="Confirm your password">
+            <UInput v-model="deactivatePassword" type="password" class="w-full" autofocus />
+          </UFormField>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="deactivating"
+            @click="deactivateOpen = false"
+          >
+            Cancel
+          </UButton>
+          <UButton
+            color="error"
+            :loading="deactivating"
+            :disabled="hasPassword && !deactivatePassword"
+            @click="confirmDeactivate"
+          >
+            Deactivate
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </PageLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed, onMounted, reactive, useTemplateRef } from 'vue'
+import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { Capacitor } from '@capacitor/core'
 import { App as CapacitorApp } from '@capacitor/app'
-import { Browser } from '@capacitor/browser'
-import { Device, type DeviceInfo } from '@capacitor/device'
 import { LiveUpdate } from '@capawesome/capacitor-live-update'
 import { InAppBrowser } from '@capacitor/inappbrowser'
 import PageLayout from '@/layouts/PageLayout.vue'
-import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
+import TwoFactorSection from '@/components/account/TwoFactorSection.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useAuthStore } from '@/stores/auth/auth'
 import { ENV } from '@/config/environment'
-import {
-  keycloakAccountApi,
-  type AccountProfile,
-  type AccountDevice,
-} from '@/lib/auth/keycloakAccount'
+import { koiosAccountApi, type AccountSession } from '@/lib/auth/koiosAccount'
 import { getErrorMessage } from '@/lib/api/errors'
 
 useHead({
@@ -350,7 +510,6 @@ useHead({
 })
 
 const router = useRouter()
-const route = useRoute()
 const authStore = useAuthStore()
 const { setHeader } = usePageHeader()
 
@@ -407,56 +566,50 @@ const loadingProfile = ref(false)
 const profileLoaded = ref(false)
 const savingProfile = ref(false)
 const editingProfile = ref(false)
-const emailVerified = ref<boolean | undefined>(undefined)
-const form = reactive({ username: '', firstName: '', lastName: '', email: '' })
-const originalForm = reactive({ username: '', firstName: '', lastName: '', email: '' })
+const emailVerified = ref(false)
+const hasPassword = ref(false)
+const isFederated = ref(false)
+const form = reactive({ firstName: '', lastName: '', email: '' })
+const originalForm = reactive({ firstName: '', lastName: '' })
 
 const profileDirty = computed(
-  () =>
-    form.firstName !== originalForm.firstName ||
-    form.lastName !== originalForm.lastName ||
-    form.email !== originalForm.email,
+  () => form.firstName !== originalForm.firstName || form.lastName !== originalForm.lastName,
 )
 
 const displayName = computed(() => {
   const full = `${form.firstName} ${form.lastName}`.trim()
-  return full || form.username || 'Your account'
+  return full || 'Your account'
 })
 
 const initials = computed(() => {
   const f = form.firstName.trim()[0]
   const l = form.lastName.trim()[0]
   if (f || l) return `${f ?? ''}${l ?? ''}`.toUpperCase()
-  const u = form.username.trim()[0]
-  return u ? u.toUpperCase() : ''
+  const e = form.email.trim()[0]
+  return e ? e.toUpperCase() : ''
 })
-
-function applyProfile(profile: AccountProfile) {
-  form.username = profile.username ?? ''
-  form.firstName = profile.firstName ?? ''
-  form.lastName = profile.lastName ?? ''
-  form.email = profile.email ?? ''
-  emailVerified.value = profile.emailVerified
-  Object.assign(originalForm, { ...form })
-}
 
 async function loadProfile() {
   loadingProfile.value = true
   try {
-    const profile = await keycloakAccountApi.getProfile()
-    applyProfile(profile)
+    const { user } = await koiosAccountApi.getMe()
+    form.firstName = user.firstName ?? ''
+    form.lastName = user.lastName ?? ''
+    form.email = user.email ?? ''
+    emailVerified.value = user.emailVerified
+    hasPassword.value = user.hasPassword
+    isFederated.value = user.isFederated
+    Object.assign(originalForm, { firstName: form.firstName, lastName: form.lastName })
     profileLoaded.value = true
   } catch (error) {
-    showBanner('error', getErrorMessage(error, 'Failed to load profile'))
+    showBanner('error', getErrorMessage(error, 'Failed to load account'))
   } finally {
     loadingProfile.value = false
   }
 }
 
 function openEdit() {
-  // Snapshot the latest server-confirmed values before letting the user
-  // type, so Cancel restores cleanly.
-  Object.assign(originalForm, { ...form })
+  Object.assign(originalForm, { firstName: form.firstName, lastName: form.lastName })
   editingProfile.value = true
 }
 
@@ -467,28 +620,12 @@ function cancelEdit() {
 
 async function saveProfile() {
   if (savingProfile.value) return
-  const emailChanged = form.email.trim().toLowerCase() !== originalForm.email.trim().toLowerCase()
-
   savingProfile.value = true
   try {
-    await keycloakAccountApi.updateProfile({
-      firstName: form.firstName,
-      lastName: form.lastName,
-      email: form.email,
-    })
-    Object.assign(originalForm, { ...form })
+    await koiosAccountApi.updateProfile({ firstName: form.firstName, lastName: form.lastName })
+    Object.assign(originalForm, { firstName: form.firstName, lastName: form.lastName })
     editingProfile.value = false
-    if (emailChanged) {
-      showBanner(
-        'info',
-        `Check ${form.email} to confirm your new email address. Until you confirm, your old address stays active.`,
-      )
-    } else {
-      showBanner('success', 'Profile updated.')
-    }
-    // Refresh to pick up server-normalised values (e.g. emailVerified flip
-    // after an email change).
-    await loadProfile()
+    showBanner('success', 'Profile updated.')
   } catch (error) {
     showBanner('error', getErrorMessage(error, 'Failed to update profile'))
   } finally {
@@ -496,99 +633,101 @@ async function saveProfile() {
   }
 }
 
-// --- Devices / sessions ---
-// Keycloak aggregates user sessions per physical device under /sessions/devices.
-// Each device may contain multiple sessions (e.g. multiple browser tabs or an
-// online + offline session pair from offline_access).
-const devices = ref<AccountDevice[]>([])
+// --- Email ---
+const emailModalOpen = ref(false)
+const savingEmail = ref(false)
+const emailError = ref('')
+const emailForm = reactive({ email: '', password: '' })
+const resendingVerification = ref(false)
+
+const emailFormValid = computed(() => {
+  const emailOk = /.+@.+\..+/.test(emailForm.email.trim())
+  return emailOk && (!hasPassword.value || emailForm.password.length > 0)
+})
+
+function openEmailModal() {
+  emailForm.email = ''
+  emailForm.password = ''
+  emailError.value = ''
+  emailModalOpen.value = true
+}
+
+async function saveEmail() {
+  if (savingEmail.value) return
+  emailError.value = ''
+  savingEmail.value = true
+  try {
+    await koiosAccountApi.changeEmail({
+      email: emailForm.email.trim(),
+      currentPassword: hasPassword.value ? emailForm.password : undefined,
+    })
+    emailModalOpen.value = false
+    showBanner('info', `Check ${emailForm.email.trim()} to verify your new address.`)
+    await loadProfile()
+  } catch (error) {
+    emailError.value = getErrorMessage(error, 'Failed to change email')
+  } finally {
+    savingEmail.value = false
+  }
+}
+
+async function resendVerification() {
+  resendingVerification.value = true
+  try {
+    await koiosAccountApi.resendVerification()
+    showBanner('info', `Verification email sent to ${form.email}.`)
+  } catch (error) {
+    showBanner('error', getErrorMessage(error, 'Failed to resend verification'))
+  } finally {
+    resendingVerification.value = false
+  }
+}
+
+// --- Password ---
+const savingPassword = ref(false)
+const passwordForm = reactive({ current: '', next: '', confirm: '' })
+
+const passwordValid = computed(() => {
+  const p = passwordForm.next
+  const strong = p.length >= 10 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /[0-9]/.test(p)
+  return !!passwordForm.current && strong && passwordForm.next === passwordForm.confirm
+})
+
+async function savePassword() {
+  if (savingPassword.value || !passwordValid.value) return
+  savingPassword.value = true
+  try {
+    await koiosAccountApi.changePassword({
+      currentPassword: passwordForm.current,
+      newPassword: passwordForm.next,
+    })
+    passwordForm.current = ''
+    passwordForm.next = ''
+    passwordForm.confirm = ''
+    showBanner('success', 'Password updated.')
+  } catch (error) {
+    showBanner('error', getErrorMessage(error, 'Failed to update password'))
+  } finally {
+    savingPassword.value = false
+  }
+}
+
+// --- Two-factor (child component) ---
+const twoFactorRef = useTemplateRef<{ reload: () => Promise<void> }>('twoFactorRef')
+
+// --- Sessions ---
+const sessions = ref<AccountSession[]>([])
 const loadingSessions = ref(false)
-const revokingDeviceId = ref<string | null>(null)
+const revokingSessionId = ref<string | null>(null)
 const revokingAll = ref(false)
 
-// Locally-detected info for the current device — used to override Keycloak's
-// user-agent parsing, which lags real OS versions.
-const currentDeviceInfo = ref<DeviceInfo | null>(null)
-async function loadCurrentDeviceInfo() {
-  try {
-    currentDeviceInfo.value = await Device.getInfo()
-  } catch (error) {
-    console.warn('Failed to load local device info', error)
-  }
-}
-
-function isCurrentDeviceMobile(device: AccountDevice): boolean {
-  if (device.current && currentDeviceInfo.value) {
-    const p = currentDeviceInfo.value.platform
-    return p === 'ios' || p === 'android'
-  }
-  return device.mobile ?? false
-}
-
-const otherDeviceCount = computed(() => devices.value.filter((d) => !d.current).length)
-
-function deviceKey(device: AccountDevice, index: number): string {
-  return device.id || device.sessions[0]?.id || `device-${index}`
-}
-
-function deviceLabel(device: AccountDevice): string {
-  // For the current device, Keycloak's user-agent parsing often lags the real
-  // OS version (e.g. WKWebView reports an older WebKit major than the iOS
-  // build). Override with the locally-detected info from @capacitor/device.
-  if (device.current && currentDeviceInfo.value) {
-    return localDeviceLabel(currentDeviceInfo.value)
-  }
-
-  const parts: string[] = []
-  if (device.browser) parts.push(device.browser)
-  const os = device.os
-    ? `${device.os}${device.osVersion && device.osVersion !== 'Unknown' ? ' ' + device.osVersion : ''}`
-    : ''
-  if (os) parts.push(os)
-  return parts.join(' · ') || device.device || 'Unknown device'
-}
-
-function localDeviceLabel(info: DeviceInfo): string {
-  // `name` is the user-set device name on iOS but is only returned for apps
-  // with the right entitlement — typically empty in third-party apps. `model`
-  // is "iPhone" / "iPad" generically on iOS 16+, or a marketing name on
-  // Android ("Pixel 7"). Combine with OS to give something useful.
-  const model = info.name || info.model || info.platform
-  const osLabel = osDisplayName(info.operatingSystem, info.platform)
-  const osVersion = info.osVersion
-  const os = osVersion ? `${osLabel} ${osVersion}` : osLabel
-  return [model, os].filter(Boolean).join(' · ')
-}
-
-function osDisplayName(os: DeviceInfo['operatingSystem'], platform: string): string {
-  switch (os) {
-    case 'ios':
-      return 'iOS'
-    case 'mac':
-      return 'macOS'
-    case 'android':
-      return 'Android'
-    case 'windows':
-      return 'Windows'
-    default:
-      return platform || 'Unknown'
-  }
-}
-
-function allClientsForDevice(device: AccountDevice): string {
-  const names = new Set<string>()
-  for (const s of device.sessions ?? []) {
-    for (const c of s.clients ?? []) {
-      const name = c.clientName || c.clientId
-      if (name) names.add(name)
-    }
-  }
-  return [...names].join(', ')
-}
+const otherSessionCount = computed(() => sessions.value.filter((s) => !s.current).length)
 
 async function loadSessions() {
   loadingSessions.value = true
   try {
-    devices.value = await keycloakAccountApi.listDevices()
+    const { sessions: list } = await koiosAccountApi.listSessions()
+    sessions.value = list
   } catch (error) {
     showBanner('error', getErrorMessage(error, 'Failed to load sessions'))
   } finally {
@@ -596,31 +735,92 @@ async function loadSessions() {
   }
 }
 
-async function revokeDevice(device: AccountDevice, key: string) {
-  revokingDeviceId.value = key
+async function revokeSession(session: AccountSession) {
+  revokingSessionId.value = session.id
   try {
-    // Sign out every session associated with this device — Keycloak doesn't
-    // expose a per-device delete, only per-session.
-    await Promise.all(device.sessions.map((s) => keycloakAccountApi.revokeSession(s.id)))
-    devices.value = devices.value.filter((d) => d !== device)
-    showBanner('success', 'Device signed out.')
+    const { revokedCurrent } = await koiosAccountApi.revokeSession(session.id)
+    sessions.value = sessions.value.filter((s) => s.id !== session.id)
+    if (revokedCurrent) {
+      await handleLogout()
+      return
+    }
+    showBanner('success', 'Session signed out.')
   } catch (error) {
-    showBanner('error', getErrorMessage(error, 'Failed to revoke device'))
+    showBanner('error', getErrorMessage(error, 'Failed to revoke session'))
   } finally {
-    revokingDeviceId.value = null
+    revokingSessionId.value = null
   }
 }
 
-async function revokeAllOther() {
+async function revokeOtherSessions() {
   revokingAll.value = true
   try {
-    await keycloakAccountApi.revokeAllOtherSessions()
-    devices.value = devices.value.filter((d) => d.current)
-    showBanner('success', 'Other devices signed out.')
+    await koiosAccountApi.revokeOtherSessions()
+    sessions.value = sessions.value.filter((s) => s.current)
+    showBanner('success', 'Other sessions signed out.')
   } catch (error) {
     showBanner('error', getErrorMessage(error, 'Failed to revoke sessions'))
   } finally {
     revokingAll.value = false
+  }
+}
+
+function sessionIcon(session: AccountSession): string {
+  const ua = session.userAgent?.toLowerCase() ?? ''
+  const mobile = /iphone|android|ipad|mobile/.test(ua)
+  return mobile ? 'i-fa6-solid:mobile-screen' : 'i-fa6-solid:desktop'
+}
+
+function sessionLabel(session: AccountSession): string {
+  const ua = session.userAgent ?? ''
+  if (!ua || ua === 'unknown') return 'Unknown device'
+  const browser = /edg/i.test(ua)
+    ? 'Edge'
+    : /chrome|crios/i.test(ua)
+      ? 'Chrome'
+      : /firefox|fxios/i.test(ua)
+        ? 'Firefox'
+        : /safari/i.test(ua)
+          ? 'Safari'
+          : null
+  const os = /iphone|ipad|ios/i.test(ua)
+    ? 'iOS'
+    : /android/i.test(ua)
+      ? 'Android'
+      : /mac os x|macintosh/i.test(ua)
+        ? 'macOS'
+        : /windows/i.test(ua)
+          ? 'Windows'
+          : /linux/i.test(ua)
+            ? 'Linux'
+            : null
+  return [browser, os].filter(Boolean).join(' · ') || 'Web session'
+}
+
+// --- Deactivate account ---
+const deactivateOpen = ref(false)
+const deactivating = ref(false)
+const deactivateError = ref('')
+const deactivatePassword = ref('')
+
+function openDeactivate() {
+  deactivatePassword.value = ''
+  deactivateError.value = ''
+  deactivateOpen.value = true
+}
+
+async function confirmDeactivate() {
+  if (deactivating.value) return
+  deactivateError.value = ''
+  deactivating.value = true
+  try {
+    await koiosAccountApi.deactivate(hasPassword.value ? deactivatePassword.value : undefined)
+    deactivateOpen.value = false
+    await handleLogout()
+  } catch (error) {
+    deactivateError.value = getErrorMessage(error, 'Failed to deactivate account')
+  } finally {
+    deactivating.value = false
   }
 }
 
@@ -727,123 +927,14 @@ async function copyDeviceId() {
   }
 }
 
-// --- Delete account (kc_action flow) ---
-const deleteModalOpen = ref(false)
-const startingDelete = ref(false)
-const deleteError = ref<string | undefined>()
-
-function generateRandomString(length: number): string {
-  const array = new Uint8Array(length)
-  crypto.getRandomValues(array)
-  return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('')
-}
-
-async function generatePKCE(): Promise<{ verifier: string; challenge: string }> {
-  const verifier = generateRandomString(32)
-  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  const challenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-  return { verifier, challenge }
-}
-
-async function startDeleteAccount() {
-  if (startingDelete.value) return
-  deleteError.value = undefined
-  const idToken = authStore.getIdToken()?.trim()
-  if (!idToken || idToken === 'undefined' || idToken === 'null') {
-    deleteError.value = 'Please sign out and sign back in, then try again.'
-    return
-  }
-
-  startingDelete.value = true
-  try {
-    const { oauth } = ENV
-    // Match the login OAuth flow: custom scheme on native (registered with
-    // ASWebAuthenticationSession and Keycloak), universal link on web.
-    const redirectUri = Capacitor.isNativePlatform()
-      ? oauth.nativeRedirectUrl
-      : `${window.location.origin}${oauth.redirectPath}`
-
-    const pkce = await generatePKCE()
-    const state = generateRandomString(16)
-    sessionStorage.setItem('oidc_pkce_verifier', pkce.verifier)
-    sessionStorage.setItem('oidc_state', state)
-
-    const authUrl = new URL(`${oauth.authority}/protocol/openid-connect/auth`)
-    authUrl.searchParams.set('client_id', oauth.clientId)
-    authUrl.searchParams.set('redirect_uri', redirectUri)
-    authUrl.searchParams.set('response_type', 'code')
-    authUrl.searchParams.set('scope', oauth.scope)
-    authUrl.searchParams.set('state', state)
-    authUrl.searchParams.set('code_challenge', pkce.challenge)
-    authUrl.searchParams.set('code_challenge_method', 'S256')
-    authUrl.searchParams.set('kc_action', 'delete_account')
-    authUrl.searchParams.set('id_token_hint', idToken)
-
-    // Open the browser FIRST — only close the confirm modal once the launch
-    // succeeded, otherwise an error from Browser.open would be invisible.
-    if (Capacitor.isNativePlatform()) {
-      await Browser.open({ url: authUrl.toString() })
-      deleteModalOpen.value = false
-    } else {
-      // Top-level redirect — page is unloading, no need to close the modal.
-      window.location.href = authUrl.toString()
-    }
-  } catch (error) {
-    deleteError.value = error instanceof Error ? error.message : 'Failed to start delete flow'
-  } finally {
-    startingDelete.value = false
-  }
-}
-
-/**
- * Consume kc_action result whenever the route query changes. The watcher
- * (not onMounted) covers the common native case where the user returns to
- * an already-mounted SettingsView via the appUrlOpen → router.replace path.
- */
-async function consumeDeleteResult() {
-  const action = route.query.kc_action
-  const status = route.query.kc_action_status
-  if (action !== 'delete_account' || typeof status !== 'string') return
-
-  // Drop the query params so a refresh doesn't re-trigger.
-  await router.replace({ path: '/settings', query: {} })
-
-  // Dismiss the confirm modal regardless of outcome.
-  deleteModalOpen.value = false
-  deleteError.value = undefined
-
-  if (status === 'success') {
-    showBanner('success', 'Your account has been deleted.')
-    try {
-      await authStore.logout()
-    } catch (error) {
-      console.warn('Logout after account deletion failed', error)
-    } finally {
-      router.replace('/login')
-    }
-  } else {
-    showBanner('error', 'Account deletion was cancelled.')
-  }
-}
-
-watch(
-  () => [route.query.kc_action, route.query.kc_action_status] as const,
-  () => consumeDeleteResult(),
-)
-
 // --- Refresh-all (pull-to-refresh) ---
 async function refreshAll() {
-  await Promise.all([loadProfile(), loadSessions()])
+  await Promise.all([loadProfile(), loadSessions(), twoFactorRef.value?.reload()])
 }
 
 // --- Util ---
-function formatRelative(epochSeconds: number): string {
-  const now = Date.now()
-  const then = epochSeconds * 1000
-  const diff = Math.max(0, now - then)
+function formatRelativeMs(epochMs: number): string {
+  const diff = Math.max(0, Date.now() - epochMs)
   const minutes = Math.floor(diff / 60_000)
   if (minutes < 1) return 'just now'
   if (minutes < 60) return `${minutes}m ago`
@@ -851,15 +942,13 @@ function formatRelative(epochSeconds: number): string {
   if (hours < 24) return `${hours}h ago`
   const days = Math.floor(hours / 24)
   if (days < 30) return `${days}d ago`
-  return new Date(then).toLocaleDateString()
+  return new Date(epochMs).toLocaleDateString()
 }
 
 onMounted(() => {
   setHeader({ title: 'Settings', backRoute: '/' })
-  consumeDeleteResult()
   loadProfile()
   loadSessions()
-  loadCurrentDeviceInfo()
   if (isNative) {
     loadNativeBuildInfo()
     loadUpdateInfo()
