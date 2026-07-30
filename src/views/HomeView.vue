@@ -1,6 +1,10 @@
 <template>
   <PageLayout :on-refresh="loadDevices">
     <section class="flex flex-col gap-6 px-5 py-6">
+      <!-- Ownership transfers addressed to this account (accept from here or
+           via the ?transfer= email deeplink). -->
+      <PendingTransfersBanner @accepted="loadDevices" />
+
       <!-- One unified grid: LAN-discovered devices (native-only, mDNS) alongside
            cloud account devices, deduped by device_id. -->
       <div
@@ -78,6 +82,7 @@ import NemotoDeviceCard from '@/components/devices/NemotoDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
 import LocalDeviceCard from '@/components/devices/LocalDeviceCard.vue'
 import TranquilDeviceCard from '@/components/devices/TranquilDeviceCard.vue'
+import PendingTransfersBanner from '@/components/devices/PendingTransfersBanner.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import { type ApiDevice, isMatrxDevice, isNemotoDevice } from '@/lib/api/mappers/deviceMapper'
@@ -118,8 +123,7 @@ const localByDeviceId = computed(() => {
 const visibleLocalDevices = computed(() => {
   const cloudIds = new Set(devices.value.map((d) => d.id))
   return localDevicesStore.devices.filter(
-    (local) =>
-      LOCAL_CONTROLLED.has(local.type) || !local.deviceId || !cloudIds.has(local.deviceId),
+    (local) => LOCAL_CONTROLLED.has(local.type) || !local.deviceId || !cloudIds.has(local.deviceId),
   )
 })
 

@@ -130,7 +130,9 @@ export class KoiosOidcClient {
    */
   static async completeAuthentication(): Promise<OidcCallbackTokens> {
     if (Capacitor.isNativePlatform()) {
-      throw new Error('completeAuthentication is not used on native; tokens are returned by login()')
+      throw new Error(
+        'completeAuthentication is not used on native; tokens are returned by login()',
+      )
     }
     const result = await Oauth.handleRedirectCallback()
     return mapPluginResult(result)

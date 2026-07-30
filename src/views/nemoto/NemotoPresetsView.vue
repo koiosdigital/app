@@ -76,9 +76,7 @@
             <p v-if="preset.source === 'url'" class="truncate text-xs text-white/50">
               {{ preset.url }}
             </p>
-            <p v-else class="text-xs text-white/50">
-              {{ preset.width }} × {{ preset.height }}
-            </p>
+            <p v-else class="text-xs text-white/50">{{ preset.width }} × {{ preset.height }}</p>
           </div>
           <div class="flex shrink-0 items-center gap-1">
             <UButton
@@ -124,10 +122,9 @@
 
           <div class="max-h-[65vh] space-y-5 overflow-y-auto">
             <p class="text-sm text-white/60">
-              The display fetches this URL when the preset is shown or scheduled.
-              It must return a 2-D array of flap ids (0–63) matching the board, or
-              <span class="font-mono">204 No Content</span> to leave the display
-              unchanged.
+              The display fetches this URL when the preset is shown or scheduled. It must return a
+              2-D array of flap ids (0–63) matching the board, or
+              <span class="font-mono">204 No Content</span> to leave the display unchanged.
             </p>
 
             <UFormField label="Name">

@@ -9,7 +9,7 @@ import globals from 'globals'
 export default ts.config(
   // Ignore patterns
   {
-    ignores: ['dist/**', 'node_modules/**', 'ios/**', 'android/**', '*.d.ts'],
+    ignores: ['dist/**', 'node_modules/**', 'ios/**', 'android/**', '**/*.d.ts'],
   },
 
   // Base JS/TS rules
@@ -22,6 +22,9 @@ export default ts.config(
       globals: {
         ...globals.browser,
         ...globals.es2021,
+        // Google Maps JS API (loaded by vue3-google-map); used as the
+        // `google.maps.*` type namespace in the schema location fields.
+        google: 'readonly',
       },
     },
   },

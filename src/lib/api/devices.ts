@@ -12,6 +12,10 @@ export type DeviceSharesResponse = components['schemas']['DeviceSharesResponseDt
 export type ShareUser = components['schemas']['ShareUserDto']
 export type ShareInvite = components['schemas']['ShareInviteDto']
 export type ShareInviteCreated = components['schemas']['ShareInviteCreatedDto']
+
+// Transfer types
+export type DeviceTransfer = components['schemas']['DeviceTransferDto']
+export type PendingTransfer = components['schemas']['PendingTransferDto']
 // Backend OpenAPI does not yet expose AcceptShareResultDto / /v1/shares/accept.
 // Mirror the response shape locally until the schema is regenerated.
 export interface AcceptShareResult {
@@ -319,6 +323,58 @@ export const devicesApi = {
     }
   },
 
+  // ==================== Ownership transfer (owner side) ====================
+
+  /**
+   * Get the pending ownership transfer for a device (null when none)
+   */
+  async getTransfer(deviceId: string): Promise<DeviceTransfer | null> {
+    const { data, error } = await apiClient.GET('/v1/devices/{deviceId}/transfer', {
+      params: {
+        path: { deviceId },
+      },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to fetch transfer status'))
+    }
+
+    return data.pending ?? null
+  },
+
+  /**
+   * Initiate an ownership transfer (sends the recipient an invite email)
+   */
+  async startTransfer(deviceId: string, email: string, name: string) {
+    const { data, error } = await apiClient.POST('/v1/devices/{deviceId}/transfer', {
+      params: {
+        path: { deviceId },
+      },
+      body: { email, name },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to start transfer'))
+    }
+
+    return data
+  },
+
+  /**
+   * Cancel the pending ownership transfer
+   */
+  async cancelTransfer(deviceId: string) {
+    const { error } = await apiClient.DELETE('/v1/devices/{deviceId}/transfer', {
+      params: {
+        path: { deviceId },
+      },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to cancel transfer'))
+    }
+  },
+
   /**
    * Accept a share invite using token from email.
    * Bypasses the typed client because the backend OpenAPI doesn't yet
@@ -342,6 +398,43 @@ export const devicesApi = {
 
     if (!data) {
       throw new Error('Accept share returned no data')
+    }
+
+    return data
+  },
+}
+
+/**
+ * Ownership transfers — recipient side. Pending transfers are matched on the
+ * signed-in account's email, so they show up for accounts created after the
+ * transfer was initiated.
+ */
+export const transfersApi = {
+  /**
+   * List pending transfers addressed to the signed-in user
+   */
+  async getPendingTransfers() {
+    const { data, error } = await apiClient.GET('/v1/transfers/pending')
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to fetch pending transfers'))
+    }
+
+    return data
+  },
+
+  /**
+   * Accept a pending transfer; ownership moves to the signed-in user
+   */
+  async acceptTransfer(transferId: string) {
+    const { data, error } = await apiClient.POST('/v1/transfers/{transferId}/accept', {
+      params: {
+        path: { transferId },
+      },
+    })
+
+    if (error) {
+      throw new Error(getErrorMessage(error, 'Failed to accept transfer'))
     }
 
     return data

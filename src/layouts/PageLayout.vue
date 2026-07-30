@@ -26,12 +26,7 @@
     </header>
     <main ref="scrollContainer" class="page-content" :class="{ 'has-refresh': !!onRefresh }">
       <!-- Pull-to-refresh indicator — grows in flow as the user pulls. -->
-      <div
-        v-if="onRefresh"
-        class="pull-indicator"
-        :style="indicatorStyle"
-        aria-hidden="true"
-      >
+      <div v-if="onRefresh" class="pull-indicator" :style="indicatorStyle" aria-hidden="true">
         <UIcon
           v-if="phase === 'refreshing'"
           name="i-fa6-solid:spinner"

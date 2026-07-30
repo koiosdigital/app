@@ -135,11 +135,7 @@
             No quiet hours configured. The screen stays on around the clock.
           </p>
 
-          <div
-            v-for="(w, i) in quietWindows"
-            :key="i"
-            class="space-y-3 rounded-lg bg-white/5 p-3"
-          >
+          <div v-for="(w, i) in quietWindows" :key="i" class="space-y-3 rounded-lg bg-white/5 p-3">
             <div class="flex items-center justify-between">
               <div class="flex flex-wrap gap-1">
                 <button
@@ -212,155 +208,15 @@
         </div>
 
         <!-- Sharing Section (Owner only) -->
-        <div v-if="isOwner" class="border-t border-white/10 pt-6 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-white/50 uppercase tracking-wider">Sharing</h3>
-            <UButton
-              size="xs"
-              color="primary"
-              variant="soft"
-              icon="i-fa6-solid:user-plus"
-              :loading="sharingLoading"
-              @click="showInviteModal = true"
-            >
-              Invite
-            </UButton>
-          </div>
+        <div v-if="isOwner" class="border-t border-white/10 pt-6">
+          <DeviceSharingSection :device-id="deviceId" />
+        </div>
 
-          <!-- Loading shares -->
-          <div v-if="sharingLoading" class="flex justify-center py-4">
-            <UIcon name="i-fa6-solid:spinner" class="h-5 w-5 animate-spin text-white/50" />
-          </div>
-
-          <!-- Sharing error -->
-          <UAlert
-            v-else-if="sharingError"
-            color="error"
-            icon="i-fa6-solid:circle-exclamation"
-            :title="sharingError"
-          />
-
-          <!-- No shares -->
-          <p
-            v-else-if="!sharedUsers.length && !pendingInvites.length"
-            class="text-sm text-white/50 py-2"
-          >
-            This device isn't shared with anyone yet.
-          </p>
-
-          <!-- Shared users list -->
-          <div v-else class="space-y-2">
-            <!-- Pending invites -->
-            <div
-              v-for="invite in pendingInvites"
-              :key="invite.id"
-              class="flex items-center justify-between py-2 px-3 bg-white/5 rounded-lg"
-            >
-              <div class="flex items-center gap-3 min-w-0">
-                <div
-                  class="flex-shrink-0 h-8 w-8 rounded-full bg-amber-500/20 flex items-center justify-center"
-                >
-                  <UIcon name="i-fa6-regular:envelope" class="h-4 w-4 text-amber-400" />
-                </div>
-                <div class="min-w-0">
-                  <p class="text-sm text-white/70 truncate">{{ invite.email }}</p>
-                  <p class="text-xs text-amber-400">Pending invite</p>
-                </div>
-              </div>
-              <UButton
-                size="xs"
-                color="neutral"
-                variant="ghost"
-                icon="i-fa6-solid:xmark"
-                :loading="cancelingInvite === invite.id"
-                @click="cancelInvite(invite.id)"
-              />
-            </div>
-
-            <!-- Shared users -->
-            <div
-              v-for="user in sharedUsers"
-              :key="user.userId"
-              class="flex items-center justify-between py-2 px-3 bg-white/5 rounded-lg"
-            >
-              <div class="flex items-center gap-3 min-w-0">
-                <div
-                  class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-500/20 flex items-center justify-center"
-                >
-                  <UIcon name="i-fa6-solid:user" class="h-4 w-4 text-primary-400" />
-                </div>
-                <div class="min-w-0">
-                  <p class="text-sm text-white/70 truncate">{{ user.userId }}</p>
-                  <p class="text-xs text-white/50">Shared {{ formatDate(user.sharedAt) }}</p>
-                </div>
-              </div>
-              <UButton
-                size="xs"
-                color="error"
-                variant="ghost"
-                icon="i-fa6-solid:user-minus"
-                :loading="revokingUser === user.userId"
-                @click="revokeAccess(user.userId)"
-              />
-            </div>
-          </div>
+        <!-- Ownership Transfer (Owner only) -->
+        <div v-if="isOwner" class="border-t border-white/10 pt-6">
+          <DeviceTransferSection :device-id="deviceId" />
         </div>
       </div>
-
-      <!-- Invite Modal -->
-      <UModal v-model:open="showInviteModal">
-        <template #content>
-          <UCard>
-            <template #header>
-              <div class="flex items-center gap-3">
-                <UIcon name="i-fa6-solid:user-plus" class="h-5 w-5 text-primary-400" />
-                <h3 class="text-lg font-semibold">Invite to Share</h3>
-              </div>
-            </template>
-
-            <div class="space-y-4">
-              <p class="text-sm text-white/70">
-                Enter the email address of the person you want to share this device with. They'll
-                receive an invitation email.
-              </p>
-              <UInput
-                v-model="inviteEmail"
-                type="email"
-                placeholder="email@example.com"
-                size="lg"
-                :disabled="sendingInvite"
-              />
-              <UAlert
-                v-if="inviteError"
-                color="error"
-                icon="i-fa6-solid:circle-exclamation"
-                :title="inviteError"
-              />
-            </div>
-
-            <template #footer>
-              <div class="flex justify-end gap-3">
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  :disabled="sendingInvite"
-                  @click="showInviteModal = false"
-                >
-                  Cancel
-                </UButton>
-                <UButton
-                  color="primary"
-                  :loading="sendingInvite"
-                  :disabled="!inviteEmail || sendingInvite"
-                  @click="sendInvite"
-                >
-                  Send Invite
-                </UButton>
-              </div>
-            </template>
-          </UCard>
-        </template>
-      </UModal>
 
       <!-- Delete Confirmation Modal -->
       <DangerConfirmModal
@@ -404,11 +260,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { jwtDecode } from 'jwt-decode'
-import { devicesApi, type ShareUser, type ShareInvite } from '@/lib/api/devices'
+import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
 import type { MatrxDevice } from '@/lib/api/mappers/deviceMapper'
 import { useAuthStore } from '@/stores/auth/auth'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
+import DeviceSharingSection from '@/components/devices/DeviceSharingSection.vue'
+import DeviceTransferSection from '@/components/devices/DeviceTransferSection.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -420,18 +278,6 @@ const loading = ref(true)
 const error = ref<string>()
 const saving = ref(false)
 const saveError = ref<string>()
-
-// Sharing state
-const sharingLoading = ref(false)
-const sharingError = ref<string>()
-const sharedUsers = ref<ShareUser[]>([])
-const pendingInvites = ref<ShareInvite[]>([])
-const showInviteModal = ref(false)
-const inviteEmail = ref('')
-const inviteError = ref<string>()
-const sendingInvite = ref(false)
-const cancelingInvite = ref<string>()
-const revokingUser = ref<string>()
 
 // Delete state
 const showDeleteModal = ref(false)
@@ -590,8 +436,7 @@ async function saveSettings() {
   try {
     // Build settings update payload
     const displayNameChanged = displayName.value !== originalDisplayName.value
-    const quietWindowsChanged =
-      JSON.stringify(quietWindows.value) !== originalQuietWindows.value
+    const quietWindowsChanged = JSON.stringify(quietWindows.value) !== originalQuietWindows.value
     const typeSettingsChanged =
       screenBrightness.value !== originalScreenBrightness.value ||
       autoBrightnessEnabled.value !== originalAutoBrightnessEnabled.value ||
@@ -628,73 +473,6 @@ async function saveSettings() {
   }
 }
 
-// ==================== Sharing Functions ====================
-
-async function loadShares() {
-  if (!isOwner.value) return
-
-  sharingLoading.value = true
-  sharingError.value = undefined
-
-  try {
-    const shares = await devicesApi.getShares(deviceId.value)
-    sharedUsers.value = shares.sharedUsers
-    pendingInvites.value = shares.pendingInvites
-  } catch (err) {
-    sharingError.value = getErrorMessage(err, 'Failed to load sharing info')
-  } finally {
-    sharingLoading.value = false
-  }
-}
-
-async function sendInvite() {
-  if (!inviteEmail.value) return
-
-  sendingInvite.value = true
-  inviteError.value = undefined
-
-  try {
-    await devicesApi.createShareInvite(deviceId.value, inviteEmail.value)
-    inviteEmail.value = ''
-    showInviteModal.value = false
-    await loadShares()
-  } catch (err) {
-    inviteError.value = getErrorMessage(err, 'Failed to send invite')
-  } finally {
-    sendingInvite.value = false
-  }
-}
-
-async function cancelInvite(inviteId: string) {
-  cancelingInvite.value = inviteId
-
-  try {
-    await devicesApi.cancelShareInvite(deviceId.value, inviteId)
-    await loadShares()
-  } catch (err) {
-    sharingError.value = getErrorMessage(err, 'Failed to cancel invite')
-  } finally {
-    cancelingInvite.value = undefined
-  }
-}
-
-async function revokeAccess(userId: string) {
-  revokingUser.value = userId
-
-  try {
-    await devicesApi.revokeShare(deviceId.value, userId)
-    await loadShares()
-  } catch (err) {
-    sharingError.value = getErrorMessage(err, 'Failed to revoke access')
-  } finally {
-    revokingUser.value = undefined
-  }
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString()
-}
-
 // ==================== Delete Functions ====================
 
 async function deleteDevice() {
@@ -729,11 +507,5 @@ watch(autoBrightnessEnabled, (enabled) => {
   }
 })
 
-onMounted(async () => {
-  await loadDevice()
-  // Load shares after device is loaded (only for owners)
-  if (isOwner.value) {
-    loadShares()
-  }
-})
+onMounted(loadDevice)
 </script>

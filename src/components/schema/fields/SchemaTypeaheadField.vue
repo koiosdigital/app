@@ -180,7 +180,12 @@ async function search(query: string) {
   searching.value = true
 
   try {
-    const response = await appsApi.callHandler(props.appId, props.field.handler, buildConfig(), query)
+    const response = await appsApi.callHandler(
+      props.appId,
+      props.field.handler,
+      buildConfig(),
+      query,
+    )
 
     if (response?.result) {
       // Result is JSON string of options array

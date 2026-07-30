@@ -195,6 +195,14 @@
         </dl>
       </UCard>
 
+      <!-- Sharing + ownership transfer (owner only) -->
+      <UCard v-if="isOwner">
+        <DeviceSharingSection :device-id="deviceId" />
+      </UCard>
+      <UCard v-if="isOwner">
+        <DeviceTransferSection :device-id="deviceId" />
+      </UCard>
+
       <!-- Reboot (owner only) -->
       <div v-if="isOwner" class="flex flex-col gap-3">
         <UAlert
@@ -248,6 +256,8 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
+import DeviceSharingSection from '@/components/devices/DeviceSharingSection.vue'
+import DeviceTransferSection from '@/components/devices/DeviceTransferSection.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { devicesApi } from '@/lib/api/devices'
 import { nemotoApi, type NemotoQuietWindow, type NemotoLiveState } from '@/lib/api/nemoto'

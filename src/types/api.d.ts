@@ -1835,6 +1835,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/transfer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the pending ownership transfer [owner] */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Pending transfer (null when none) */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeviceTransferStatusDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Initiate an ownership transfer [owner] */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTransferDto"];
+                };
+            };
+            responses: {
+                /** @description Transfer initiated; recipient emailed */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeviceTransferDto"];
+                    };
+                };
+                /** @description Invalid email / transfer to self */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description A transfer is already pending for this device */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        /** Cancel the pending ownership transfer [owner] */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Transfer cancelled */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description No pending transfer for this device */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/transfers/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List pending ownership transfers addressed to me */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Pending transfers for the current user */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PendingTransferDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/transfers/{transferId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept a pending ownership transfer */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transferId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Transfer accepted; ownership moved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TransferAcceptedDto"];
+                    };
+                };
+                /** @description Signed-in account has no email to match the transfer against */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Transfer not found (or not addressed to this account) */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/user/me": {
         parameters: {
             query?: never;
@@ -2754,6 +2958,38 @@ export interface components {
         };
         CreateShareInviteDto: {
             email: string;
+        };
+        DeviceTransferDto: {
+            id: string;
+            deviceId: string;
+            toEmail: string;
+            toName: string;
+            createdAt: string;
+        };
+        CreateTransferDto: {
+            /** @description Recipient email address */
+            email: string;
+            /** @description Recipient name (greeting in the invite email) */
+            name: string;
+        };
+        DeviceTransferStatusDto: {
+            deviceId: string;
+            pending: components["schemas"]["DeviceTransferDto"] & (Record<string, never> | null);
+        };
+        PendingTransferDto: {
+            id: string;
+            deviceId: string;
+            deviceName: string;
+            /** @enum {string} */
+            deviceType: "LANTERN" | "MATRX" | "NEMOTO" | "TRANQUIL";
+            /** @description Display name of the current owner */
+            fromName: string;
+            /** @description Recipient name the owner entered */
+            toName: string;
+            createdAt: string;
+        };
+        TransferAcceptedDto: {
+            deviceId: string;
         };
         UserResponseDto: {
             sub: string;
