@@ -46,7 +46,7 @@ importers:
         version: 8.0.0(@capacitor/core@8.0.0)
       '@capawesome-team/capacitor-oauth':
         specifier: github:acvigue/pkgs#path:/packages/@capawesome-team/capacitor-oauth
-        version: https://codeload.github.com/acvigue/pkgs/tar.gz/578374799c2006d2c337d0c87a0983acf833a2a9#path:/packages/@capawesome-team/capacitor-oauth(@capacitor/core@8.0.0)
+        version: https://codeload.github.com/acvigue/pkgs/tar.gz/42fe02afe687304dc62df07fde1c0d6195a452e7#path:/packages/@capawesome-team/capacitor-oauth(@capacitor/core@8.0.0)
       '@capawesome/capacitor-live-update':
         specifier: github:acvigue/pkgs#path:/packages/@capawesome/capacitor-live-update
         version: https://codeload.github.com/acvigue/pkgs/tar.gz/578374799c2006d2c337d0c87a0983acf833a2a9#path:/packages/@capawesome/capacitor-live-update(@capacitor/core@8.0.0)
@@ -328,9 +328,9 @@ packages:
   '@capacitor/synapse@1.0.4':
     resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
 
-  '@capawesome-team/capacitor-oauth@https://codeload.github.com/acvigue/pkgs/tar.gz/578374799c2006d2c337d0c87a0983acf833a2a9#path:/packages/@capawesome-team/capacitor-oauth':
-    resolution: {path: /packages/@capawesome-team/capacitor-oauth, tarball: https://codeload.github.com/acvigue/pkgs/tar.gz/578374799c2006d2c337d0c87a0983acf833a2a9}
-    version: 0.1.6
+  '@capawesome-team/capacitor-oauth@https://codeload.github.com/acvigue/pkgs/tar.gz/42fe02afe687304dc62df07fde1c0d6195a452e7#path:/packages/@capawesome-team/capacitor-oauth':
+    resolution: {path: /packages/@capawesome-team/capacitor-oauth, tarball: https://codeload.github.com/acvigue/pkgs/tar.gz/42fe02afe687304dc62df07fde1c0d6195a452e7}
+    version: 0.2.0
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
@@ -5217,7 +5217,7 @@ snapshots:
 
   '@capacitor/synapse@1.0.4': {}
 
-  '@capawesome-team/capacitor-oauth@https://codeload.github.com/acvigue/pkgs/tar.gz/578374799c2006d2c337d0c87a0983acf833a2a9#path:/packages/@capawesome-team/capacitor-oauth(@capacitor/core@8.0.0)':
+  '@capawesome-team/capacitor-oauth@https://codeload.github.com/acvigue/pkgs/tar.gz/42fe02afe687304dc62df07fde1c0d6195a452e7#path:/packages/@capawesome-team/capacitor-oauth(@capacitor/core@8.0.0)':
     dependencies:
       '@capacitor/core': 8.0.0
 

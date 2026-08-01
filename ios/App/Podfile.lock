@@ -50,7 +50,7 @@ DEPENDENCIES:
   - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences`)"
   - "CapacitorZeroconf (from `../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.0.0_bonjour@3.5.1/node_modules/capacitor-zeroconf`)"
   - "CapawesomeCapacitorLiveUpdate (from `../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update`)"
-  - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+578374_d597849d0ea3b4f45ffc89b034aedfae/node_modules/@capawesome-team/capacitor-oauth`)"
+  - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_4eab26ef7c2ccf0fbe81e182a28f6327/node_modules/@capawesome-team/capacitor-oauth`)"
 
 SPEC REPOS:
   trunk:
@@ -84,7 +84,7 @@ EXTERNAL SOURCES:
   CapawesomeCapacitorLiveUpdate:
     :path: "../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update"
   CapawesomeTeamCapacitorOauth:
-    :path: "../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+578374_d597849d0ea3b4f45ffc89b034aedfae/node_modules/@capawesome-team/capacitor-oauth"
+    :path: "../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_4eab26ef7c2ccf0fbe81e182a28f6327/node_modules/@capawesome-team/capacitor-oauth"
 
 SPEC CHECKSUMS:
   Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
@@ -105,6 +105,6 @@ SPEC CHECKSUMS:
   OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 183a8a5251f6ac49e80ea6c79e9dbd51bf654c6d
+PODFILE CHECKSUM: 4987888ad604c2ef5578612abd7ada503811fbd2
 
 COCOAPODS: 1.16.2
