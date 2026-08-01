@@ -41,6 +41,11 @@
               @send-message="openMessage"
               @open-settings="openSettings"
             />
+            <TranquilCloudDeviceCard
+              v-else-if="isTranquilDevice(device)"
+              :device="device"
+              @open="openDevice"
+            />
             <LanternDeviceCard
               v-else
               :device="device"
@@ -85,7 +90,12 @@ import TranquilDeviceCard from '@/components/devices/TranquilDeviceCard.vue'
 import PendingTransfersBanner from '@/components/devices/PendingTransfersBanner.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
-import { type ApiDevice, isMatrxDevice, isNemotoDevice } from '@/lib/api/mappers/deviceMapper'
+import {
+  type ApiDevice,
+  isMatrxDevice,
+  isNemotoDevice,
+  isTranquilDevice,
+} from '@/lib/api/mappers/deviceMapper'
 import { useLocalDevicesStore } from '@/stores/localDevices'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import { type LocalDevice, normalizeKoiosType } from '@/lib/mdns/discovery'
@@ -231,19 +241,26 @@ const handleSendTouch = async (id: string) => {
 const deviceBasePath = (device: ApiDevice) => {
   if (device.type === 'MATRX') return '/matrx'
   if (device.type === 'NEMOTO') return '/nemoto'
+  // Tranquil has no cloud pages — it's LAN-controlled; when broadcasting, the
+  // local card (which routes to /tranquil/local/) replaces this one.
+  if (device.type === 'TRANQUIL') return null
   return '/lantern'
 }
 
 const openDevice = (id: string) => {
   const device = findDevice(id)
   if (!device) return
-  router.push(`${deviceBasePath(device)}/${id}`)
+  const base = deviceBasePath(device)
+  if (!base) return
+  router.push(`${base}/${id}`)
 }
 
 const openSettings = (id: string) => {
   const device = findDevice(id)
   if (!device) return
-  router.push(`${deviceBasePath(device)}/${id}/settings`)
+  const base = deviceBasePath(device)
+  if (!base) return
+  router.push(`${base}/${id}/settings`)
 }
 
 const openMessage = (id: string) => {

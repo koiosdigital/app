@@ -4,7 +4,8 @@ import type { components } from '@/types/api'
 export type MatrxDevice = components['schemas']['MatrxDeviceResponseDto']
 export type LanternDevice = components['schemas']['LanternDeviceResponseDto']
 export type NemotoDevice = components['schemas']['NemotoDeviceResponseDto']
-export type ApiDevice = MatrxDevice | LanternDevice | NemotoDevice
+export type TranquilDevice = components['schemas']['TranquilDeviceResponseDto']
+export type ApiDevice = MatrxDevice | LanternDevice | NemotoDevice | TranquilDevice
 
 /**
  * Type guard for Matrix device
@@ -25,4 +26,11 @@ export function isLanternDevice(device: ApiDevice): device is LanternDevice {
  */
 export function isNemotoDevice(device: ApiDevice): device is NemotoDevice {
   return device.type === 'NEMOTO'
+}
+
+/**
+ * Type guard for Tranquil device
+ */
+export function isTranquilDevice(device: ApiDevice): device is TranquilDevice {
+  return device.type === 'TRANQUIL'
 }

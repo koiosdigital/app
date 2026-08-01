@@ -1458,7 +1458,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": (components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"] | components["schemas"]["NemotoDeviceResponseDto"])[];
+                        "application/json": (components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"] | components["schemas"]["NemotoDeviceResponseDto"] | components["schemas"]["TranquilDeviceResponseDto"])[];
                     };
                 };
             };
@@ -1532,7 +1532,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"] | components["schemas"]["NemotoDeviceResponseDto"];
+                        "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"] | components["schemas"]["NemotoDeviceResponseDto"] | components["schemas"]["TranquilDeviceResponseDto"];
                     };
                 };
                 /** @description Device not found */
@@ -1600,7 +1600,7 @@ export interface paths {
             /** @description Request body */
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["UpdateLanternSettingsDto"] | components["schemas"]["UpdateMatrxSettingsDto"] | components["schemas"]["UpdateNemotoSettingsDto"];
+                    "application/json": components["schemas"]["UpdateLanternSettingsDto"] | components["schemas"]["UpdateMatrxSettingsDto"] | components["schemas"]["UpdateNemotoSettingsDto"] | components["schemas"]["UpdateTranquilSettingsDto"];
                 };
             };
             responses: {
@@ -1610,7 +1610,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"] | components["schemas"]["NemotoDeviceResponseDto"];
+                        "application/json": components["schemas"]["LanternDeviceResponseDto"] | components["schemas"]["MatrxDeviceResponseDto"] | components["schemas"]["NemotoDeviceResponseDto"] | components["schemas"]["TranquilDeviceResponseDto"];
                     };
                 };
                 /** @description Device type mismatch */
@@ -2881,6 +2881,45 @@ export interface components {
             /** @description Module auto-discovery window (seconds) */
             autoDiscoverSec: number;
         } | null;
+        TranquilDeviceResponseDto: {
+            /**
+             * @description Unique identifier for the device
+             * @example dev_123abc
+             */
+            id: string;
+            /** @description Whether the device is currently online */
+            online: boolean;
+            accessLevel: components["schemas"]["ClaimType"];
+            /** @description UUID of the installation currently displayed */
+            currentlyDisplayingInstallation?: string | null;
+            /** @description Number of installations on this device */
+            installationCount: number;
+            /** @description Creation timestamp (ISO 8601) */
+            createdAt: string;
+            /** @description Last-update timestamp (ISO 8601) */
+            updatedAt: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "TRANQUIL";
+            settings: components["schemas"]["TranquilDeviceSettingsDto"];
+        };
+        TranquilDeviceSettingsDto: ({
+            /**
+             * @description Display name for the device
+             * @example Living Room
+             */
+            displayName: string;
+            /** @description Display width in pixels (read-only) */
+            width?: number;
+            /** @description Display height in pixels (read-only) */
+            height?: number;
+            /** @description Whether the device has a light sensor (read-only) */
+            hasLightSensor?: boolean;
+        } & {
+            [key: string]: unknown;
+        }) | null;
         ClaimTokenResponseDto: {
             token: string;
             expiresAt: number;
@@ -2933,6 +2972,14 @@ export interface components {
                 /** @description Module auto-discovery window (seconds) */
                 autoDiscoverSec?: number;
             };
+        };
+        UpdateTranquilSettingsDto: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "TRANQUIL";
+            displayName?: string;
         };
         DeviceSharesResponseDto: {
             deviceId: string;
