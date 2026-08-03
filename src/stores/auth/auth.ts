@@ -16,6 +16,10 @@ type JwtPayload = {
   [key: string]: unknown
 }
 
+// Refresh a little before the token actually expires so a request in flight
+// never races the server's expiry check (and to absorb minor clock skew).
+const CLOCK_SKEW_SECONDS = 30
+
 /**
  * Helper to set or remove a preference
  */
@@ -37,19 +41,26 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref<string>()
   const idToken = ref<string>()
 
-  // Computed
-  const accessTokenExpired = computed(() => {
-    if (!accessToken.value) return true
+  // In-flight refresh, shared across concurrent callers. The refresh token is
+  // single-use under Keycloak rotation, so parallel refreshes would invalidate
+  // each other and spuriously log the user out — coalesce them into one call.
+  let refreshInFlight: Promise<string | undefined> | null = null
 
+  // Seconds the current access token stays valid; 0 if absent/undecodable.
+  function tokenLifetimeSeconds(): number {
+    if (!accessToken.value) return 0
     try {
       const decoded = jwtDecode<JwtPayload>(accessToken.value)
-      const currentTime = Math.floor(Date.now() / 1000)
-      return decoded.exp < currentTime
+      return decoded.exp - Math.floor(Date.now() / 1000)
     } catch (error) {
       console.error('Failed to decode access token', error)
-      return true
+      return 0
     }
-  })
+  }
+
+  // Computed
+  // Hard expiry (no skew): used to gate isLoggedIn / route access.
+  const accessTokenExpired = computed(() => tokenLifetimeSeconds() <= 0)
 
   const isLoggedIn = computed(() => {
     return accessToken.value !== undefined && !accessTokenExpired.value
@@ -129,9 +140,22 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Refresh the access token using the refresh token
+   * Refresh the access token using the refresh token.
+   *
+   * Single-flight: concurrent callers share one refresh so the rotating
+   * refresh token is only spent once. Returns the new access token, or
+   * undefined on a true failure (missing/expired/revoked refresh token),
+   * in which case the user is logged out.
    */
   async function refreshAccessToken(): Promise<string | undefined> {
+    if (refreshInFlight) return refreshInFlight
+    refreshInFlight = doRefresh().finally(() => {
+      refreshInFlight = null
+    })
+    return refreshInFlight
+  }
+
+  async function doRefresh(): Promise<string | undefined> {
     if (!refreshToken.value) {
       await logout()
       return undefined
@@ -153,10 +177,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Get a valid access token, refreshing if necessary
+   * Get a valid access token, refreshing proactively if it is expired or about
+   * to expire. Returns undefined only when no valid token can be obtained.
    */
   async function getAccessToken(): Promise<string | undefined> {
-    if (accessToken.value && !accessTokenExpired.value) {
+    if (tokenLifetimeSeconds() > CLOCK_SKEW_SECONDS) {
       return accessToken.value
     }
 
@@ -164,7 +189,7 @@ export const useAuthStore = defineStore('auth', () => {
       return await refreshAccessToken()
     }
 
-    return undefined
+    return accessToken.value ?? undefined
   }
 
   /**

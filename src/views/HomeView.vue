@@ -98,7 +98,8 @@ import {
 } from '@/lib/api/mappers/deviceMapper'
 import { useLocalDevicesStore } from '@/stores/localDevices'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
-import { type LocalDevice, normalizeKoiosType } from '@/lib/mdns/discovery'
+import { useClockLocalStore } from '@/stores/clockLocal'
+import { CLOCK_TYPES, isClockType, type LocalDevice, normalizeKoiosType } from '@/lib/mdns/discovery'
 
 useHead({
   title: 'Devices | Koios Digital',
@@ -106,9 +107,11 @@ useHead({
 })
 
 const router = useRouter()
+const toast = useToast()
 const { setHeader } = usePageHeader()
 const localDevicesStore = useLocalDevicesStore()
 const tranquilLocal = useTranquilLocalStore()
+const clockLocal = useClockLocalStore()
 
 const devices = ref<ApiDevice[]>([])
 const loading = ref(false)
@@ -117,7 +120,7 @@ const error = ref<string>()
 // Families whose primary control path is LAN-direct. When such a device is
 // broadcasting on the network, the local card wins over any cloud twin; for
 // everything else (matrx/nemoto — cloud-only so far) the cloud card wins.
-const LOCAL_CONTROLLED = new Set<string>(['TRANQUIL'])
+const LOCAL_CONTROLLED = new Set<string>(['TRANQUIL', ...CLOCK_TYPES])
 
 // mDNS broadcasts keyed by the cloud device id from the `device_id` TXT record.
 const localByDeviceId = computed(() => {
@@ -225,6 +228,7 @@ const toggleScreen = async (id: string) => {
         },
       }
     }
+    toast.add({ title: getErrorMessage(err, 'Failed to toggle screen'), color: 'error' })
     console.error('Failed to toggle screen:', err)
   }
 }
@@ -268,12 +272,18 @@ const openMessage = (id: string) => {
 }
 
 const openLocalDevice = (device: LocalDevice) => {
-  // Tranquil is LAN-direct controlled: establish the connection here (while the
-  // mDNS list is still in memory) before navigating to the device page, which
-  // then drives the already-active connection.
-  if (normalizeKoiosType(device.typeRaw) === 'TRANQUIL') {
+  // LAN-direct families: establish the connection here (while the mDNS list is
+  // still in memory) before navigating to the device page, which then drives
+  // the already-active connection.
+  const type = normalizeKoiosType(device.typeRaw)
+  if (type === 'TRANQUIL') {
     tranquilLocal.connect(device)
     router.push(`/tranquil/local/${encodeURIComponent(device.id)}`)
+    return
+  }
+  if (isClockType(type)) {
+    clockLocal.connect(device)
+    router.push(`/clock/local/${encodeURIComponent(device.id)}`)
     return
   }
   // TODO(fold-in): other device families' LAN pages not built yet.
@@ -290,8 +300,8 @@ onMounted(() => {
   setHeader({
     title: 'Devices',
     actions: [
-      { icon: 'i-fa6-solid:plus', onClick: () => router.push('/setup/new') },
-      { icon: 'i-fa6-solid:gear', onClick: () => router.push('/settings') },
+      { icon: 'i-fa6-solid:plus', label: 'Add device', onClick: () => router.push('/setup/new') },
+      { icon: 'i-fa6-solid:gear', label: 'Settings', onClick: () => router.push('/settings') },
     ],
   })
   loadDevices()

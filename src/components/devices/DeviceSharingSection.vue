@@ -51,8 +51,8 @@
           color="neutral"
           variant="ghost"
           icon="i-fa6-solid:xmark"
-          :loading="cancelingInvite === invite.id"
-          @click="cancelInvite(invite.id)"
+          aria-label="Cancel invite"
+          @click="askCancelInvite(invite)"
         />
       </div>
 
@@ -78,8 +78,8 @@
           color="error"
           variant="ghost"
           icon="i-fa6-solid:user-minus"
-          :loading="revokingUser === user.userId"
-          @click="revokeAccess(user.userId)"
+          aria-label="Revoke access"
+          @click="askRevokeAccess(user)"
         />
       </div>
     </div>
@@ -138,6 +138,28 @@
         </UCard>
       </template>
     </UModal>
+
+    <!-- Cancel invite confirmation -->
+    <DangerConfirmModal
+      v-model="showCancelInvite"
+      title="Cancel invite?"
+      :message="`This will cancel the invitation to ${inviteToCancel?.email ?? ''}.`"
+      confirm-text="Cancel invite"
+      :loading="cancelingInvite"
+      :error="cancelInviteError"
+      @confirm="confirmCancelInvite"
+    />
+
+    <!-- Revoke access confirmation -->
+    <DangerConfirmModal
+      v-model="showRevokeAccess"
+      title="Revoke access?"
+      :message="`This will revoke ${userToRevoke?.userId ?? ''}'s access to the device.`"
+      confirm-text="Revoke"
+      :loading="revokingUser"
+      :error="revokeError"
+      @confirm="confirmRevokeAccess"
+    />
   </div>
 </template>
 
@@ -145,6 +167,7 @@
 import { ref, onMounted } from 'vue'
 import { devicesApi, type ShareUser, type ShareInvite } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
+import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 
 // Owner-only sharing management for a device: shared users, pending invites,
 // and the invite-by-email modal. Self-contained — parents just render it
@@ -152,6 +175,8 @@ import { getErrorMessage } from '@/lib/api/errors'
 const props = defineProps<{
   deviceId: string
 }>()
+
+const toast = useToast()
 
 const loading = ref(false)
 const error = ref<string>()
@@ -161,8 +186,18 @@ const showInviteModal = ref(false)
 const inviteEmail = ref('')
 const inviteError = ref<string>()
 const sendingInvite = ref(false)
-const cancelingInvite = ref<string>()
-const revokingUser = ref<string>()
+
+// Cancel-invite confirmation state
+const showCancelInvite = ref(false)
+const inviteToCancel = ref<ShareInvite | null>(null)
+const cancelingInvite = ref(false)
+const cancelInviteError = ref<string>()
+
+// Revoke-access confirmation state
+const showRevokeAccess = ref(false)
+const userToRevoke = ref<ShareUser | null>(null)
+const revokingUser = ref(false)
+const revokeError = ref<string>()
 
 async function loadShares() {
   loading.value = true
@@ -197,29 +232,51 @@ async function sendInvite() {
   }
 }
 
-async function cancelInvite(inviteId: string) {
-  cancelingInvite.value = inviteId
+function askCancelInvite(invite: ShareInvite) {
+  inviteToCancel.value = invite
+  cancelInviteError.value = undefined
+  showCancelInvite.value = true
+}
+
+async function confirmCancelInvite() {
+  if (!inviteToCancel.value) return
+  cancelingInvite.value = true
+  cancelInviteError.value = undefined
 
   try {
-    await devicesApi.cancelShareInvite(props.deviceId, inviteId)
+    await devicesApi.cancelShareInvite(props.deviceId, inviteToCancel.value.id)
+    showCancelInvite.value = false
+    inviteToCancel.value = null
     await loadShares()
   } catch (err) {
-    error.value = getErrorMessage(err, 'Failed to cancel invite')
+    cancelInviteError.value = getErrorMessage(err, 'Failed to cancel invite')
+    toast.add({ title: cancelInviteError.value, color: 'error' })
   } finally {
-    cancelingInvite.value = undefined
+    cancelingInvite.value = false
   }
 }
 
-async function revokeAccess(userId: string) {
-  revokingUser.value = userId
+function askRevokeAccess(user: ShareUser) {
+  userToRevoke.value = user
+  revokeError.value = undefined
+  showRevokeAccess.value = true
+}
+
+async function confirmRevokeAccess() {
+  if (!userToRevoke.value) return
+  revokingUser.value = true
+  revokeError.value = undefined
 
   try {
-    await devicesApi.revokeShare(props.deviceId, userId)
+    await devicesApi.revokeShare(props.deviceId, userToRevoke.value.userId)
+    showRevokeAccess.value = false
+    userToRevoke.value = null
     await loadShares()
   } catch (err) {
-    error.value = getErrorMessage(err, 'Failed to revoke access')
+    revokeError.value = getErrorMessage(err, 'Failed to revoke access')
+    toast.add({ title: revokeError.value, color: 'error' })
   } finally {
-    revokingUser.value = undefined
+    revokingUser.value = false
   }
 }
 

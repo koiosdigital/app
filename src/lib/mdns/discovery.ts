@@ -17,10 +17,33 @@ import { ZeroConf, type ZeroConfWatchResult, type ZeroConfService } from 'capaci
 export const KOIOS_MDNS_TYPE = '_koiosdigital._tcp.'
 export const KOIOS_MDNS_DOMAIN = 'local.'
 
-/** Device families, matching device-api's `devices.type` (uppercased). */
-export type KoiosDeviceType = 'MATRX' | 'NEMOTO' | 'LANTERN' | 'TRANQUIL'
+/** Device families, matching device-api's `devices.type` (uppercased). Clock
+ * variants advertise their subtype (nixie/wordclock/fibonacci) as the TXT type. */
+export type KoiosDeviceType =
+  | 'MATRX'
+  | 'NEMOTO'
+  | 'LANTERN'
+  | 'TRANQUIL'
+  | 'NIXIE'
+  | 'WORDCLOCK'
+  | 'FIBONACCI'
 
-const KNOWN_TYPES: KoiosDeviceType[] = ['MATRX', 'NEMOTO', 'LANTERN', 'TRANQUIL']
+const KNOWN_TYPES: KoiosDeviceType[] = [
+  'MATRX',
+  'NEMOTO',
+  'LANTERN',
+  'TRANQUIL',
+  'NIXIE',
+  'WORDCLOCK',
+  'FIBONACCI',
+]
+
+/** Clock variants — all run the KD Clock firmware and share one local HTTP API. */
+export const CLOCK_TYPES: ReadonlySet<string> = new Set(['NIXIE', 'WORDCLOCK', 'FIBONACCI'])
+
+export function isClockType(type: string): boolean {
+  return CLOCK_TYPES.has(type)
+}
 
 /** A Koios device seen on the local network. */
 export interface LocalDevice {

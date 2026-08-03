@@ -31,8 +31,10 @@ import TranquilLightingView from '@/views/tranquil/TranquilLightingView.vue'
 import TranquilStoreView from '@/views/tranquil/TranquilStoreView.vue'
 import TranquilStorePlaylistView from '@/views/tranquil/TranquilStorePlaylistView.vue'
 import TranquilSettingsView from '@/views/tranquil/TranquilSettingsView.vue'
+import ClockDeviceView from '@/views/clock/ClockDeviceView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useClockLocalStore } from '@/stores/clockLocal'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -226,6 +228,13 @@ const router = createRouter({
       name: 'tranquil-local-settings',
       component: TranquilSettingsView,
     },
+    {
+      // LAN-direct clock (nixie/wordclock/fibonacci), keyed by its mDNS service
+      // name. The active connection is set up in HomeView.openLocalDevice.
+      path: '/clock/local/:id',
+      name: 'clock-local-device',
+      component: ClockDeviceView,
+    },
   ],
 })
 
@@ -264,9 +273,13 @@ router.beforeEach(async (to) => {
 // torn down only when they leave the device entirely. (connect() happens in
 // HomeView.openLocalDevice.)
 const TRANQUIL_PREFIX = '/tranquil/local/'
+const CLOCK_PREFIX = '/clock/local/'
 router.afterEach((to, from) => {
   if (from.path.startsWith(TRANQUIL_PREFIX) && !to.path.startsWith(TRANQUIL_PREFIX)) {
     useTranquilLocalStore().disconnect()
+  }
+  if (from.path.startsWith(CLOCK_PREFIX) && !to.path.startsWith(CLOCK_PREFIX)) {
+    useClockLocalStore().disconnect()
   }
 })
 

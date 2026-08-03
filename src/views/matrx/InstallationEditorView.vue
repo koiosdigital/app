@@ -43,6 +43,7 @@
       :message="`Are you sure you want to remove '${appName}' from this device? This action cannot be undone.`"
       confirm-text="Delete"
       :loading="deleting"
+      :error="deleteError"
       @confirm="handleDelete"
     />
 
@@ -198,7 +199,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, toRef } from 'vue'
+import { ref, computed, onMounted, toRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import MatrixDevicePreview from '@/components/MatrixDevicePreview.vue'
@@ -221,6 +222,7 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
+const toast = useToast()
 
 // Data refs
 const app = ref<AppManifest | null>(null)
@@ -239,7 +241,13 @@ const saving = ref(false)
 const saveError = ref<string>()
 const showDeleteModal = ref(false)
 const deleting = ref(false)
+const deleteError = ref<string>()
 const dataLoaded = ref(false)
+
+// Clear any stale delete error whenever the confirmation modal is opened.
+watch(showDeleteModal, (open) => {
+  if (open) deleteError.value = undefined
+})
 
 // Installation settings
 const displayTime = ref(10)
@@ -534,6 +542,7 @@ async function handleSave() {
       }
 
       // Navigate back to device view
+      toast.add({ title: 'Saved', color: 'success' })
       router.replace(`/matrx/${props.deviceId}`)
     } else {
       // Update existing installation
@@ -550,6 +559,7 @@ async function handleSave() {
         throw new Error('Failed to update installation')
       }
 
+      toast.add({ title: 'Saved', color: 'success' })
       router.back()
     }
   } catch (err) {
@@ -564,11 +574,14 @@ async function handleDelete() {
   if (!props.installationId) return
 
   deleting.value = true
+  deleteError.value = undefined
   try {
     await devicesApi.deleteInstallation(props.deviceId, props.installationId)
     showDeleteModal.value = false
     router.replace(`/matrx/${props.deviceId}`)
   } catch (err) {
+    deleteError.value = getErrorMessage(err, 'Failed to delete installation')
+    toast.add({ title: deleteError.value, color: 'error' })
     console.error('Delete error:', err)
   } finally {
     deleting.value = false
@@ -584,6 +597,7 @@ async function togglePin() {
     await devicesApi.setPinState(props.deviceId, props.installationId, newPinState)
     pinnedByUser.value = newPinState
   } catch (err) {
+    toast.add({ title: getErrorMessage(err, 'Failed to update pin'), color: 'error' })
     console.error('Pin toggle error:', err)
   } finally {
     pinning.value = false

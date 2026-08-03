@@ -7,6 +7,7 @@
       :message="`Are you sure you want to remove '${deleteTarget?.appName}' from this device? This action cannot be undone.`"
       confirm-text="Delete"
       :loading="deleting"
+      :error="deleteError"
       @confirm="handleDelete"
     />
 
@@ -219,6 +220,7 @@ type InstallationListItem = components['schemas']['InstallationListItemDto']
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const deviceId = computed(() => route.params.id as string)
 
@@ -231,6 +233,9 @@ const error = ref<string>()
 const isReordering = ref(false)
 const dragIndex = ref<number | null>(null)
 const dropIndex = ref<number | null>(null)
+// Per-item copy of the order captured when reorder mode is entered, so a failed
+// save can be reverted (drag mutates sortOrder on the shared item objects).
+const orderSnapshot = ref<InstallationListItem[] | null>(null)
 
 // Pinned state
 const unpinning = ref(false)
@@ -291,9 +296,13 @@ async function loadDevice() {
 }
 
 function toggleReorder() {
-  isReordering.value = !isReordering.value
   if (!isReordering.value) {
-    // Save new order when done
+    // Entering reorder mode — snapshot the current order (per-item copy) so a
+    // failed save can be rolled back to exactly this state.
+    orderSnapshot.value = installations.value.map((i) => ({ ...i }))
+    isReordering.value = true
+  } else {
+    isReordering.value = false
     saveInstallationOrder()
   }
 }
@@ -343,7 +352,14 @@ async function saveInstallationOrder() {
       pinnedByUser: inst.pinnedByUser,
     }))
     await devicesApi.bulkUpdateInstallations(deviceId.value, updates)
+    orderSnapshot.value = null
   } catch (err) {
+    // Restore the pre-reorder order so the UI reflects what's actually saved.
+    if (orderSnapshot.value) {
+      installations.value = orderSnapshot.value.sort((a, b) => a.sortOrder - b.sortOrder)
+      orderSnapshot.value = null
+    }
+    toast.add({ title: getErrorMessage(err, 'Failed to save order'), color: 'error' })
     console.error('Failed to save installation order:', err)
   }
 }
@@ -358,6 +374,7 @@ async function unpinPinnedInstallation() {
       installation.pinnedByUser = false
     }
   } catch (err) {
+    toast.add({ title: getErrorMessage(err, 'Failed to unpin installation'), color: 'error' })
     console.error('Failed to unpin installation:', err)
   } finally {
     unpinning.value = false
@@ -368,17 +385,26 @@ async function unpinPinnedInstallation() {
 const deleteTarget = ref<InstallationListItem | null>(null)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
+const deleteError = ref<string>()
+
+// Clear any stale delete error whenever the confirmation modal is opened.
+watch(showDeleteModal, (open) => {
+  if (open) deleteError.value = undefined
+})
 
 async function handleDelete() {
   if (!deleteTarget.value) return
 
   deleting.value = true
+  deleteError.value = undefined
   try {
     await devicesApi.deleteInstallation(deviceId.value, deleteTarget.value.id)
     installations.value = installations.value.filter((i) => i.id !== deleteTarget.value?.id)
     showDeleteModal.value = false
     deleteTarget.value = null
   } catch (err) {
+    deleteError.value = getErrorMessage(err, 'Failed to delete installation')
+    toast.add({ title: deleteError.value, color: 'error' })
     console.error('Failed to delete installation:', err)
   } finally {
     deleting.value = false
@@ -416,6 +442,7 @@ function syncHeader() {
     actions: [
       {
         icon: 'i-fa6-solid:gear',
+        label: 'Settings',
         onClick: () => router.push(`/matrx/${deviceId.value}/settings`),
       },
     ],

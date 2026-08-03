@@ -2834,7 +2834,24 @@ export interface components {
             autoBrightnessEnabled: boolean;
             /** @description Ambient lux below which the screen turns off */
             screenOffLux: number;
+            /** @description Quiet windows (local wall-clock). While inside an enabled window the screen turns off. Up to 7. */
+            quietWindows?: components["schemas"]["MatrxQuietWindowDto"][];
+            /** @description Device-reported: whether the device is currently inside a quiet window (read-only) */
+            isQuietNow?: boolean;
         } | null;
+        MatrxQuietWindowDto: {
+            /** @description Bitmask of active days (bit0=Sunday .. bit6=Saturday) */
+            dayMask: number;
+            /** @description Window start hour, local wall-clock (0-23) */
+            startHour: number;
+            /** @description Window start minute (0-59) */
+            startMin: number;
+            /** @description Window end hour, local wall-clock (0-23) */
+            endHour: number;
+            /** @description Window end minute (0-59) */
+            endMin: number;
+            enabled: boolean;
+        };
         NemotoDeviceResponseDto: {
             /**
              * @description Unique identifier for the device
@@ -2957,6 +2974,10 @@ export interface components {
                 autoBrightnessEnabled?: boolean;
                 /** @description Ambient lux below which the screen turns off */
                 screenOffLux?: number;
+                /** @description Quiet windows (local wall-clock). While inside an enabled window the screen turns off. Up to 7. */
+                quietWindows?: components["schemas"]["MatrxQuietWindowDto"][];
+                /** @description Device-reported: whether the device is currently inside a quiet window (read-only) */
+                isQuietNow?: boolean;
             };
         };
         UpdateNemotoSettingsDto: {

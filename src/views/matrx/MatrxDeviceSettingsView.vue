@@ -270,6 +270,7 @@ import DeviceTransferSection from '@/components/devices/DeviceTransferSection.vu
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const deviceId = computed(() => route.params.id as string)
 
@@ -401,10 +402,7 @@ async function loadDevice() {
     screenBrightness.value = settings?.typeSettings?.screenBrightness ?? 200
     autoBrightnessEnabled.value = settings?.typeSettings?.autoBrightnessEnabled ?? false
     screenOffLux.value = settings?.typeSettings?.screenOffLux ?? 3
-    // quietWindows / isQuietNow aren't in the generated DTO yet; read via cast.
-    const ts = settings?.typeSettings as
-      | { quietWindows?: MatrxQuietWindow[]; isQuietNow?: boolean }
-      | undefined
+    const ts = settings?.typeSettings
     quietWindows.value = (ts?.quietWindows ?? []).map((w) => ({
       dayMask: w.dayMask,
       startHour: w.startHour,
@@ -464,6 +462,7 @@ async function saveSettings() {
     originalScreenOffLux.value = screenOffLux.value
     originalQuietWindows.value = JSON.stringify(quietWindows.value)
 
+    toast.add({ title: 'Saved', color: 'success' })
     router.back()
   } catch (err) {
     saveError.value = getErrorMessage(err, 'Failed to save settings')

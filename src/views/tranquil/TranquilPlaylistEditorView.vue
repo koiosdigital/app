@@ -193,7 +193,9 @@ async function load() {
     setHeader({
       title: pl.name,
       backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}/playlists`,
-      actions: [{ icon: 'i-fa6-solid:trash', onClick: () => (showDelete.value = true) }],
+      actions: [
+        { icon: 'i-fa6-solid:trash', label: 'Delete', onClick: () => (showDelete.value = true) },
+      ],
     })
   } catch (e) {
     error.value = formatTranquilError(e)

@@ -148,7 +148,7 @@ onMounted(() => {
   setHeader({
     title: 'Patterns',
     backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}`,
-    actions: [{ icon: 'i-fa6-solid:upload', onClick: triggerUpload }],
+    actions: [{ icon: 'i-fa6-solid:upload', label: 'Upload', onClick: triggerUpload }],
   })
   void refresh()
 })

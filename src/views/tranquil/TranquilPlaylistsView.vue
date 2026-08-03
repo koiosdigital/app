@@ -136,7 +136,9 @@ onMounted(() => {
   setHeader({
     title: 'Playlists',
     backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}`,
-    actions: [{ icon: 'i-fa6-solid:plus', onClick: () => (showNew.value = true) }],
+    actions: [
+      { icon: 'i-fa6-solid:plus', label: 'New playlist', onClick: () => (showNew.value = true) },
+    ],
   })
   void refresh()
 })

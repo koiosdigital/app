@@ -452,9 +452,14 @@ function applyHeader() {
     actions: [
       {
         icon: isSearchOpen.value ? 'i-fa6-solid:xmark' : 'i-fa6-solid:magnifying-glass',
+        label: isSearchOpen.value ? 'Close search' : 'Search',
         onClick: toggleSearch,
       },
-      { icon: 'i-fa6-solid:sliders', onClick: () => (isSortOpen.value = !isSortOpen.value) },
+      {
+        icon: 'i-fa6-solid:sliders',
+        label: 'Sort',
+        onClick: () => (isSortOpen.value = !isSortOpen.value),
+      },
     ],
   })
 }

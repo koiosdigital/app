@@ -225,6 +225,7 @@ function syncHeader() {
     actions: [
       {
         icon: 'i-fa6-solid:gear',
+        label: 'Settings',
         onClick: () => router.push(`/nemoto/${deviceId.value}/settings`),
       },
     ],

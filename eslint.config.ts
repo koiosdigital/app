@@ -25,6 +25,12 @@ export default ts.config(
         // Google Maps JS API (loaded by vue3-google-map); used as the
         // `google.maps.*` type namespace in the schema location fields.
         google: 'readonly',
+        // Composables auto-imported by the @nuxt/ui Vite plugin (see
+        // auto-imports.d.ts). They resolve at build/type time but ESLint
+        // can't see the generated declarations, so declare them here.
+        useToast: 'readonly',
+        useOverlay: 'readonly',
+        useAppConfig: 'readonly',
       },
     },
   },

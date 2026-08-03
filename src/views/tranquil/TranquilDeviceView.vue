@@ -301,10 +301,12 @@ function syncHeader() {
     actions: [
       {
         icon: 'i-fa6-solid:lightbulb',
+        label: 'Lighting',
         onClick: () => router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/lighting`),
       },
       {
         icon: 'i-fa6-solid:gear',
+        label: 'Settings',
         onClick: () => router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/settings`),
       },
     ],
