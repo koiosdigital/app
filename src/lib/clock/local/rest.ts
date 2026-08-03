@@ -5,6 +5,7 @@
  */
 
 import createClient from 'openapi-fetch'
+import { lanFetch } from '@/lib/http/lanFetch'
 import type {
   ClockAbout,
   ClockSystemConfig,
@@ -84,7 +85,9 @@ async function handleResponse<T>(response: {
 export type ClockRestClient = ReturnType<typeof createClockRest>
 
 export function createClockRest(baseUrl: string) {
-  const client = createClient<paths>({ baseUrl })
+  // Route through native HTTP on device so cleartext http://<ip> LAN requests
+  // aren't blocked as mixed content by the https-origin WebView (see lanFetch).
+  const client = createClient<paths>({ baseUrl, fetch: lanFetch })
 
   const system = {
     async getAbout(): Promise<ClockAbout> {
