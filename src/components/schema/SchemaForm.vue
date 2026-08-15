@@ -1,7 +1,12 @@
 <template>
-  <div class="space-y-4 md:grid md:grid-cols-2 md:gap-y-4 md:gap-x-16">
+  <div class="flex flex-col gap-5 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-6">
     <template v-for="field in schema" :key="field.id">
-      <SchemaFieldWrapper :field="field" :visibility-state="evaluateVisibility(field.visibility)">
+      <SchemaFieldWrapper
+        :field="field"
+        :visibility-state="evaluateVisibility(field.visibility)"
+        :error="errors[field.id]"
+        :disabled-hint="describeDependency(field.visibility)"
+      >
         <component
           :is="getFieldComponent(field.type)"
           :field="field"
@@ -18,24 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { type Component, computed } from 'vue'
+import { type Component, computed, defineAsyncComponent } from 'vue'
 import type { components } from '@/types/api'
 import SchemaFieldWrapper from './SchemaFieldWrapper.vue'
-import SchemaTextField from './fields/SchemaTextField.vue'
-import SchemaDropdownField from './fields/SchemaDropdownField.vue'
-import SchemaMultiSelectField from './fields/SchemaMultiSelectField.vue'
-import SchemaRadioField from './fields/SchemaRadioField.vue'
-import SchemaOnOffField from './fields/SchemaOnOffField.vue'
-import SchemaColorField from './fields/SchemaColorField.vue'
-import SchemaDatetimeField from './fields/SchemaDatetimeField.vue'
-import SchemaLocationField from './fields/SchemaLocationField.vue'
-import SchemaLocationBasedField from './fields/SchemaLocationBasedField.vue'
-import SchemaTypeaheadField from './fields/SchemaTypeaheadField.vue'
-import SchemaOAuthField from './fields/SchemaOAuthField.vue'
-import SchemaWebCallbackField from './fields/SchemaWebCallbackField.vue'
-import SchemaPNGField from './fields/SchemaPNGField.vue'
-import SchemaNotificationField from './fields/SchemaNotificationField.vue'
-import SchemaGeoJSONField from './fields/SchemaGeoJSONField.vue'
 
 type AppSchemaField = components['schemas']['AppSchemaDto']['schema'][number]
 type AppSchemaVisibility = components['schemas']['AppSchemaVisibilityDto']
@@ -58,27 +48,47 @@ const emit = defineEmits<{
   (e: 'handler-result', fieldId: string, result: unknown): void
 }>()
 
+/**
+ * Loaded on demand. A schema typically uses two or three field types, but this
+ * map used to pull all fifteen into the bundle up front — including a 436-line
+ * GeoJSON editor and a Google Maps location picker — for any app that opened a
+ * config form.
+ */
 const fieldComponentMap: Record<string, Component> = {
-  text: SchemaTextField,
-  dropdown: SchemaDropdownField,
-  multiselect: SchemaMultiSelectField,
-  radio: SchemaRadioField,
-  onoff: SchemaOnOffField,
-  color: SchemaColorField,
-  datetime: SchemaDatetimeField,
-  location: SchemaLocationField,
-  locationbased: SchemaLocationBasedField,
-  typeahead: SchemaTypeaheadField,
-  oauth2: SchemaOAuthField,
-  webcallback: SchemaWebCallbackField,
-  png: SchemaPNGField,
-  notification: SchemaNotificationField,
-  geojson: SchemaGeoJSONField,
+  text: defineAsyncComponent(() => import('./fields/SchemaTextField.vue')),
+  dropdown: defineAsyncComponent(() => import('./fields/SchemaDropdownField.vue')),
+  multiselect: defineAsyncComponent(() => import('./fields/SchemaMultiSelectField.vue')),
+  radio: defineAsyncComponent(() => import('./fields/SchemaRadioField.vue')),
+  onoff: defineAsyncComponent(() => import('./fields/SchemaOnOffField.vue')),
+  color: defineAsyncComponent(() => import('./fields/SchemaColorField.vue')),
+  datetime: defineAsyncComponent(() => import('./fields/SchemaDatetimeField.vue')),
+  location: defineAsyncComponent(() => import('./fields/SchemaLocationField.vue')),
+  locationbased: defineAsyncComponent(() => import('./fields/SchemaLocationBasedField.vue')),
+  typeahead: defineAsyncComponent(() => import('./fields/SchemaTypeaheadField.vue')),
+  oauth2: defineAsyncComponent(() => import('./fields/SchemaOAuthField.vue')),
+  webcallback: defineAsyncComponent(() => import('./fields/SchemaWebCallbackField.vue')),
+  png: defineAsyncComponent(() => import('./fields/SchemaPNGField.vue')),
+  notification: defineAsyncComponent(() => import('./fields/SchemaNotificationField.vue')),
+  geojson: defineAsyncComponent(() => import('./fields/SchemaGeoJSONField.vue')),
   // generated fields have no UI component - they are hidden by the wrapper
 }
 
 function getFieldComponent(type: string): Component {
-  return fieldComponentMap[type] || SchemaTextField
+  return fieldComponentMap[type] ?? fieldComponentMap.text
+}
+
+/**
+ * A greyed-out field with no explanation is a dead end. The schema already
+ * knows the dependency, so say it: "Available when Units is metric".
+ */
+function describeDependency(visibility: AppSchemaVisibility | undefined): string | undefined {
+  if (!visibility || visibility.type === 'invisible') return undefined
+  const source = props.schema.find((f) => f.id === visibility.variable)
+  const label = source?.name || visibility.variable
+  const value = String(visibility.value)
+  return visibility.condition === 'equal'
+    ? `Available while ${label} is not ${value}`
+    : `Available while ${label} is ${value}`
 }
 
 const oauthProps = computed(() => ({

@@ -1,7 +1,6 @@
 <template>
   <div>
     <UInput type="datetime-local" :model-value="formattedValue" @update:model-value="handleInput" />
-    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

@@ -24,8 +24,6 @@
     >
       Preview
     </UButton>
-
-    <p v-if="error" class="text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

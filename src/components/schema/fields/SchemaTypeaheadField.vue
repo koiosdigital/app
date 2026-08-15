@@ -12,8 +12,6 @@
       <UIcon name="i-fa6-solid:magnifying-glass" class="h-4 w-4 text-white/50" />
     </button>
 
-    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
-
     <!-- Search Modal -->
     <UModal v-model:open="isOpen" :ui="{ width: 'sm:max-w-lg' }">
       <template #content>

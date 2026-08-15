@@ -8,13 +8,11 @@
       class="w-full"
       :search-input="false"
       @update:model-value="handleSelect"
-      :ui="{ base: 'min-w-32!' }"
     >
       <template #item="{ item }">
         <span>{{ item.label }}</span>
       </template>
     </USelectMenu>
-    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

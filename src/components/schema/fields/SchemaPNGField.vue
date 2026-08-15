@@ -29,8 +29,6 @@
         Upload PNG
       </UButton>
     </div>
-
-    <p v-if="error" class="text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

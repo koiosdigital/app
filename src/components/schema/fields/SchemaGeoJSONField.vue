@@ -27,8 +27,6 @@
       Draw Area
     </UButton>
 
-    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
-
     <!-- Map picker modal -->
     <UModal v-model:open="isOpen" :ui="{ width: 'sm:max-w-xl' }">
       <template #content>

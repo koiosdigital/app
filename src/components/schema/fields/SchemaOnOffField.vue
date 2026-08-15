@@ -1,10 +1,9 @@
 <template>
-  <div class="flex items-center justify-between">
-    <USwitch
-      :model-value="value === 'true' || value === true"
-      @update:model-value="emit('update:value', $event ? 'true' : 'false')"
-    />
-  </div>
+  <!-- The wrapper lays this out beside its label; the switch is the control. -->
+  <USwitch
+    :model-value="value === 'true' || value === true"
+    @update:model-value="emit('update:value', $event ? 'true' : 'false')"
+  />
 </template>
 
 <script setup lang="ts">
