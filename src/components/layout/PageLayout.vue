@@ -1,7 +1,9 @@
 <template>
-  <div class="page-layout flex flex-col bg-zinc-950">
+  <div class="page-layout flex flex-col bg-default">
     <!-- Header (fixed, does not scroll) -->
-    <header class="shrink-0 border-b border-white/10 bg-zinc-950/95 backdrop-blur px-5 py-4">
+    <header
+      class="shrink-0 border-b border-muted bg-[rgb(11_10_9/0.82)] px-4 py-3 backdrop-blur-xl"
+    >
       <slot name="header" />
     </header>
 

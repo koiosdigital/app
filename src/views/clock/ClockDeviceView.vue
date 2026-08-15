@@ -17,14 +17,22 @@
         Connecting to the clock…
       </div>
 
-      <UAlert v-if="store.error" color="error" icon="i-fa6-solid:circle-exclamation" :title="store.error" />
+      <UAlert
+        v-if="store.error"
+        color="error"
+        icon="i-fa6-solid:circle-exclamation"
+        :title="store.error"
+      />
 
       <!-- Nixie tubes -->
       <template v-if="store.isNixie && store.nixie">
         <UCard class="bg-white/5">
           <div class="flex items-center justify-between">
             <span class="font-medium">Tubes</span>
-            <USwitch :model-value="store.nixie.on" @update:model-value="(on) => store.setNixie({ on })" />
+            <USwitch
+              :model-value="store.nixie.on"
+              @update:model-value="(on) => store.setNixie({ on })"
+            />
           </div>
         </UCard>
 
@@ -128,9 +136,7 @@
 
       <!-- Backlight (nixie + wordclock; fibonacci has no LED API) -->
       <template v-if="store.hasLeds && store.ledChannel">
-        <h2 v-if="store.isNixie" class="mt-2 text-xs uppercase tracking-[0.35em] text-white/50">
-          Backlight
-        </h2>
+        <h2 v-if="store.isNixie" class="k-eyebrow mt-2">Backlight</h2>
 
         <UCard class="bg-white/5">
           <div class="flex items-center justify-between">

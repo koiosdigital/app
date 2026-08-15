@@ -8,7 +8,10 @@
       class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
     />
     <!-- Dark overlay + warm radial glow -->
-    <div class="pointer-events-none absolute inset-0 bg-zinc-950/85" aria-hidden="true"></div>
+    <div
+      class="pointer-events-none absolute inset-0 bg-[rgb(11_10_9/0.86)]"
+      aria-hidden="true"
+    ></div>
     <div
       class="pointer-events-none absolute inset-x-0 -top-20 h-72 bg-linear-to-b from-primary-500/25 to-transparent blur-3xl"
       aria-hidden="true"
@@ -23,10 +26,10 @@
 
       <!-- Hero copy -->
       <section class="mt-12 flex flex-1 flex-col items-center justify-center gap-4 text-center">
-        <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">
+        <h1 class="text-[32px] font-semibold leading-[1.05] tracking-[-0.035em] sm:text-4xl">
           Pair and manage your devices
         </h1>
-        <p class="max-w-sm text-base text-white/65">
+        <p class="max-w-[34ch] text-[15px] leading-relaxed text-white/60">
           One place to provision, configure, and control every Koios Digital product you own.
         </p>
       </section>
@@ -43,7 +46,7 @@
         >
           {{ isAuthorizing ? 'Opening sign-in…' : 'Get started' }}
         </UButton>
-        <p class="px-4 text-center text-[11px] leading-relaxed text-white/45">
+        <p class="px-4 text-center text-[11px] leading-relaxed text-white/40">
           By continuing you agree to the
           <button class="underline-offset-2 hover:underline" @click="openTerms">Terms</button>
           and acknowledge our

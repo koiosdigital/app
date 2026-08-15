@@ -2,12 +2,11 @@
   <BaseDeviceCard
     eyebrow="Sand table"
     :title="displayName"
-    subtitle="Not on your network"
-    card-background-class="bg-white/5"
+    subtitle="Control needs the same network"
     @click="emit('open', device.id)"
   >
     <template #header-end>
-      <UBadge :color="statusColor" variant="soft">{{ statusLabel }}</UBadge>
+      <DeviceStatus :online="device.online" link="cloud" />
     </template>
 
     <template #content>
@@ -22,10 +21,9 @@
 
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { useDeviceCard } from '@/composables/useDeviceCard'
-import { getStatusColor } from '@/utils/device'
 import type { TranquilDevice } from '@/lib/api/mappers/deviceMapper'
 import BaseDeviceCard from './BaseDeviceCard.vue'
+import DeviceStatus from './DeviceStatus.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 
 const props = defineProps<{ device: TranquilDevice }>()
@@ -35,8 +33,6 @@ const emit = defineEmits<{
 }>()
 
 const device = toRef(props, 'device')
-const { statusLabel } = useDeviceCard(device)
 
 const displayName = computed(() => device.value.settings?.displayName || device.value.id)
-const statusColor = computed(() => getStatusColor(device.value.online))
 </script>

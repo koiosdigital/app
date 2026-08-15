@@ -12,7 +12,7 @@
   justify-content: center;
   flex: 1;
   min-height: 0;
-  background-color: #09090b;
+  background-color: var(--k-ground);
 
   /* Break out of AppLayout's safe-area padding so backgrounds extend
      edge-to-edge (behind the status bar, home indicator, notches). */

@@ -3,7 +3,7 @@
     <template #header>
       <div class="flex items-center justify-between gap-3">
         <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Security</p>
+          <p class="k-eyebrow">Security</p>
           <p class="text-lg font-medium">Two-factor authentication</p>
         </div>
         <UButton

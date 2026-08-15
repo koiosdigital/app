@@ -8,7 +8,7 @@
         :class="statusColor === 'primary' ? 'ring-2 ring-primary-500/50' : ''"
       />
       <div>
-        <p class="text-xs uppercase tracking-[0.3em] text-white/60">{{ device.location }}</p>
+        <p class="k-eyebrow">{{ device.location }}</p>
         <p class="text-lg font-semibold">{{ device.name }}</p>
       </div>
     </div>

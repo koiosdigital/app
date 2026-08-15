@@ -1,19 +1,21 @@
 <template>
   <div class="page-layout">
     <header class="page-header">
-      <div class="flex items-center gap-4">
+      <div class="flex min-w-0 items-center gap-1">
         <UButton
           v-if="backRoute"
           color="neutral"
           variant="ghost"
-          icon="i-fa6-solid:arrow-left"
+          icon="i-fa6-solid:chevron-left"
           square
+          size="lg"
+          class="-ml-2"
           aria-label="Go back"
           @click="router.push(backRoute)"
         />
-        <h1 class="text-xl font-semibold">{{ title }}</h1>
+        <h1 class="page-title">{{ title }}</h1>
       </div>
-      <div v-if="actions.length" class="flex items-center gap-2">
+      <div v-if="actions.length" class="-mr-2 flex shrink-0 items-center">
         <UButton
           v-for="(action, i) in actions"
           :key="i"
@@ -21,6 +23,7 @@
           variant="ghost"
           :icon="action.icon"
           square
+          size="lg"
           :aria-label="action.label"
           @click="action.onClick"
         />
@@ -29,17 +32,15 @@
     <main ref="scrollContainer" class="page-content" :class="{ 'has-refresh': !!onRefresh }">
       <!-- Pull-to-refresh indicator — grows in flow as the user pulls. -->
       <div v-if="onRefresh" class="pull-indicator" :style="indicatorStyle" aria-hidden="true">
-        <UIcon
-          v-if="phase === 'refreshing'"
-          name="i-fa6-solid:spinner"
-          class="h-5 w-5 animate-spin text-white/70"
-        />
-        <UIcon
-          v-else
-          name="i-fa6-solid:arrow-down"
-          class="h-5 w-5 text-white/70 transition-transform duration-150"
-          :class="{ 'rotate-180': phase === 'ready' }"
-          :style="{ opacity: Math.min(1, pullDistance / threshold) }"
+        <!-- The indicator lights up as it arms, so the gesture reads the same
+             way device state does everywhere else in the app. -->
+        <span
+          class="pull-dot"
+          :class="{
+            'pull-dot--armed': phase === 'ready' || phase === 'refreshing',
+            'pull-dot--spinning': phase === 'refreshing',
+          }"
+          :style="{ opacity: phase === 'idle' ? 0 : Math.min(1, pullDistance / threshold) }"
         />
       </div>
 
@@ -90,7 +91,7 @@ const indicatorStyle = computed(() => ({
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  background-color: #09090b;
+  background-color: var(--k-ground);
 }
 
 .page-header {
@@ -98,10 +99,23 @@ const indicatorStyle = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(9, 9, 11, 0.95);
-  backdrop-filter: blur(8px);
+  gap: 0.75rem;
+  /* Tighter vertically than before: on a phone the header is overhead, and
+     the 44px controls already guarantee a comfortable touch target. */
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--k-line-soft);
+  background-color: rgb(11 10 9 / 0.82);
+  backdrop-filter: blur(14px) saturate(1.3);
+}
+
+.page-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ui-text-highlighted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .page-content {
@@ -123,5 +137,40 @@ const indicatorStyle = computed(() => ({
   overflow: hidden;
   flex-shrink: 0;
   will-change: height;
+}
+
+.pull-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1.5px #453d36;
+  transition:
+    background 0.2s var(--k-ease),
+    box-shadow 0.2s var(--k-ease),
+    opacity 0.15s linear;
+}
+
+/* Past the threshold the dot lights: release now and it refreshes. */
+.pull-dot--armed {
+  background: var(--k-ember);
+  box-shadow:
+    0 0 0 2px rgb(231 145 20 / 0.16),
+    0 0 10px 1px rgb(231 145 20 / 0.85);
+}
+
+.pull-dot--spinning {
+  animation: pull-pulse 1s ease-in-out infinite;
+}
+
+@keyframes pull-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.72);
+    opacity: 0.55;
+  }
 }
 </style>

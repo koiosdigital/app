@@ -10,13 +10,17 @@
       >
         Back
       </UButton>
-      <div>
-        <p v-if="eyebrow" class="text-xs uppercase tracking-wide text-white/50">{{ eyebrow }}</p>
-        <h1 class="text-2xl font-semibold">{{ title }}</h1>
-        <p v-if="description" class="text-sm text-white/70">{{ description }}</p>
+      <div class="min-w-0">
+        <p v-if="eyebrow" class="k-eyebrow">{{ eyebrow }}</p>
+        <h1 class="text-xl font-semibold tracking-tight text-highlighted">
+          {{ title }}
+        </h1>
+        <p v-if="description" class="mt-0.5 text-sm text-muted">{{ description }}</p>
       </div>
     </header>
-    <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+    <div
+      class="rounded-[14px] border border-default bg-muted p-4 shadow-[inset_0_1px_0_rgb(255_255_255/0.055)]"
+    >
       <slot />
     </div>
   </section>

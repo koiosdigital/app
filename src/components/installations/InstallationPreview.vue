@@ -90,16 +90,21 @@ const stateIconClass = computed(() => {
   width: 100%;
 }
 
+/* Housing, not a flat swatch: a warm moulding with a lit top edge, so the
+   panel reads as a physical object rather than a bordered image. */
 .matrix-frame.has-frame {
-  padding: 6px;
-  background: #27272a; /* zinc-800 */
-  border-radius: 0.5rem;
+  padding: 7px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #241f1b, #171412);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 2px 6px rgb(0 0 0 / 0.5);
 }
 
 .matrix-screen {
   width: 100%;
-  background: black;
-  border-radius: 2px;
+  background: #050505;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
 }

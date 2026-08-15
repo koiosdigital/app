@@ -1,6 +1,6 @@
 <template>
   <PageLayout :on-refresh="loadDevices">
-    <section class="flex flex-col gap-6 px-5 py-6">
+    <section class="flex flex-col gap-5 px-4 py-4">
       <!-- Ownership transfers addressed to this account (accept from here or
            via the ?transfer= email deeplink). -->
       <PendingTransfersBanner @accepted="loadDevices" />
@@ -9,7 +9,7 @@
            cloud account devices, deduped by device_id. -->
       <div
         v-if="loading || visibleLocalDevices.length || sortedDevices.length"
-        class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+        class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
       >
         <template v-for="local in visibleLocalDevices" :key="local.id">
           <TranquilDeviceCard
@@ -20,10 +20,19 @@
           />
           <LocalDeviceCard v-else :device="local" @open="openLocalDevice" />
         </template>
+        <!-- Skeletons mirror the card's own anatomy — eyebrow, name, screen —
+             so the layout doesn't jump when the real devices land. -->
         <template v-if="loading">
-          <UCard v-for="i in 3" :key="i" class="bg-white/5">
-            <USkeleton class="h-32 w-full" />
-          </UCard>
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="flex h-full flex-col rounded-[14px] border border-default bg-muted p-3.5"
+          >
+            <USkeleton class="h-2.5 w-20 rounded-full" />
+            <USkeleton class="mt-2.5 h-4 w-32 rounded" />
+            <USkeleton class="mt-2 h-2.5 w-24 rounded-full" />
+            <USkeleton class="mt-4 h-24 w-full rounded-lg" />
+          </div>
         </template>
         <template v-else-if="!error">
           <template v-for="device in sortedDevices" :key="device.id">
@@ -60,17 +69,32 @@
 
       <div
         v-if="!loading && error"
-        class="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-center"
+        class="flex flex-col items-center gap-3 rounded-[14px] border border-error/25 bg-error/10 px-5 py-6 text-center"
       >
-        <p class="text-red-400">{{ error }}</p>
-        <UButton color="neutral" variant="soft" class="mt-4" @click="loadDevices"> Retry </UButton>
+        <span class="k-lamp k-lamp--fault" aria-hidden="true" />
+        <p class="text-sm text-default">{{ error }}</p>
+        <UButton color="neutral" variant="soft" size="sm" @click="loadDevices">Try again</UButton>
       </div>
 
+      <!-- Empty state earns its space: say what to do next, not just that
+           there is nothing here. -->
       <div
         v-else-if="!loading && !visibleLocalDevices.length && !sortedDevices.length"
-        class="rounded-lg border border-dashed border-white/20 p-6 text-center text-white/70"
+        class="flex flex-col items-center gap-3 rounded-[14px] border border-dashed border-default px-5 py-10 text-center"
       >
-        No devices yet. Add your first Koios Digital product to get started.
+        <p class="k-eyebrow">No devices yet</p>
+        <p class="max-w-[34ch] text-sm text-muted">
+          Pair a Koios device to see it here. Anything already on this network shows up on its own.
+        </p>
+        <UButton
+          color="primary"
+          size="sm"
+          icon="i-fa6-solid:plus"
+          class="mt-1"
+          @click="router.push('/setup/new')"
+        >
+          Add a device
+        </UButton>
       </div>
     </section>
   </PageLayout>
@@ -99,7 +123,12 @@ import {
 import { useLocalDevicesStore } from '@/stores/localDevices'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import { useClockLocalStore } from '@/stores/clockLocal'
-import { CLOCK_TYPES, isClockType, type LocalDevice, normalizeKoiosType } from '@/lib/mdns/discovery'
+import {
+  CLOCK_TYPES,
+  isClockType,
+  type LocalDevice,
+  normalizeKoiosType,
+} from '@/lib/mdns/discovery'
 
 useHead({
   title: 'Devices | Koios Digital',

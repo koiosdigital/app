@@ -3,24 +3,25 @@
     :eyebrow="eyebrow"
     :title="title"
     :subtitle="subtitle"
-    card-background-class="bg-white/5"
     @click="emit('open', device)"
   >
     <template #header-end>
-      <UBadge color="success" variant="soft" icon="i-fa6-solid:wifi">On network</UBadge>
+      <DeviceStatus :online="true" link="lan" />
     </template>
 
     <template #content>
-      <div class="flex w-full flex-col gap-1 text-sm text-white/70">
-        <div class="flex items-center gap-2">
-          <UIcon name="i-fa6-solid:location-dot" class="h-4 w-4 text-white/40" />
-          <span class="font-mono">{{ device.address ?? 'Resolving…' }}</span>
+      <!-- Nothing to preview yet for this family, so show the two facts that
+           make a freshly-discovered device identifiable on the network. -->
+      <dl class="w-full space-y-2 py-1">
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="k-eyebrow">Address</dt>
+          <dd class="k-num text-xs text-default">{{ device.address ?? 'Resolving…' }}</dd>
         </div>
-        <div v-if="device.version" class="flex items-center gap-2">
-          <UIcon name="i-fa6-solid:microchip" class="h-4 w-4 text-white/40" />
-          <span>{{ device.version }}</span>
+        <div v-if="device.version" class="flex items-baseline justify-between gap-3">
+          <dt class="k-eyebrow">Firmware</dt>
+          <dd class="k-num text-xs text-default">{{ device.version }}</dd>
         </div>
-      </div>
+      </dl>
     </template>
   </BaseDeviceCard>
 </template>
@@ -29,6 +30,7 @@
 import { computed, toRef } from 'vue'
 import type { LocalDevice } from '@/lib/mdns/discovery'
 import BaseDeviceCard from './BaseDeviceCard.vue'
+import DeviceStatus from './DeviceStatus.vue'
 
 const props = defineProps<{ device: LocalDevice }>()
 

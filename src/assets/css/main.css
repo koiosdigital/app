@@ -1,8 +1,43 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
-/* Brand color palette based on #e79114 - used by Nuxt UI as primary */
+/* ============================================================
+   Typefaces — Chivo for UI, Spline Sans Mono for data.
+   Both variable, latin subset, SIL OFL 1.1. Self-hosted so the
+   native (Capacitor) build never waits on a font CDN.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Chivo';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('@/assets/fonts/chivo-var.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Spline Sans Mono';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('@/assets/fonts/spline-sans-mono-var.woff2') format('woff2');
+}
+
+@theme {
+  --font-sans: 'Chivo', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ============================================================
+   Palette
+   These are objects that emit light in a dim room, so the UI is
+   the dark room and the accent is the light. The neutral ramp is
+   hue-biased toward the ember rather than a stock cool grey — it
+   is what makes the surfaces read as chosen instead of default.
+   ============================================================ */
+
 :root {
+  /* Brand ember, built from #e79114 */
   --ui-color-primary-50: #fef9ec;
   --ui-color-primary-100: #fcf0c9;
   --ui-color-primary-200: #f8df8f;
@@ -14,42 +49,249 @@
   --ui-color-primary-800: #8c3d14;
   --ui-color-primary-900: #733314;
   --ui-color-primary-950: #421906;
+
+  /* Warm graphite replaces zinc across every Nuxt UI component */
+  --ui-color-neutral-50: #faf8f6;
+  --ui-color-neutral-100: #f2efec;
+  --ui-color-neutral-200: #e8e2da;
+  --ui-color-neutral-300: #c9c1b8;
+  --ui-color-neutral-400: #a2988e;
+  --ui-color-neutral-500: #7d746b;
+  --ui-color-neutral-600: #5d554e;
+  --ui-color-neutral-700: #3a322b;
+  --ui-color-neutral-800: #2b2521;
+  --ui-color-neutral-900: #1a1715;
+  --ui-color-neutral-950: #0b0a09;
+
+  /* Status hues sit away from the ember on purpose: a device that is
+     merely reachable must never be mistaken for one asking for attention. */
+  --ui-color-success-400: #6fd3ae;
+  --ui-color-success-500: #4fc29a;
+  --ui-color-success-600: #35a381;
+  --ui-color-error-400: #ef7d76;
+  --ui-color-error-500: #e2564f;
+  --ui-color-error-600: #c73f39;
+
+  --ui-radius: 0.625rem;
+
+  /* App surfaces, referenced by the primitives below */
+  --k-ground: #0b0a09;
+  --k-panel: #141211;
+  --k-panel-2: #191614;
+  --k-raised: #221e1a;
+  --k-line: #2b2521;
+  --k-line-soft: #1f1b18;
+  --k-ember: #e79114;
+  --k-ember-hi: #f2b42d;
+  --k-live: #4fc29a;
+  --k-alert: #e2564f;
+
+  --k-bezel: inset 0 1px 0 rgb(255 255 255 / 0.055);
+  --k-lift: 0 1px 2px rgb(0 0 0 / 0.5), 0 12px 28px -18px rgb(0 0 0 / 0.9);
+  --k-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* The app is dark-only by design; `dark` is set on <html>. These win over
+   Nuxt UI's own @layer theme defaults because they are unlayered. */
+.dark {
+  --ui-bg: #0b0a09;
+  --ui-bg-muted: #141211;
+  --ui-bg-elevated: #1a1715;
+  --ui-bg-accented: #221e1a;
+  --ui-bg-inverted: #f6f2ec;
+
+  --ui-border: #2b2521;
+  --ui-border-muted: #1f1b18;
+  --ui-border-accented: #3a322b;
+
+  --ui-text-dimmed: #6d655d;
+  --ui-text-muted: #a2988e;
+  --ui-text-toned: #c9c1b8;
+  --ui-text: #e8e2da;
+  --ui-text-highlighted: #f6f2ec;
+  --ui-text-inverted: #0b0a09;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
 
 html,
 body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #09090b;
+  background-color: var(--k-ground);
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 #app {
   height: 100%;
-  background-color: #09090b;
+  background-color: var(--k-ground);
 }
 
-/* Custom scrollbars */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+::selection {
+  background: rgb(231 145 20 / 0.36);
+  color: #f6f2ec;
+}
+
+/* ============================================================
+   Design primitives
+   Small, composable classes for the vocabulary the redesign
+   leans on: labels, readouts, status light, and device framing.
+   ============================================================ */
+
+/* Uppercase mono label above a title. */
+.k-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ui-text-dimmed);
+}
+
+/* Anything that is a reading, an ID, a timestamp or a percentage. */
+.k-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Status as light: a reachable device glows, an unreachable one is a
+   hollow ring. Legible at a glance and it still works when the phone is
+   at arm's length or the screen is dimmed. */
+.k-lamp {
+  position: relative;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: none;
+}
+.k-lamp--on {
+  background: var(--k-live);
+  box-shadow:
+    0 0 0 2px rgb(79 194 154 / 0.16),
+    0 0 9px 1px rgb(79 194 154 / 0.85);
+}
+.k-lamp--ember {
+  background: var(--k-ember);
+  box-shadow:
+    0 0 0 2px rgb(231 145 20 / 0.16),
+    0 0 9px 1px rgb(231 145 20 / 0.85);
+}
+.k-lamp--fault {
+  background: var(--k-alert);
+  box-shadow:
+    0 0 0 2px rgb(226 86 79 / 0.16),
+    0 0 9px 1px rgb(226 86 79 / 0.8);
+}
+.k-lamp--off {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px #453d36;
+}
+
+/* Compact metadata pill — quieter than a UBadge, mono so it reads as data. */
+.k-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 21px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ui-text-muted);
+  background: rgb(255 255 255 / 0.04);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.055);
+}
+.k-chip--live {
+  color: #86ddbc;
+  background: rgb(79 194 154 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(79 194 154 / 0.22);
+}
+.k-chip--ember {
+  color: var(--k-ember-hi);
+  background: rgb(231 145 20 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(231 145 20 / 0.22);
+}
+.k-chip--alert {
+  color: #f08c86;
+  background: rgb(226 86 79 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(226 86 79 / 0.22);
+}
+
+/* Housing around a device's own display — the moulding that catches light. */
+.k-bezel {
+  padding: 7px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #241f1b, #171412);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 2px 6px rgb(0 0 0 / 0.5);
+}
+.k-screen {
+  border-radius: 4px;
+  background: #050505;
+  overflow: hidden;
+}
+
+.k-hairline {
+  height: 1px;
+  border: 0;
+  background: var(--k-line-soft);
+}
+
+/* ============================================================
+   Scrollbars
+   ============================================================ */
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: #2f2924;
+  border-radius: 9px;
+  border: 2px solid var(--k-ground);
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #3d352e;
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-color: #2f2924 transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

@@ -3,11 +3,12 @@
     eyebrow="Sand table"
     :title="title"
     :subtitle="subtitle"
-    card-background-class="bg-white/5"
+    lit
+    bloom="rgb(216 196 160 / 0.10)"
     @click="emit('open', device)"
   >
     <template #header-end>
-      <UBadge color="success" variant="soft" icon="i-fa6-solid:wifi">On network</UBadge>
+      <DeviceStatus :online="true" link="lan" />
     </template>
 
     <template #content>
@@ -15,11 +16,12 @@
         <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
         <div
           v-if="playerState && playerState.state !== 'STOPPED'"
-          class="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm"
+          class="player-badge"
+          :class="{ 'player-badge--live': playerState.state === 'PLAYING' }"
         >
           <UIcon
             :name="playerState.state === 'PLAYING' ? 'i-fa6-solid:play' : 'i-fa6-solid:pause'"
-            class="h-3.5 w-3.5"
+            class="h-3 w-3"
           />
         </div>
       </div>
@@ -27,7 +29,7 @@
 
     <template #actions>
       <div class="flex w-full items-center justify-between">
-        <span class="text-sm text-white/60">{{ stateLabel }}</span>
+        <span class="k-num text-xs text-muted">{{ stateLabel }}</span>
         <UButton
           size="sm"
           color="neutral"
@@ -48,6 +50,7 @@ import type { LocalDevice } from '@/lib/mdns/discovery'
 import { createTranquilRest } from '@/lib/tranquil/local/rest'
 import type { PlayerState } from '@/lib/tranquil/local/types'
 import BaseDeviceCard from './BaseDeviceCard.vue'
+import DeviceStatus from './DeviceStatus.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 
 const props = defineProps<{ device: LocalDevice }>()
@@ -103,3 +106,29 @@ const stateLabel = computed(() => {
   }
 })
 </script>
+
+<style scoped>
+.player-badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: rgb(255 255 255 / 0.75);
+  background: rgb(8 6 5 / 0.72);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(4px);
+}
+
+/* Playing is a device doing work — give it the ember, dimly. */
+.player-badge--live {
+  color: var(--k-ember-hi);
+  box-shadow:
+    inset 0 0 0 1px rgb(231 145 20 / 0.35),
+    0 0 12px -2px rgb(231 145 20 / 0.55);
+}
+</style>

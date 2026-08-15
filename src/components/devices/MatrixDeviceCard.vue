@@ -2,14 +2,12 @@
   <BaseDeviceCard
     eyebrow="Smart matrix"
     :title="displayName"
-    :subtitle="`${device.installationCount} app${
-      device.installationCount !== 1 ? 's' : ''
-    } installed`"
-    card-background-class="bg-white/5"
+    :subtitle="subtitle"
+    :lit="isLit"
     @click="handleOpen"
   >
     <template #header-end>
-      <UBadge :color="statusColor" variant="soft">{{ statusLabel }}</UBadge>
+      <DeviceStatus :online="device.online" link="cloud" />
     </template>
 
     <template #content>
@@ -27,12 +25,15 @@
           :show-label="false"
         />
         <!-- Show empty/off state when no installation is displaying -->
-        <div v-else class="empty-preview-frame">
+        <div v-else class="k-bezel">
           <div
-            class="empty-preview-screen"
+            class="k-screen empty-preview-screen"
             :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
           >
-            <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white/30" />
+            <UIcon
+              :name="screenEnabled ? 'i-fa6-regular:image' : 'i-fa6-solid:power-off'"
+              class="h-5 w-5 text-white/25"
+            />
           </div>
         </div>
       </div>
@@ -65,10 +66,9 @@
 
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { useDeviceCard } from '@/composables/useDeviceCard'
-import { getStatusColor } from '@/utils/device'
 import type { MatrxDevice } from '@/lib/api/mappers/deviceMapper'
 import BaseDeviceCard from './BaseDeviceCard.vue'
+import DeviceStatus from './DeviceStatus.vue'
 import InstallationPreview from '../installations/InstallationPreview.vue'
 
 const props = defineProps<{ device: MatrxDevice }>()
@@ -80,7 +80,6 @@ const emit = defineEmits<{
 }>()
 
 const device = toRef(props, 'device')
-const { statusLabel } = useDeviceCard(device)
 
 const screenEnabled = computed(() => device.value.settings?.typeSettings?.screenEnabled ?? true)
 
@@ -89,7 +88,16 @@ const displayName = computed(() => device.value.settings?.displayName || device.
 const deviceWidth = computed(() => device.value.settings?.width ?? 64)
 const deviceHeight = computed(() => device.value.settings?.height ?? 32)
 
-const statusColor = computed(() => getStatusColor(device.value.online))
+/** The panel is actually emitting light — the card glows with it. */
+const isLit = computed(() => device.value.online && screenEnabled.value)
+
+// One line that answers "what is it doing?" before "what is installed on it?".
+const subtitle = computed(() => {
+  if (!device.value.online) return 'Unreachable'
+  if (!screenEnabled.value) return 'Screen off'
+  const n = device.value.installationCount
+  return `${n} app${n !== 1 ? 's' : ''} in rotation`
+})
 
 const handleOpen = () => {
   emit('open', device.value.id)
@@ -102,17 +110,10 @@ const handleOpen = () => {
   max-width: 100%;
 }
 
-.empty-preview-frame {
-  width: 100%;
-  padding: 6px;
-  background: #27272a;
-  border-radius: 0.5rem;
-}
-
+/* Frame and screen come from the shared .k-bezel / .k-screen primitives so
+   every matrix preview in the app is moulded the same way. */
 .empty-preview-screen {
   width: 100%;
-  background: black;
-  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;

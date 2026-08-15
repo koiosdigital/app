@@ -62,7 +62,7 @@
         <UCard v-if="editingProfile" class="bg-white/5">
           <template #header>
             <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Profile</p>
+              <p class="k-eyebrow">Profile</p>
               <p class="text-lg font-medium">Personal information</p>
             </div>
           </template>
@@ -125,7 +125,7 @@
               <UCard class="bg-white/5">
                 <template #header>
                   <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-white/60">Account</p>
+                    <p class="k-eyebrow">Account</p>
                     <p class="text-lg font-medium">Email address</p>
                   </div>
                 </template>
@@ -180,7 +180,7 @@
               <UCard v-if="hasPassword" class="bg-white/5">
                 <template #header>
                   <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-white/60">Security</p>
+                    <p class="k-eyebrow">Security</p>
                     <p class="text-lg font-medium">Password</p>
                   </div>
                 </template>
@@ -228,9 +228,7 @@
                 <template #header>
                   <div class="flex items-center justify-between gap-3">
                     <div>
-                      <p class="text-xs uppercase tracking-[0.3em] text-white/60">
-                        Active sessions
-                      </p>
+                      <p class="k-eyebrow">Active sessions</p>
                       <p class="text-lg font-medium">Where you're signed in</p>
                     </div>
                     <UButton
@@ -327,7 +325,7 @@
 
       <!-- About -->
       <div class="mt-2 flex flex-col gap-3 border-t border-white/5 pt-6">
-        <p class="text-xs uppercase tracking-[0.3em] text-white/40">About</p>
+        <p class="k-eyebrow">About</p>
         <dl class="grid grid-cols-2 gap-y-2 text-sm">
           <dt class="text-white/50">App</dt>
           <dd class="text-right text-white/80">Koios Digital</dd>
@@ -403,7 +401,7 @@
       <UCard v-if="profileLoaded" class="border border-red-500/30 bg-red-500/5">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="text-xs uppercase tracking-[0.3em] text-red-300/80">Danger zone</p>
+            <p class="k-eyebrow text-error">Danger zone</p>
             <p class="text-base font-medium">Deactivate account</p>
             <p class="mt-1 text-sm text-white/60">
               Signs you out everywhere and disables your Koios ID. Contact support to reactivate.

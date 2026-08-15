@@ -1,7 +1,7 @@
 <template>
   <FullPageLayout>
     <div class="space-y-2 text-center">
-      <p class="text-xs uppercase tracking-[0.35em] text-white/60">KDID login</p>
+      <p class="k-eyebrow">KDID login</p>
       <h1 class="text-2xl font-semibold">Finishing sign-in…</h1>
       <p class="text-sm text-white/70">
         {{

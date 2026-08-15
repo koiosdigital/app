@@ -3,22 +3,23 @@
     eyebrow="Split-flap"
     :title="displayName"
     :subtitle="subtitle"
-    card-background-class="bg-white/5"
+    :lit="device.online"
+    bloom="rgb(234 223 208 / 0.07)"
     @click="handleOpen"
   >
     <template #header-end>
-      <UBadge :color="statusColor" variant="soft">{{ statusLabel }}</UBadge>
+      <DeviceStatus :online="device.online" link="cloud" />
     </template>
 
     <template #content>
       <div class="preview-container">
         <!-- Live board: render the current frame the device is showing -->
-        <div v-if="displayFlaps" class="preview-frame">
+        <div v-if="displayFlaps" class="k-bezel w-full">
           <NemotoFlapGrid :flaps="displayFlaps" />
         </div>
         <!-- Empty / off state -->
-        <div v-else class="preview-frame">
-          <div class="empty-preview-screen">
+        <div v-else class="k-bezel w-full">
+          <div class="k-screen empty-preview-screen">
             <UIcon
               :name="loadingState ? 'i-fa6-solid:spinner' : 'i-fa6-solid:table-cells'"
               class="h-5 w-5 text-white/30"
@@ -56,12 +57,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, toRef } from 'vue'
-import { useDeviceCard } from '@/composables/useDeviceCard'
-import { getStatusColor } from '@/utils/device'
 import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import { nemotoApi, type NemotoLiveState } from '@/lib/api/nemoto'
 import type { NemotoDevice } from '@/lib/api/mappers/deviceMapper'
 import BaseDeviceCard from './BaseDeviceCard.vue'
+import DeviceStatus from './DeviceStatus.vue'
 import NemotoFlapGrid from '../nemoto/NemotoFlapGrid.vue'
 
 const props = defineProps<{ device: NemotoDevice }>()
@@ -73,11 +73,9 @@ const emit = defineEmits<{
 }>()
 
 const device = toRef(props, 'device')
-const { statusLabel } = useDeviceCard(device)
 const { ensureLoaded } = useNemotoFlaps()
 
 const displayName = computed(() => device.value.settings?.displayName || device.value.id)
-const statusColor = computed(() => getStatusColor(device.value.online))
 
 // Live frame the board is currently showing (same source as the device view's
 // "Now showing"). Each card fetches its own state, mirroring how the Matrx
@@ -115,18 +113,9 @@ onMounted(async () => {
   max-width: 100%;
 }
 
-.preview-frame {
-  width: 100%;
-  padding: 8px;
-  background: #18181b;
-  border-radius: 0.5rem;
-}
-
 .empty-preview-screen {
   width: 100%;
   aspect-ratio: 22 / 6;
-  background: black;
-  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;

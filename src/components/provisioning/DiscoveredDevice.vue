@@ -2,7 +2,7 @@
   <UCard class="border-white/5 bg-white/5 backdrop-blur">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <p class="text-xs uppercase tracking-[0.3em] text-white/60">Channel {{ ap.channel }}</p>
+        <p class="k-eyebrow">Channel {{ ap.channel }}</p>
         <h3 class="text-xl font-semibold">{{ ap.ssid || 'Hidden SSID' }}</h3>
       </div>
       <UBadge :color="connected ? 'primary' : 'neutral'" variant="soft">
