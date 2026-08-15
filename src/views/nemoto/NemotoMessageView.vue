@@ -6,7 +6,6 @@
 
     <div v-else class="flex flex-col gap-5 px-5 py-6 pb-28">
       <UAlert v-if="error" color="error" icon="i-fa6-solid:circle-exclamation" :title="error" />
-      <UAlert v-if="sentMsg" :color="sentMsg.color" :icon="sentMsg.icon" :title="sentMsg.text" />
 
       <!-- Message text — laid out onto the grid as you type -->
       <UFormField label="Message" help="Typed text is laid out onto the board; tweak cells below.">
@@ -78,6 +77,9 @@ import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import { NEMOTO_EFFECT_ITEMS } from '@/lib/nemoto/effects'
 import { nemotoApi } from '@/lib/api/nemoto'
 import { getErrorMessage } from '@/lib/api/errors'
+import { useCommandToast } from '@/composables/useCommandToast'
+
+const command = useCommandToast()
 
 const props = defineProps<{ deviceId: string }>()
 
@@ -100,7 +102,6 @@ const overrideDelay = ref(0)
 const loading = ref(true)
 const sending = ref(false)
 const error = ref<string>()
-const sentMsg = ref<{ text: string; color: 'success' | 'warning'; icon: string } | null>(null)
 
 function blankGrid(w: number, h: number): number[][] {
   const bl = blankId.value
@@ -146,7 +147,6 @@ function framesMatch(a: number[][], b: number[][]): boolean {
 async function send() {
   sending.value = true
   error.value = undefined
-  sentMsg.value = null
   try {
     const res = await nemotoApi.displayFrame(props.deviceId, {
       flaps: grid.value,
@@ -155,11 +155,7 @@ async function send() {
       forceQuiet: forceQuiet.value,
     })
     if (!res.delivered) {
-      sentMsg.value = {
-        text: 'Device offline — message not delivered',
-        color: 'warning',
-        icon: 'i-fa6-solid:triangle-exclamation',
-      }
+      command.warn('Device offline', 'The message was not delivered. It will need sending again.')
       return
     }
     // The device never acks commands; verify by watching its display-state
@@ -169,17 +165,12 @@ async function send() {
     await new Promise((r) => window.setTimeout(r, 2500))
     const state = await nemotoApi.getState(props.deviceId)
     if (state.display?.flaps && framesMatch(state.display.flaps, sent)) {
-      sentMsg.value = {
-        text: 'Message is on the board',
-        color: 'success',
-        icon: 'i-fa6-solid:circle-check',
-      }
+      command.ok('Message is on the board')
     } else {
-      sentMsg.value = {
-        text: 'Sent, but the board has not confirmed it (quiet hours or grid mismatch?)',
-        color: 'warning',
-        icon: 'i-fa6-solid:triangle-exclamation',
-      }
+      command.warn(
+        'Sent, but not confirmed',
+        'The board has not echoed the frame back — quiet hours, or a grid mismatch.',
+      )
     }
   } catch (err) {
     error.value = getErrorMessage(err, 'Failed to send message')

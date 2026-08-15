@@ -57,13 +57,6 @@
       </DeviceStage>
 
       <section class="flex flex-col gap-4 px-4 py-5">
-        <UAlert
-          v-if="commandMsg"
-          :color="commandMsg.color"
-          :icon="commandMsg.icon"
-          :title="commandMsg.text"
-        />
-
         <!-- Destinations as a list, not three identical blocks: each one says
              what it is for, so you pick by purpose rather than by icon. -->
         <nav class="destinations">
@@ -95,6 +88,7 @@ import NemotoFlapGrid from '@/components/nemoto/NemotoFlapGrid.vue'
 import DeviceStage from '@/components/devices/DeviceStage.vue'
 import PageState from '@/components/PageState.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
+import { useCommandToast } from '@/composables/useCommandToast'
 import { devicesApi } from '@/lib/api/devices'
 import { nemotoApi, type NemotoLiveState } from '@/lib/api/nemoto'
 import { getErrorMessage } from '@/lib/api/errors'
@@ -103,6 +97,7 @@ import { isNemotoDevice, type NemotoDevice } from '@/lib/api/mappers/deviceMappe
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
+const command = useCommandToast()
 const deviceId = computed(() => route.params.id as string)
 
 const device = ref<NemotoDevice | null>(null)
@@ -110,11 +105,6 @@ const state = ref<NemotoLiveState | null>(null)
 const loading = ref(true)
 const error = ref<string>()
 const busy = ref<'clear' | 'refresh-display' | null>(null)
-const commandMsg = ref<{
-  text: string
-  color: 'success' | 'warning' | 'error'
-  icon: string
-} | null>(null)
 
 const hasFrame = computed(() => !!state.value?.display?.valid)
 
@@ -172,29 +162,12 @@ async function refresh() {
   }
 }
 
-function flash(text: string, color: 'success' | 'warning' | 'error', icon: string) {
-  commandMsg.value = { text, color, icon }
-  window.setTimeout(() => (commandMsg.value = null), 4000)
-}
-
-function flashDelivered(delivered: boolean, successText: string) {
-  if (delivered) {
-    flash(successText, 'success', 'i-fa6-solid:circle-check')
-  } else {
-    flash('Device offline — command not delivered', 'warning', 'i-fa6-solid:triangle-exclamation')
-  }
-}
-
 async function refreshDisplay() {
   busy.value = 'refresh-display'
   try {
     const res = await nemotoApi.refreshDisplayState(deviceId.value)
     if (!res.delivered) {
-      flash(
-        'Device offline — showing last known frame',
-        'warning',
-        'i-fa6-solid:triangle-exclamation',
-      )
+      command.warn('Device offline — showing last known frame')
       return
     }
     // The device debounces its report ~1s and the round-trip adds more; poll
@@ -207,11 +180,7 @@ async function refreshDisplay() {
       if (next.at && next.at !== before) break
     }
   } catch (err) {
-    flash(
-      getErrorMessage(err, 'Failed to refresh display'),
-      'error',
-      'i-fa6-solid:circle-exclamation',
-    )
+    command.fail(err, 'Failed to refresh display')
   } finally {
     busy.value = null
   }
@@ -221,13 +190,9 @@ async function clearDisplay() {
   busy.value = 'clear'
   try {
     const res = await nemotoApi.displayClear(deviceId.value)
-    flashDelivered(res.delivered, 'Display cleared')
+    command.delivered(res.delivered, 'Display cleared')
   } catch (err) {
-    flash(
-      getErrorMessage(err, 'Failed to clear display'),
-      'error',
-      'i-fa6-solid:circle-exclamation',
-    )
+    command.fail(err, 'Failed to clear display')
   } finally {
     busy.value = null
   }

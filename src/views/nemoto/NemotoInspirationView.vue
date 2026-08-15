@@ -71,8 +71,6 @@
 
     <!-- Browse -->
     <div v-else class="flex flex-col gap-4 px-5 py-6 pb-10">
-      <UAlert v-if="sentMsg" :color="sentMsg.color" :icon="sentMsg.icon" :title="sentMsg.text" />
-
       <UTabs v-model="tab" :items="tabItems" class="w-full" />
 
       <UAlert v-if="error" color="error" icon="i-fa6-solid:circle-exclamation" :title="error" />
@@ -189,10 +187,12 @@ import {
   type ListTodaysPicksResult,
   type VestaboardPick,
 } from '@/lib/vestaboard/queries'
+import { useCommandToast } from '@/composables/useCommandToast'
 
 const props = defineProps<{ deviceId: string }>()
 
 const { setHeader } = usePageHeader()
+const command = useCommandToast()
 const { blankId, ensureLoaded } = useNemotoFlaps()
 const vestaboard = useVestaboardStore()
 
@@ -234,7 +234,6 @@ const pending = ref<Entry | null>(null)
 const forceQuiet = ref(false)
 const sending = ref(false)
 const sendError = ref<string>()
-const sentMsg = ref<{ text: string; color: 'success' | 'warning'; icon: string } | null>(null)
 
 const isLinked = computed(() => vestaboard.isLinked)
 
@@ -359,7 +358,6 @@ async function unlink() {
 function askSend(entry: Entry) {
   pending.value = entry
   sendError.value = undefined
-  sentMsg.value = null
   showConfirm.value = true
 }
 
@@ -373,14 +371,7 @@ async function confirmSend() {
       forceQuiet: forceQuiet.value,
     })
     showConfirm.value = false
-    sentMsg.value = res.delivered
-      ? { text: 'Sent to the board', color: 'success', icon: 'i-fa6-solid:circle-check' }
-      : {
-          text: 'Device offline — message not delivered',
-          color: 'warning',
-          icon: 'i-fa6-solid:triangle-exclamation',
-        }
-    window.setTimeout(() => (sentMsg.value = null), 5000)
+    command.delivered(res.delivered, 'Sent to the board')
   } catch (err) {
     sendError.value = getErrorMessage(err, 'Failed to send message')
   } finally {

@@ -120,9 +120,14 @@
     </header>
 
     <!-- Loading State (initial) -->
-    <div v-if="initialLoading" class="flex flex-1 items-center justify-center">
-      <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
-    </div>
+    <SkeletonList
+      v-if="initialLoading"
+      variant="tile"
+      :count="6"
+      :ratio="`${deviceWidth} / ${deviceHeight}`"
+      grid-class="grid-cols-2 lg:grid-cols-3"
+      class="p-5"
+    />
 
     <!-- Error State -->
     <div v-else-if="error && apps.length === 0" class="flex flex-1 items-center justify-center p-5">
@@ -184,6 +189,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import AppCard from '@/components/apps/AppCard.vue'
+import SkeletonList from '@/components/SkeletonList.vue'
 import { appsApi, type AppManifest, type PaginationMeta } from '@/lib/api/apps'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'

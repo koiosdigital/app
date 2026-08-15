@@ -173,11 +173,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
+import { usePolling } from '@/composables/usePolling'
 import InstallationPreview from '@/components/installations/InstallationPreview.vue'
 import DeviceStage from '@/components/devices/DeviceStage.vue'
 import PageState from '@/components/PageState.vue'
@@ -210,9 +211,6 @@ const orderSnapshot = ref<InstallationListItem[] | null>(null)
 
 // Pinned state
 const unpinning = ref(false)
-
-// Polling interval
-let pollInterval: ReturnType<typeof setInterval> | null = null
 
 const deviceName = computed(
   () => device.value?.settings?.displayName || device.value?.id || 'Device',
@@ -442,19 +440,13 @@ function syncHeader() {
 
 watch(deviceName, syncHeader)
 
+// Which app is on screen changes without us asking, so keep it live — but
+// only while the user is actually looking at this page.
+usePolling(pollDeviceState, 5000)
+
 onMounted(() => {
   syncHeader()
   loadDevice()
-  // Start polling every 5 seconds
-  pollInterval = setInterval(pollDeviceState, 5000)
-})
-
-onUnmounted(() => {
-  // Clean up polling interval
-  if (pollInterval) {
-    clearInterval(pollInterval)
-    pollInterval = null
-  }
 })
 </script>
 

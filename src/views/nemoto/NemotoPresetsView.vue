@@ -33,16 +33,7 @@
         </UButton>
       </div>
 
-      <UAlert
-        v-if="commandMsg"
-        :color="commandMsg.color"
-        :icon="commandMsg.icon"
-        :title="commandMsg.text"
-      />
-
-      <div v-if="loading" class="flex items-center justify-center py-16">
-        <UIcon name="i-fa6-solid:spinner" class="h-7 w-7 animate-spin text-white/50" />
-      </div>
+      <SkeletonList v-if="loading" :count="4" />
 
       <UAlert
         v-else-if="error"
@@ -212,13 +203,16 @@ import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import NemotoFlapGrid from '@/components/nemoto/NemotoFlapGrid.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
+import { useCommandToast } from '@/composables/useCommandToast'
 import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import { nemotoApi, type NemotoPresetListItem } from '@/lib/api/nemoto'
 import { getErrorMessage } from '@/lib/api/errors'
+import SkeletonList from '@/components/SkeletonList.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
+const command = useCommandToast()
 const { ensureLoaded } = useNemotoFlaps()
 const deviceId = computed(() => route.params.id as string)
 
@@ -231,25 +225,6 @@ const showDelete = ref(false)
 const pendingDelete = ref<NemotoPresetListItem | null>(null)
 const deleting = ref(false)
 const deleteError = ref<string>()
-
-const commandMsg = ref<{
-  text: string
-  color: 'success' | 'warning' | 'error'
-  icon: string
-} | null>(null)
-
-function flash(text: string, color: 'success' | 'warning' | 'error', icon: string) {
-  commandMsg.value = { text, color, icon }
-  window.setTimeout(() => (commandMsg.value = null), 4000)
-}
-
-function flashDelivered(delivered: boolean, successText: string) {
-  if (delivered) {
-    flash(successText, 'success', 'i-fa6-solid:circle-check')
-  } else {
-    flash('Device offline — command not delivered', 'warning', 'i-fa6-solid:triangle-exclamation')
-  }
-}
 
 async function load() {
   loading.value = true
@@ -267,9 +242,9 @@ async function show(presetId: number) {
   showing.value = presetId
   try {
     const res = await nemotoApi.showPreset(deviceId.value, presetId)
-    flashDelivered(res.delivered, 'Preset shown on display')
+    command.delivered(res.delivered, 'Preset shown on display')
   } catch (err) {
-    flash(getErrorMessage(err, 'Failed to show preset'), 'error', 'i-fa6-solid:circle-exclamation')
+    command.fail(err, 'Failed to show preset')
   } finally {
     showing.value = null
   }

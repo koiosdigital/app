@@ -1,20 +1,18 @@
 <template>
-  <article
-    class="k-device-card"
-    :class="{ 'is-lit': lit }"
-    :style="{ '--bloom': bloom }"
-    role="button"
-    tabindex="0"
-    :aria-label="title"
-    @click="$emit('click')"
-    @keydown.enter.prevent="$emit('click')"
-    @keydown.space.prevent="$emit('click')"
-  >
+  <article class="k-device-card" :class="{ 'is-lit': lit }" :style="{ '--bloom': bloom }">
     <!-- Header: mono eyebrow, name, then the one line of state that matters -->
     <div class="k-device-card__head">
       <div class="k-device-card__identity">
         <p class="k-eyebrow">{{ eyebrow }}</p>
-        <h3 class="k-device-card__title">{{ title }}</h3>
+        <!-- The device name is the card's action, stretched over the whole
+             surface. A card that declares role="button" and then contains more
+             buttons is invalid, and left the footer actions unreachable to a
+             screen reader walking the page by control. -->
+        <h3 class="k-device-card__title">
+          <button type="button" class="k-device-card__open" @click="$emit('click')">
+            {{ title }}
+          </button>
+        </h3>
         <p class="k-device-card__sub k-num">{{ subtitle }}</p>
       </div>
       <!-- Named parts, not anonymous wrappers: the roster layout promotes each
@@ -135,9 +133,28 @@ defineEmits<{
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--ui-text-highlighted);
+}
+
+.k-device-card__open {
+  display: block;
+  max-width: 100%;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Stretch the hit area over the entire card. */
+.k-device-card__open::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
 }
 
 .k-device-card__sub {
@@ -156,6 +173,7 @@ defineEmits<{
 
 .k-device-card__foot {
   position: relative;
+  z-index: 2;
   margin-top: auto;
   display: flex;
   align-items: center;

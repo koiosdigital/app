@@ -15,16 +15,7 @@
         New Schedule
       </UButton>
 
-      <UAlert
-        v-if="commandMsg"
-        :color="commandMsg.color"
-        :icon="commandMsg.icon"
-        :title="commandMsg.text"
-      />
-
-      <div v-if="loading" class="flex items-center justify-center py-16">
-        <UIcon name="i-fa6-solid:spinner" class="h-7 w-7 animate-spin text-white/50" />
-      </div>
+      <SkeletonList v-if="loading" :count="4" />
 
       <UAlert
         v-else-if="error"
@@ -335,6 +326,7 @@ import { useRoute } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
+import { useCommandToast } from '@/composables/useCommandToast'
 import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import {
   buildCron,
@@ -351,12 +343,14 @@ import {
   type NemotoPresetListItem,
 } from '@/lib/api/nemoto'
 import { getErrorMessage } from '@/lib/api/errors'
+import SkeletonList from '@/components/SkeletonList.vue'
 
 type ActionType = NemotoScheduleAction['type']
 type WhenMode = 'repeating' | 'daily' | 'weekly' | 'monthly' | 'custom'
 
 const route = useRoute()
 const { setHeader } = usePageHeader()
+const command = useCommandToast()
 const { byId, groups, ensureLoaded } = useNemotoFlaps()
 const deviceId = computed(() => route.params.id as string)
 
@@ -385,12 +379,6 @@ const repeatUnits: Array<'minutes' | 'hours'> = ['minutes', 'hours']
 const presetItems = computed(() =>
   presets.value.map((p) => ({ label: `${p.name} (${p.width}×${p.height})`, value: p.presetId })),
 )
-
-const commandMsg = ref<{
-  text: string
-  color: 'success' | 'warning' | 'error'
-  icon: string
-} | null>(null)
 
 // Editor state
 const showEditor = ref(false)
@@ -579,18 +567,6 @@ const formValid = computed(
 )
 
 // ---- Data ----------------------------------------------------------------------
-function flash(text: string, color: 'success' | 'warning' | 'error', icon: string) {
-  commandMsg.value = { text, color, icon }
-  window.setTimeout(() => (commandMsg.value = null), 4000)
-}
-
-function flashDelivered(delivered: boolean, successText: string) {
-  if (delivered) {
-    flash(successText, 'success', 'i-fa6-solid:circle-check')
-  } else {
-    flash('Device offline — command not delivered', 'warning', 'i-fa6-solid:triangle-exclamation')
-  }
-}
 
 function actionLabel(action: NemotoScheduleAction): string {
   if (action.type === 'CLEAR') return 'Clear display'
@@ -694,11 +670,7 @@ async function toggleEnabled(s: NemotoSchedule, enabled: boolean) {
     await nemotoApi.updateSchedule(deviceId.value, s.scheduleId, { enabled })
     s.enabled = enabled
   } catch (err) {
-    flash(
-      getErrorMessage(err, 'Failed to update schedule'),
-      'error',
-      'i-fa6-solid:circle-exclamation',
-    )
+    command.fail(err, 'Failed to update schedule')
   }
 }
 
@@ -706,9 +678,9 @@ async function runNow(s: NemotoSchedule) {
   running.value = s.scheduleId
   try {
     const res = await nemotoApi.runScheduleNow(deviceId.value, s.scheduleId)
-    flashDelivered(res.delivered, 'Schedule run')
+    command.delivered(res.delivered, 'Schedule run')
   } catch (err) {
-    flash(getErrorMessage(err, 'Failed to run schedule'), 'error', 'i-fa6-solid:circle-exclamation')
+    command.fail(err, 'Failed to run schedule')
   } finally {
     running.value = null
   }

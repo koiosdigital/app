@@ -143,6 +143,7 @@ import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
+import { useNetworkStatus } from '@/composables/useNetworkStatus'
 import MatrixDeviceCard from '@/components/devices/MatrixDeviceCard.vue'
 import NemotoDeviceCard from '@/components/devices/NemotoDeviceCard.vue'
 import LanternDeviceCard from '@/components/devices/LanternDeviceCard.vue'
@@ -175,9 +176,12 @@ useHead({
 const router = useRouter()
 const toast = useToast()
 const { setHeader } = usePageHeader()
+const { onReconnect } = useNetworkStatus()
 const localDevicesStore = useLocalDevicesStore()
 const tranquilLocal = useTranquilLocalStore()
 const clockLocal = useClockLocalStore()
+
+let stopReconnectWatch: (() => void) | undefined
 
 const devices = ref<ApiDevice[]>([])
 const loading = ref(false)
@@ -251,8 +255,14 @@ const togglePower = async (id: string) => {
   const device = findDevice(id)
   if (!device) return
 
-  // TODO: Implement power toggle for Lantern devices when API supports it
-  console.info('Toggle power for lantern', id)
+  // TODO: Implement power toggle for Lantern devices when API supports it.
+  // Until the endpoint lands, say so — a control that silently does nothing
+  // reads as a broken app, not an unfinished feature.
+  toast.add({
+    title: 'Lantern power is not available yet',
+    description: 'The control arrives with the next lantern firmware.',
+    color: 'neutral',
+  })
 }
 
 const toggleScreen = async (id: string) => {
@@ -310,12 +320,13 @@ const toggleScreen = async (id: string) => {
 }
 
 const handleSendTouch = async (id: string) => {
-  try {
-    // TODO: Implement send touch API call
-    console.info('Send touch to', id)
-  } catch (err) {
-    console.error('Failed to send touch:', err)
-  }
+  // TODO: Implement send touch API call.
+  void id
+  toast.add({
+    title: 'Touch is not available yet',
+    description: 'Sending a touch needs the next lantern firmware.',
+    color: 'neutral',
+  })
 }
 
 const deviceBasePath = (device: ApiDevice) => {
@@ -381,11 +392,15 @@ onMounted(() => {
     ],
   })
   loadDevices()
+  // Anything that failed while the phone was dark is worth fetching again the
+  // moment it isn't.
+  stopReconnectWatch = onReconnect(loadDevices)
   // Native-only; a no-op on web (store.supported === false).
   localDevicesStore.start()
 })
 
 onUnmounted(() => {
+  stopReconnectWatch?.()
   localDevicesStore.stop()
 })
 </script>

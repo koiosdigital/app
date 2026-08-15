@@ -261,6 +261,26 @@ h3 {
   background: var(--k-line-soft);
 }
 
+/* Keyboard focus for the app's own interactive surfaces. Nuxt UI components
+   bring their own ring, so this is deliberately scoped to hand-built controls
+   rather than applied to every element — otherwise UButton draws two. */
+.k-device-card:focus-within,
+.app-tile:focus-visible,
+.destination:focus-visible,
+.control__link:focus-visible,
+.transport__btn:focus-visible,
+.transport__play:focus-visible,
+.lantern:focus-visible {
+  outline: 2px solid var(--k-ember);
+  outline-offset: 2px;
+}
+
+/* The card itself shows the ring; its title button would only draw a second,
+   tighter one inside it. */
+.k-device-card__open:focus-visible {
+  outline: none;
+}
+
 /* ============================================================
    Scrollbars
    ============================================================ */

@@ -1,11 +1,18 @@
 <template>
   <UApp>
     <div class="app-container">
+      <!-- Sits above the routed page so it pushes content down instead of
+           covering a sticky header. -->
+      <OfflineBanner />
       <slot />
     </div>
     <div id="app-footer"></div>
   </UApp>
 </template>
+
+<script setup lang="ts">
+import OfflineBanner from '@/components/OfflineBanner.vue'
+</script>
 
 <style scoped>
 .app-container {
