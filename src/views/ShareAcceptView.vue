@@ -9,8 +9,8 @@
 
       <!-- Success -->
       <div v-else-if="result" class="space-y-4">
-        <UIcon name="i-fa6-solid:circle-check" class="mx-auto h-12 w-12 text-green-400" />
-        <p class="font-medium text-green-400">{{ result.message }}</p>
+        <UIcon name="i-fa6-solid:circle-check" class="mx-auto h-12 w-12 text-success" />
+        <p class="font-medium text-success">{{ result.message }}</p>
         <p class="text-white/70">
           You now have access to <span class="font-medium">{{ result.deviceName }}</span>
         </p>
@@ -19,8 +19,8 @@
 
       <!-- Error -->
       <div v-else-if="errorMessage" class="space-y-4">
-        <UIcon name="i-fa6-solid:circle-exclamation" class="mx-auto h-12 w-12 text-red-400" />
-        <p class="font-medium text-red-400">Failed to accept invitation</p>
+        <UIcon name="i-fa6-solid:circle-exclamation" class="mx-auto h-12 w-12 text-error" />
+        <p class="font-medium text-error">Failed to accept invitation</p>
         <p class="text-sm text-white/50">{{ errorMessage }}</p>
         <UButton color="neutral" variant="soft" @click="goHome"> Go to Home </UButton>
       </div>

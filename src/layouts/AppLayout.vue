@@ -1,5 +1,5 @@
 <template>
-  <UApp>
+  <UApp :toaster="{ position: toastPosition }">
     <div class="app-container">
       <!-- Sits above the routed page so it pushes content down instead of
            covering a sticky header. -->
@@ -11,7 +11,27 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeUnmount, ref } from 'vue'
 import OfflineBanner from '@/components/OfflineBanner.vue'
+
+/**
+ * Toasts go top-center on phones. The bottom of the screen belongs to the
+ * thumb — and to the fixed tab bar teleported into #app-footer — so a toast
+ * landing there covers the controls the user just reached for. Nuxt UI derives
+ * the swipe-to-dismiss direction from this too, so a top toast correctly
+ * dismisses upward.
+ */
+const COMPACT = '(max-width: 768px)'
+const compact = window.matchMedia(COMPACT)
+const toastPosition = ref<'top-center' | 'bottom-right'>(
+  compact.matches ? 'top-center' : 'bottom-right',
+)
+
+const onChange = (e: MediaQueryListEvent) => {
+  toastPosition.value = e.matches ? 'top-center' : 'bottom-right'
+}
+compact.addEventListener('change', onChange)
+onBeforeUnmount(() => compact.removeEventListener('change', onChange))
 </script>
 
 <style scoped>

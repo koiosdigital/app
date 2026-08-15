@@ -66,7 +66,7 @@
           >
             {{ downloadPct(pattern.uuid) }}%
           </span>
-          <UIcon v-else name="i-fa6-solid:circle-check" class="h-4 w-4 text-green-400" />
+          <UIcon v-else name="i-fa6-solid:circle-check" class="h-4 w-4 text-success" />
         </div>
       </div>
 

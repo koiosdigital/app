@@ -71,6 +71,29 @@
   --ui-color-error-400: #ef7d76;
   --ui-color-error-500: #e2564f;
   --ui-color-error-600: #c73f39;
+  /* Gold, pushed off the ember's hue so "caution" and "brand" stay separable. */
+  --ui-color-warning-400: #e8bb63;
+  --ui-color-warning-500: #d9a441;
+  --ui-color-warning-600: #b8842c;
+  /* Info is deliberately the only cool hue in the system; used sparingly. */
+  --ui-color-info-400: #8bb4d8;
+  --ui-color-info-500: #6e9bc5;
+  --ui-color-info-600: #557ea6;
+  --ui-color-secondary-400: #8bb4d8;
+  --ui-color-secondary-500: #6e9bc5;
+  --ui-color-secondary-600: #557ea6;
+
+  /* Semantic aliases.
+     Tailwind maps `bg-primary` / `text-error` / `color="success"` onto these,
+     but in Vue (non-Nuxt) mode nothing generates them — the app has to. They
+     were never defined here, so every one of those utilities resolved to an
+     undefined variable and rendered with no colour at all. */
+  --ui-primary: var(--ui-color-primary-500);
+  --ui-secondary: var(--ui-color-secondary-500);
+  --ui-success: var(--ui-color-success-500);
+  --ui-info: var(--ui-color-info-500);
+  --ui-warning: var(--ui-color-warning-500);
+  --ui-error: var(--ui-color-error-500);
 
   --ui-radius: 0.625rem;
 
@@ -110,6 +133,14 @@
   --ui-text: #e8e2da;
   --ui-text-highlighted: #f6f2ec;
   --ui-text-inverted: #0b0a09;
+
+  /* One step lighter against a near-black ground, where the 500s go muddy. */
+  --ui-primary: var(--ui-color-primary-400);
+  --ui-secondary: var(--ui-color-secondary-400);
+  --ui-success: var(--ui-color-success-400);
+  --ui-info: var(--ui-color-info-400);
+  --ui-warning: var(--ui-color-warning-400);
+  --ui-error: var(--ui-color-error-400);
 }
 
 /* ============================================================
@@ -182,6 +213,11 @@ h3 {
   height: 7px;
   border-radius: 999px;
   flex: none;
+  /* A device coming online should read as something lighting up, not as a
+     dot being swapped out. */
+  transition:
+    background 0.4s var(--k-ease),
+    box-shadow 0.4s var(--k-ease);
 }
 .k-lamp--on {
   background: var(--k-live);
@@ -261,6 +297,79 @@ h3 {
   background: var(--k-line-soft);
 }
 
+/* ============================================================
+   Motion
+   Two ideas only: content rises into place, and pages cross over.
+   Everything is short enough to feel like response rather than
+   choreography, and the reduced-motion block at the bottom of this
+   file neutralises all of it.
+   ============================================================ */
+
+@keyframes k-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Stagger a list's children. Applied to the container, so adding items to a
+   template costs nothing — and because Vue patches keyed nodes in place, only
+   genuinely new rows animate, not every re-render. */
+.k-stagger > * {
+  animation: k-rise 0.3s var(--k-ease) both;
+}
+.k-stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.k-stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.k-stagger > *:nth-child(4) {
+  animation-delay: 115ms;
+}
+.k-stagger > *:nth-child(5) {
+  animation-delay: 145ms;
+}
+.k-stagger > *:nth-child(6) {
+  animation-delay: 170ms;
+}
+/* Anything past the sixth arrives together — a long list should not have the
+   tail still animating after the user has started scrolling it. */
+.k-stagger > *:nth-child(n + 7) {
+  animation-delay: 190ms;
+}
+
+/* Route changes: opacity only, deliberately.
+   The routed page is a flex child sized to exactly fill the app shell, so it
+   has no slack to move into — translating it even 6px pushed its bottom edge
+   past the shell, the document grew a scrollbar for the length of the
+   transition, and the scrollbar's width shunted the whole viewport sideways
+   and back. A list item can afford to rise because it sits inside a padded
+   scroll container; a full-height page cannot. */
+.page-enter-active {
+  transition: opacity 0.2s ease;
+}
+.page-leave-active {
+  transition: opacity 0.12s ease;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+
+/* Toasts sit top-center on phones (see AppLayout), where the status bar and
+   any notch would otherwise clip them. The toaster portals outside the
+   safe-area-padded app container, so it has to inset itself. */
+@media (max-width: 768px) {
+  [data-slot='viewport'] {
+    padding-top: calc(0.75rem + env(safe-area-inset-top));
+  }
+}
+
 /* Keyboard focus for the app's own interactive surfaces. Nuxt UI components
    bring their own ring, so this is deliberately scoped to hand-built controls
    rather than applied to every element — otherwise UButton draws two. */
@@ -311,6 +420,9 @@ h3 {
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    /* Without this, a staggered item stays at its from-state (invisible) for
+       the length of its delay and then pops in — worse than no animation. */
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }

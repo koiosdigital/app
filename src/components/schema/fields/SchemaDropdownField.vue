@@ -14,7 +14,7 @@
         <span>{{ item.label }}</span>
       </template>
     </USelectMenu>
-    <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
+    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

@@ -28,7 +28,7 @@
             <UIcon
               v-if="pl.pattern_uuids.includes(uuid)"
               name="i-fa6-solid:circle-check"
-              class="h-5 w-5 shrink-0 text-green-400"
+              class="h-5 w-5 shrink-0 text-success"
             />
             <UIcon
               v-else-if="addingTo === pl.uuid"

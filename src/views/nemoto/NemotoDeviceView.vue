@@ -59,7 +59,7 @@
       <section class="flex flex-col gap-4 px-4 py-5">
         <!-- Destinations as a list, not three identical blocks: each one says
              what it is for, so you pick by purpose rather than by icon. -->
-        <nav class="destinations">
+        <nav class="destinations k-stagger">
           <button
             v-for="d in destinations"
             :key="d.to"

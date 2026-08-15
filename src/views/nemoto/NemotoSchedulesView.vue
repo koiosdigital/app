@@ -174,7 +174,7 @@
 
               <!-- Cron preview + next fires -->
               <div class="space-y-1 rounded-lg border border-white/10 bg-white/5 p-3 text-xs">
-                <p v-if="cronError" class="text-red-300">{{ cronError }}</p>
+                <p v-if="cronError" class="text-error">{{ cronError }}</p>
                 <template v-else>
                   <p class="font-medium text-white/90">{{ cronDescription }}</p>
                   <p class="font-mono text-white/50">{{ builtCron }}</p>

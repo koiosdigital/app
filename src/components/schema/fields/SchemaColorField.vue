@@ -9,7 +9,7 @@
       @click="isOpen = true"
     />
 
-    <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
+    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
 
     <!-- Color picker modal -->
     <UModal v-model:open="isOpen" :ui="{ width: 'sm:max-w-sm' }">

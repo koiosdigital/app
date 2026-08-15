@@ -112,8 +112,8 @@
       </UCard>
 
       <!-- Danger -->
-      <UCard class="border-red-500/20 bg-red-500/5">
-        <template #header><h3 class="font-semibold text-red-400">Danger zone</h3></template>
+      <UCard class="border-error/20 bg-error/5">
+        <template #header><h3 class="font-semibold text-error">Danger zone</h3></template>
         <UButton
           color="error"
           variant="soft"

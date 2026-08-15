@@ -98,7 +98,7 @@
 
         <div
           ref="installationsContainer"
-          class="apps-grid"
+          class="apps-grid k-stagger"
           :class="{ 'is-reordering': isReordering }"
         >
           <div

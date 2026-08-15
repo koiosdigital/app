@@ -55,8 +55,8 @@
     <!-- Error State -->
     <div v-else-if="loadError" class="flex flex-1 items-center justify-center p-5">
       <div class="text-center space-y-4">
-        <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-red-400 mx-auto" />
-        <p class="text-red-400">{{ loadError }}</p>
+        <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-error mx-auto" />
+        <p class="text-error">{{ loadError }}</p>
         <UButton color="neutral" variant="soft" @click="loadData">Retry</UButton>
       </div>
     </div>
@@ -100,8 +100,8 @@
 
                 <!-- HTTP error state -->
                 <div v-else-if="previewErrorType === 'http'" class="state-overlay flex-col gap-1">
-                  <UIcon name="i-fa6-solid:circle-exclamation" class="h-6 w-6 text-red-500" />
-                  <span class="text-xs text-red-500 text-center px-2">{{ previewError }}</span>
+                  <UIcon name="i-fa6-solid:circle-exclamation" class="h-6 w-6 text-error" />
+                  <span class="text-xs text-error text-center px-2">{{ previewError }}</span>
                 </div>
 
                 <!-- Setup required state -->

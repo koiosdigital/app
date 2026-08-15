@@ -132,8 +132,8 @@
     <!-- Error State -->
     <div v-else-if="error && apps.length === 0" class="flex flex-1 items-center justify-center p-5">
       <div class="text-center space-y-4">
-        <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-red-400 mx-auto" />
-        <p class="text-red-400">{{ error }}</p>
+        <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-error mx-auto" />
+        <p class="text-error">{{ error }}</p>
         <UButton color="neutral" variant="soft" @click="loadApps(true)">Retry</UButton>
       </div>
     </div>

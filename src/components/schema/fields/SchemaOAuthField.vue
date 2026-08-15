@@ -3,11 +3,11 @@
     <!-- Connected State -->
     <div
       v-if="isConnected"
-      class="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 p-4"
+      class="flex items-center gap-3 rounded-lg border border-success/20 bg-success/10 p-4"
     >
-      <UIcon name="i-fa6-solid:circle-check" class="h-5 w-5 shrink-0 text-green-400" />
+      <UIcon name="i-fa6-solid:circle-check" class="h-5 w-5 shrink-0 text-success" />
       <div class="min-w-0 flex-1">
-        <p class="font-medium text-green-400">Connected</p>
+        <p class="font-medium text-success">Connected</p>
         <p v-if="connectionInfo" class="truncate text-xs text-white/60">{{ connectionInfo }}</p>
       </div>
       <UButton color="neutral" variant="ghost" size="sm" @click="disconnect"> Disconnect </UButton>
@@ -42,7 +42,7 @@
       </UButton>
     </div>
 
-    <p v-if="error || oauthFlow.error.value" class="text-xs text-red-400">
+    <p v-if="error || oauthFlow.error.value" class="text-xs text-error">
       {{ error || oauthFlow.error.value }}
     </p>
   </div>

@@ -6,7 +6,7 @@
       :color="error ? 'error' : undefined"
       @update:model-value="emit('update:value', $event)"
     />
-    <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
+    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

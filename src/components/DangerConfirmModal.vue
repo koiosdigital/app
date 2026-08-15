@@ -2,7 +2,7 @@
   <UModal v-model:open="model">
     <template #header>
       <div class="flex items-center gap-3">
-        <UIcon name="i-fa6-solid:triangle-exclamation" class="h-5 w-5 text-red-400" />
+        <UIcon name="i-fa6-solid:triangle-exclamation" class="h-5 w-5 text-error" />
         <h3 class="text-lg font-semibold">{{ title }}</h3>
       </div>
     </template>

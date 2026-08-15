@@ -44,7 +44,7 @@
            tablets; from lg up the same cards lay out as roster rows. -->
       <div
         v-if="loading || visibleLocalDevices.length || sortedDevices.length"
-        class="device-roster grid gap-3 sm:grid-cols-2 lg:grid-cols-1 lg:gap-2"
+        class="device-roster k-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-1 lg:gap-2"
       >
         <template v-for="local in visibleLocalDevices" :key="local.id">
           <TranquilDeviceCard

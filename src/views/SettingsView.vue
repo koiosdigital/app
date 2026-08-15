@@ -100,7 +100,11 @@
         </UCard>
 
         <!-- Account settings -->
-        <UCollapsible v-model:open="accountSettingsOpen">
+        <!-- px-px: UCard's border is a ring (a box-shadow painted outside the
+             element), and the collapsible clips to its padding box for the
+             height animation — without this the cards lose 1px of border down
+             both sides. -->
+        <UCollapsible v-model:open="accountSettingsOpen" :ui="{ content: 'px-px' }">
           <button
             type="button"
             class="flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-left"
@@ -134,22 +138,10 @@
                   <div class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
                       <p class="truncate text-sm font-medium">{{ form.email }}</p>
-                      <p class="mt-0.5 flex items-center gap-1.5 text-xs">
-                        <template v-if="emailVerified">
-                          <UIcon
-                            name="i-fa6-solid:circle-check"
-                            class="h-3.5 w-3.5 text-green-400"
-                          />
-                          <span class="text-green-300">Verified</span>
-                        </template>
-                        <template v-else>
-                          <UIcon
-                            name="i-fa6-solid:circle-exclamation"
-                            class="h-3.5 w-3.5 text-amber-400"
-                          />
-                          <span class="text-amber-300">Not verified</span>
-                        </template>
-                      </p>
+                      <span v-if="!emailVerified" class="k-chip k-chip--alert mt-1">
+                        <UIcon name="i-fa6-solid:circle-exclamation" class="h-2.5 w-2.5" />
+                        Not verified
+                      </span>
                     </div>
                     <UButton
                       color="neutral"
@@ -265,7 +257,7 @@
                           <p class="truncate text-sm font-medium">{{ sessionLabel(session) }}</p>
                           <span
                             v-if="session.current"
-                            class="rounded-full bg-green-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wider text-green-300"
+                            class="rounded-full bg-success/20 px-2 py-0.5 text-[10px] uppercase tracking-wider text-success"
                           >
                             This device
                           </span>
@@ -398,7 +390,7 @@
       </div>
 
       <!-- Danger zone — deactivates (soft, reversible) the Koios account -->
-      <UCard v-if="profileLoaded" class="border border-red-500/30 bg-red-500/5">
+      <UCard v-if="profileLoaded" class="border border-error/30 bg-error/5">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="k-eyebrow text-error">Danger zone</p>
@@ -474,7 +466,7 @@
     <UModal v-model:open="deactivateOpen">
       <template #header>
         <div class="flex items-center gap-3">
-          <UIcon name="i-fa6-solid:triangle-exclamation" class="h-5 w-5 text-red-400" />
+          <UIcon name="i-fa6-solid:triangle-exclamation" class="h-5 w-5 text-error" />
           <h3 class="text-lg font-semibold">Deactivate your account?</h3>
         </div>
       </template>
@@ -560,10 +552,10 @@ const BANNER_STYLES: Record<
   { container: string; icon: string; iconColor: string; textColor: string }
 > = {
   success: {
-    container: 'border-green-500/30 bg-green-500/10',
+    container: 'border-success/30 bg-success/10',
     icon: 'i-fa6-solid:circle-check',
-    iconColor: 'text-green-400',
-    textColor: 'text-green-200',
+    iconColor: 'text-success',
+    textColor: 'text-success',
   },
   error: {
     container: 'border-amber-500/30 bg-amber-500/10',

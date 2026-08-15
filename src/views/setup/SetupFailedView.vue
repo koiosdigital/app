@@ -4,9 +4,9 @@
       <!-- Failure Icon -->
       <div class="flex justify-center">
         <div
-          class="flex h-24 w-24 items-center justify-center rounded-full border-4 border-red-400/20 bg-red-400/10"
+          class="flex h-24 w-24 items-center justify-center rounded-full border-4 border-error/20 bg-error/10"
         >
-          <UIcon name="i-fa6-solid:xmark" class="h-12 w-12 text-red-400" />
+          <UIcon name="i-fa6-solid:xmark" class="h-12 w-12 text-error" />
         </div>
       </div>
 

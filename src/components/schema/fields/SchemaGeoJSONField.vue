@@ -12,7 +12,7 @@
         </span>
       </div>
       <button type="button" class="shrink-0 rounded p-1 hover:bg-white/10" @click="clearValue">
-        <UIcon name="i-fa6-solid:xmark" class="h-4 w-4 text-red-400" />
+        <UIcon name="i-fa6-solid:xmark" class="h-4 w-4 text-error" />
       </button>
     </div>
 
@@ -27,7 +27,7 @@
       Draw Area
     </UButton>
 
-    <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
+    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
 
     <!-- Map picker modal -->
     <UModal v-model:open="isOpen" :ui="{ width: 'sm:max-w-xl' }">

@@ -31,10 +31,10 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="flex flex-1 items-center justify-center p-5">
-      <UCard class="w-full max-w-md border border-red-500/20 bg-red-500/10">
+      <UCard class="w-full max-w-md border border-error/20 bg-error/10">
         <div class="space-y-4 text-center">
-          <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-red-400 mx-auto" />
-          <p class="text-red-400">{{ error }}</p>
+          <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-error mx-auto" />
+          <p class="text-error">{{ error }}</p>
           <UButton color="neutral" variant="soft" @click="loadDevice">Retry</UButton>
         </div>
       </UCard>

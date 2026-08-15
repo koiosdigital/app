@@ -5,7 +5,7 @@
       :options="radioOptions"
       @update:model-value="handleUpdate"
     />
-    <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
+    <p v-if="error" class="mt-1 text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

@@ -43,7 +43,7 @@
           >
             <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <UIcon name="i-fa6-solid:shield-halved" class="h-4 w-4 shrink-0 text-green-300" />
+                <UIcon name="i-fa6-solid:shield-halved" class="h-4 w-4 shrink-0 text-success" />
                 <p class="truncate text-sm font-medium">{{ factor.name }}</p>
               </div>
               <p class="mt-0.5 text-xs text-white/50">Added {{ formatDate(factor.createdAt) }}</p>

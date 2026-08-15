@@ -72,7 +72,7 @@ const stateIcon = computed(() => {
 })
 
 const stateIconClass = computed(() => {
-  if (errorType.value === 'http') return 'text-red-500/70'
+  if (errorType.value === 'http') return 'text-error/70'
   return 'text-white/30'
 })
 </script>

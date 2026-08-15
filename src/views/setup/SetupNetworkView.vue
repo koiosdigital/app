@@ -154,11 +154,11 @@
       v-if="bleStore.wifi.connectionError"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5"
     >
-      <div class="w-full max-w-md space-y-6 rounded-lg border border-red-500/20 bg-zinc-900 p-6">
+      <div class="w-full max-w-md space-y-6 rounded-lg border border-error/20 bg-zinc-900 p-6">
         <div class="flex items-center gap-3">
-          <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-red-400" />
+          <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-error" />
           <div>
-            <h2 class="text-lg font-semibold text-red-400">Connection Failed</h2>
+            <h2 class="text-lg font-semibold text-error">Connection Failed</h2>
             <p class="text-sm text-white/70">{{ bleStore.wifi.connectionError }}</p>
           </div>
         </div>
@@ -194,7 +194,7 @@
             size="lg"
             @keyup.enter="isPasswordValid && connectToNetwork()"
           />
-          <p v-if="password && !isPasswordValid" class="text-xs text-red-400">
+          <p v-if="password && !isPasswordValid" class="text-xs text-error">
             Password must be at least 8 characters long
           </p>
         </div>
@@ -254,7 +254,7 @@
             />
             <p
               v-if="otherNetworkPassword && otherNetworkPassword.length < 8"
-              class="text-xs text-red-400"
+              class="text-xs text-error"
             >
               Password must be at least 8 characters long
             </p>
@@ -342,7 +342,7 @@ function getSignalColor(rssi: number): string {
   const strength = getSignalStrength(rssi)
   if (strength >= 75) return 'text-primary-400'
   if (strength >= 50) return 'text-yellow-400'
-  return 'text-red-400'
+  return 'text-error'
 }
 
 async function scanNetworks() {

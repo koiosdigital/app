@@ -18,15 +18,12 @@
 
     <!-- BLE Availability Error -->
     <div v-if="bleError" class="flex flex-1 items-center justify-center p-5">
-      <UCard class="w-full max-w-md border border-red-500/20 bg-red-500/10">
+      <UCard class="w-full max-w-md border border-error/20 bg-error/10">
         <div class="space-y-4">
           <div class="flex items-start gap-3">
-            <UIcon
-              name="i-fa6-solid:circle-exclamation"
-              class="h-6 w-6 flex-shrink-0 text-red-400"
-            />
+            <UIcon name="i-fa6-solid:circle-exclamation" class="h-6 w-6 flex-shrink-0 text-error" />
             <div class="flex-1">
-              <h2 class="text-lg font-semibold text-red-400">{{ bleError.errorTitle }}</h2>
+              <h2 class="text-lg font-semibold text-error">{{ bleError.errorTitle }}</h2>
               <p class="mt-1 text-sm text-white/70">{{ bleError.errorMessage }}</p>
             </div>
           </div>

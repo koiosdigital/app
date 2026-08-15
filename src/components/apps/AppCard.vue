@@ -24,7 +24,7 @@
 
           <!-- HTTP error state -->
           <div v-else-if="errorType === 'http'" class="state-overlay">
-            <UIcon name="i-fa6-solid:circle-exclamation" class="h-5 w-5 text-red-500/70" />
+            <UIcon name="i-fa6-solid:circle-exclamation" class="h-5 w-5 text-error/70" />
           </div>
 
           <!-- Empty/default state -->

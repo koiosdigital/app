@@ -9,7 +9,7 @@
       />
       <button
         type="button"
-        class="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 hover:bg-red-600"
+        class="absolute -top-2 -right-2 rounded-full bg-error p-1 hover:bg-error"
         @click="clearImage"
       >
         <UIcon name="i-fa6-solid:xmark" class="h-3 w-3 text-white" />
@@ -30,7 +30,7 @@
       </UButton>
     </div>
 
-    <p v-if="error" class="text-xs text-red-400">{{ error }}</p>
+    <p v-if="error" class="text-xs text-error">{{ error }}</p>
   </div>
 </template>
 

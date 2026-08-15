@@ -3,8 +3,8 @@
     <div class="w-full max-w-md space-y-6 text-center">
       <!-- Error from provider -->
       <div v-if="errorMessage" class="space-y-4">
-        <UIcon name="i-fa6-solid:circle-exclamation" class="mx-auto h-12 w-12 text-red-400" />
-        <p class="font-medium text-red-400">Authentication failed</p>
+        <UIcon name="i-fa6-solid:circle-exclamation" class="mx-auto h-12 w-12 text-error" />
+        <p class="font-medium text-error">Authentication failed</p>
         <p class="text-sm text-white/50">{{ errorMessage }}</p>
         <p class="text-sm text-white/50">You can close this window.</p>
       </div>
