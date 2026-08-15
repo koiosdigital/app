@@ -62,9 +62,11 @@
             <label class="block text-sm font-medium text-white/70">Brightness</label>
             <span class="text-sm text-white/50">{{ brightnessPercent }}%</span>
           </div>
+          <!-- Floor of 1: zero brightness is an invisible screen, which is what
+               the Screen toggle above is for. The API rejects 0. -->
           <input
             type="range"
-            min="0"
+            min="1"
             max="255"
             v-model.number="screenBrightness"
             :disabled="autoBrightnessEnabled"
