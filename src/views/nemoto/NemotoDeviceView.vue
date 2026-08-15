@@ -98,6 +98,17 @@
           >
             Schedules
           </UButton>
+          <UButton
+            class="col-span-2"
+            color="neutral"
+            variant="soft"
+            size="lg"
+            icon="i-fa6-solid:lightbulb"
+            block
+            @click="router.push(`/nemoto/${deviceId}/inspiration`)"
+          >
+            Inspiration
+          </UButton>
         </div>
       </section>
     </div>

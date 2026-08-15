@@ -21,6 +21,7 @@ import NemotoDeviceSettingsView from '@/views/nemoto/NemotoDeviceSettingsView.vu
 import NemotoPresetsView from '@/views/nemoto/NemotoPresetsView.vue'
 import NemotoPresetEditorView from '@/views/nemoto/NemotoPresetEditorView.vue'
 import NemotoMessageView from '@/views/nemoto/NemotoMessageView.vue'
+import NemotoInspirationView from '@/views/nemoto/NemotoInspirationView.vue'
 import NemotoSchedulesView from '@/views/nemoto/NemotoSchedulesView.vue'
 import TranquilDeviceView from '@/views/tranquil/TranquilDeviceView.vue'
 import TranquilPatternsView from '@/views/tranquil/TranquilPatternsView.vue'
@@ -174,6 +175,12 @@ const router = createRouter({
       path: '/nemoto/:id/message',
       name: 'nemoto-message',
       component: NemotoMessageView,
+      props: (route) => ({ deviceId: route.params.id }),
+    },
+    {
+      path: '/nemoto/:id/inspiration',
+      name: 'nemoto-inspiration',
+      component: NemotoInspirationView,
       props: (route) => ({ deviceId: route.params.id }),
     },
     {
