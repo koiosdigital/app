@@ -1,55 +1,44 @@
 <template>
   <PageLayout :on-refresh="refresh">
-    <div v-if="loading" class="flex flex-1 items-center justify-center py-20">
-      <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
-    </div>
-
-    <div v-else-if="error" class="flex flex-1 items-center justify-center p-5">
-      <UCard class="w-full max-w-md border border-red-500/20 bg-red-500/10">
-        <div class="space-y-4 text-center">
-          <UIcon name="i-fa6-solid:circle-exclamation" class="mx-auto h-12 w-12 text-red-400" />
-          <p class="text-red-400">{{ error }}</p>
-          <UButton color="neutral" variant="soft" @click="load">Retry</UButton>
-        </div>
-      </UCard>
-    </div>
+    <PageState v-if="loading" loading />
+    <PageState v-else-if="error" :error="error" @retry="load" />
 
     <div v-else class="flex flex-1 flex-col">
-      <!-- Now showing (hero preview) -->
-      <section class="flex flex-col items-center gap-5 border-b border-white/10 px-5 py-8">
-        <p class="text-xs uppercase tracking-widest text-white/50">Now showing</p>
+      <!-- Now showing -->
+      <DeviceStage
+        eyebrow="Now showing"
+        :title="hasFrame ? undefined : 'Board is blank'"
+        :meta="stageMeta"
+        :lit="hasFrame"
+        bloom="rgb(234 223 208 / 0.10)"
+        width="min(92vw, 720px)"
+      >
+        <div class="k-bezel w-full">
+          <NemotoFlapGrid
+            v-if="state?.display?.valid && state.display.flaps"
+            :flaps="state.display.flaps"
+          />
+          <div v-else class="k-screen empty-screen">
+            <UIcon name="i-fa6-solid:table-cells" class="h-6 w-6 text-white/25" />
+          </div>
+        </div>
 
-        <div class="now-showing-container relative">
-          <!-- Edit current display -->
+        <template #actions>
           <UButton
-            class="absolute right-2 top-2 z-10"
+            color="primary"
+            size="sm"
+            icon="i-fa6-solid:pencil"
+            @click="router.push(`/nemoto/${deviceId}/message`)"
+          >
+            Compose
+          </UButton>
+          <UButton
             color="neutral"
             variant="soft"
             size="sm"
-            square
-            icon="i-fa6-solid:pencil"
-            aria-label="Edit display"
-            @click="router.push(`/nemoto/${deviceId}/message`)"
-          />
-          <div class="now-showing-frame">
-            <NemotoFlapGrid
-              v-if="state?.display?.valid && state.display.flaps"
-              :flaps="state.display.flaps"
-            />
-            <div v-else class="empty-preview-screen">
-              <UIcon name="i-fa6-solid:table-cells" class="h-6 w-6 text-white/30" />
-            </div>
-          </div>
-        </div>
-        <p v-if="!state?.display?.valid" class="text-sm text-white/50">Nothing displayed yet.</p>
-
-        <!-- Clear (centered below preview) -->
-        <div class="flex items-center justify-center gap-2">
-          <UButton
-            color="neutral"
-            variant="soft"
             icon="i-fa6-solid:eraser"
             :loading="busy === 'clear'"
+            :disabled="!hasFrame"
             @click="clearDisplay"
           >
             Clear
@@ -61,14 +50,13 @@
             square
             icon="i-fa6-solid:rotate"
             :loading="busy === 'refresh-display'"
-            aria-label="Refresh display"
+            aria-label="Re-read the board"
             @click="refreshDisplay"
           />
-        </div>
-      </section>
+        </template>
+      </DeviceStage>
 
-      <section class="flex flex-col gap-5 px-5 py-6">
-        <!-- Command feedback -->
+      <section class="flex flex-col gap-4 px-4 py-5">
         <UAlert
           v-if="commandMsg"
           :color="commandMsg.color"
@@ -76,40 +64,24 @@
           :title="commandMsg.text"
         />
 
-        <!-- Navigation -->
-        <div class="grid grid-cols-2 gap-3">
-          <UButton
-            color="neutral"
-            variant="soft"
-            size="lg"
-            icon="i-fa6-solid:table-cells"
-            block
-            @click="router.push(`/nemoto/${deviceId}/presets`)"
+        <!-- Destinations as a list, not three identical blocks: each one says
+             what it is for, so you pick by purpose rather than by icon. -->
+        <nav class="destinations">
+          <button
+            v-for="d in destinations"
+            :key="d.to"
+            type="button"
+            class="destination"
+            @click="router.push(d.to)"
           >
-            Presets
-          </UButton>
-          <UButton
-            color="neutral"
-            variant="soft"
-            size="lg"
-            icon="i-fa6-solid:calendar"
-            block
-            @click="router.push(`/nemoto/${deviceId}/schedules`)"
-          >
-            Schedules
-          </UButton>
-          <UButton
-            class="col-span-2"
-            color="neutral"
-            variant="soft"
-            size="lg"
-            icon="i-fa6-solid:lightbulb"
-            block
-            @click="router.push(`/nemoto/${deviceId}/inspiration`)"
-          >
-            Inspiration
-          </UButton>
-        </div>
+            <span class="destination__icon"><UIcon :name="d.icon" class="h-4 w-4" /></span>
+            <span class="min-w-0 flex-1">
+              <span class="destination__title">{{ d.title }}</span>
+              <span class="destination__hint">{{ d.hint }}</span>
+            </span>
+            <UIcon name="i-fa6-solid:chevron-right" class="h-3 w-3 shrink-0 text-dimmed" />
+          </button>
+        </nav>
       </section>
     </div>
   </PageLayout>
@@ -120,6 +92,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import NemotoFlapGrid from '@/components/nemoto/NemotoFlapGrid.vue'
+import DeviceStage from '@/components/devices/DeviceStage.vue'
+import PageState from '@/components/PageState.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { devicesApi } from '@/lib/api/devices'
 import { nemotoApi, type NemotoLiveState } from '@/lib/api/nemoto'
@@ -141,6 +115,36 @@ const commandMsg = ref<{
   color: 'success' | 'warning' | 'error'
   icon: string
 } | null>(null)
+
+const hasFrame = computed(() => !!state.value?.display?.valid)
+
+const stageMeta = computed(() => {
+  if (!hasFrame.value) return 'Compose a message to put something on it'
+  const w = state.value?.display?.width ?? state.value?.setup?.gridWidth
+  const h = state.value?.display?.height ?? state.value?.setup?.gridHeight
+  return w && h ? `${w} × ${h} flaps` : undefined
+})
+
+const destinations = computed(() => [
+  {
+    to: `/nemoto/${deviceId.value}/presets`,
+    icon: 'i-fa6-solid:table-cells',
+    title: 'Presets',
+    hint: 'Saved boards you can send again',
+  },
+  {
+    to: `/nemoto/${deviceId.value}/schedules`,
+    icon: 'i-fa6-solid:calendar',
+    title: 'Schedules',
+    hint: 'Show a board at a set time',
+  },
+  {
+    to: `/nemoto/${deviceId.value}/inspiration`,
+    icon: 'i-fa6-solid:lightbulb',
+    title: 'Inspiration',
+    hint: 'Ideas worth putting on the wall',
+  },
+])
 
 async function load() {
   loading.value = true
@@ -252,25 +256,65 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.now-showing-container {
-  width: min(92vw, 860px);
-  max-width: 100%;
-}
-
-.now-showing-frame {
-  width: 100%;
-  padding: 10px;
-  background: #18181b;
-  border-radius: 0.75rem;
-}
-
-.empty-preview-screen {
+.empty-screen {
   width: 100%;
   aspect-ratio: 22 / 6;
-  background: black;
-  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.destinations {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--k-line);
+  border-radius: 14px;
+  background: var(--k-panel);
+  box-shadow: var(--k-bezel);
+  overflow: hidden;
+}
+
+.destination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--k-line-soft);
+  transition: background 0.15s var(--k-ease);
+}
+.destination:last-child {
+  border-bottom: 0;
+}
+.destination:active {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.destination__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 9px;
+  color: var(--k-ember-hi);
+  background: rgb(231 145 20 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(231 145 20 / 0.2);
+}
+
+.destination__title {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ui-text-highlighted);
+}
+
+.destination__hint {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--ui-text-muted);
 }
 </style>

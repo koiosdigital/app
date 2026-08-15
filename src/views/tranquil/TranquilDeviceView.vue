@@ -2,190 +2,180 @@
   <PageLayout :on-refresh="refresh">
     <!-- Not connected (e.g. deep-linked / reloaded): discovery state is lost,
          so send the user back to the device list to reopen the table. -->
-    <div v-if="!isActive" class="flex flex-col items-center gap-4 px-5 py-16 text-center">
-      <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-white/30" />
-      <p class="text-white/70">This table isn't connected. Open it from your device list.</p>
-      <UButton color="primary" variant="soft" @click="router.replace('/')">Go to devices</UButton>
+    <div v-if="!isActive" class="flex flex-col items-center gap-3 px-5 py-16 text-center">
+      <span class="k-lamp k-lamp--off" aria-hidden="true" />
+      <p class="k-eyebrow">Not connected</p>
+      <p class="max-w-[32ch] text-sm text-muted">
+        The table is reached over your local network. Open it from the device list to reconnect.
+      </p>
+      <UButton color="primary" variant="soft" size="sm" @click="router.replace('/')">
+        Go to devices
+      </UButton>
     </div>
 
     <!-- pb clears the fixed bottom tab bar -->
-    <div v-else class="flex flex-col gap-4 px-5 pt-6 pb-28">
-      <div
-        v-if="!store.connected"
-        class="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-300"
-      >
-        <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin" />
+    <div v-else class="pb-28">
+      <div v-if="!store.connected" class="connecting">
+        <span class="k-lamp k-lamp--ember connecting__lamp" aria-hidden="true" />
         Connecting to the table…
       </div>
 
-      <!-- Now playing — preview ringed by radial playback progress -->
-      <div class="flex flex-col items-center gap-4">
-        <div class="relative mx-auto w-full max-w-xs">
+      <!-- Now playing: the disc, ringed by playback progress -->
+      <DeviceStage
+        eyebrow="Now playing"
+        :title="isStopped ? 'Nothing running' : currentPattern?.name"
+        :meta="stageMeta"
+        :lit="isPlaying"
+        bloom="rgb(216 196 160 / 0.13)"
+        width="min(74vw, 320px)"
+      >
+        <div class="relative">
           <svg
+            v-if="!isStopped"
             class="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
             viewBox="0 0 100 100"
             aria-hidden="true"
-            v-if="playerState?.state !== 'STOPPED'"
           >
             <circle
               cx="50"
               cy="50"
               :r="RING_R"
               fill="none"
-              stroke="rgba(255,255,255,0.1)"
-              stroke-width="2.5"
+              stroke="rgb(255 255 255 / 0.07)"
+              stroke-width="2"
             />
             <circle
               cx="50"
               cy="50"
               :r="RING_R"
               fill="none"
-              class="text-primary-500"
-              stroke="currentColor"
-              stroke-width="2.5"
+              stroke="var(--k-ember)"
+              stroke-width="2"
               stroke-linecap="round"
               :stroke-dasharray="RING_CIRC"
               :stroke-dashoffset="ringOffset"
               style="transition: stroke-dashoffset 0.3s ease"
             />
           </svg>
-          <div class="p-[5%]">
+          <div class="p-[6%]">
             <div class="relative">
               <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
-              <!-- Live LED strip projected inside the disc -->
               <TranquilLedRing />
-              <!-- Play/pause overlaid on the disc center -->
-              <button
-                type="button"
-                class="absolute inset-0 z-10 m-auto flex h-16 w-16 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/55 disabled:opacity-40"
-                :disabled="isStopped"
-                :aria-label="isPlaying ? 'Pause' : 'Play'"
-                @click="togglePlayPause"
-              >
-                <UIcon
-                  :name="isPlaying ? 'i-fa6-solid:pause' : 'i-fa6-solid:play'"
-                  class="h-7 w-7"
-                />
-              </button>
             </div>
           </div>
         </div>
-        <div class="text-center" v-if="playerState?.state !== 'STOPPED'">
-          <h2 class="text-lg font-semibold">
-            {{ currentPattern?.name }}
-          </h2>
-          <p v-if="currentPattern?.creator" class="text-xs text-white/60">
-            {{ currentPattern.creator }}
-          </p>
-        </div>
-      </div>
+      </DeviceStage>
 
-      <!-- Shuffle / repeat pill with skip alongside -->
-      <div v-if="isPlaylist" class="flex items-center justify-center gap-3">
-        <div class="flex items-center gap-6 rounded-full bg-white/10 px-5 py-1.5">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            size="lg"
-            square
-            icon="i-fa6-solid:shuffle"
-            :class="playerState?.shuffle ? 'text-yellow-400' : 'text-white/60'"
+      <div class="flex flex-col gap-5 px-4 py-5">
+        <!-- Transport: one row, thumb-height, play as the only lit control -->
+        <div class="transport">
+          <button
+            type="button"
+            class="transport__btn"
+            :class="{ 'transport__btn--armed': playerState?.shuffle }"
+            :disabled="!isPlaylist"
             aria-label="Shuffle"
             @click="store.setShuffle(!playerState?.shuffle)"
-          />
-          <UButton
-            color="neutral"
-            variant="ghost"
-            size="lg"
-            square
-            icon="i-fa6-solid:repeat"
-            :class="playerState?.loop ? 'text-yellow-400' : 'text-white/60'"
+          >
+            <UIcon name="i-fa6-solid:shuffle" class="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
+            class="transport__play"
+            :disabled="isStopped"
+            :aria-label="isPlaying ? 'Pause' : 'Play'"
+            @click="togglePlayPause"
+          >
+            <UIcon :name="isPlaying ? 'i-fa6-solid:pause' : 'i-fa6-solid:play'" class="h-6 w-6" />
+          </button>
+
+          <button
+            type="button"
+            class="transport__btn"
+            :disabled="!isPlaylist"
+            aria-label="Skip to next pattern"
+            @click="store.skip()"
+          >
+            <UIcon name="i-fa6-solid:forward-step" class="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
+            class="transport__btn"
+            :class="{ 'transport__btn--armed': playerState?.loop }"
+            :disabled="!isPlaylist"
             aria-label="Repeat"
             @click="store.setLoop(!playerState?.loop)"
-          />
+          >
+            <UIcon name="i-fa6-solid:repeat" class="h-4 w-4" />
+          </button>
         </div>
-        <div class="rounded-full bg-white/10 p-1.5">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            size="lg"
-            square
-            icon="i-fa6-solid:forward-step"
-            class="text-white/60"
-            aria-label="Skip"
-            @click="store.skip()"
-          />
-        </div>
-      </div>
 
-      <!-- Speed (device scale 1..5; shown as turtle→rabbit, no numbers) -->
-      <div class="space-y-4 mx-auto w-[70vw]">
-        <div class="flex flex-col gap-2">
-          <span class="text-sm font-medium">Speed</span>
-          <div class="flex items-center gap-3">
-            <UIcon
-              name="i-lucide:turtle"
-              class="h-5 w-5 shrink-0 text-white/60"
-              aria-label="Slower"
-            />
-            <input
-              type="range"
-              min="1"
-              max="5"
-              step="0.25"
-              :value="feedRate"
-              class="w-full accent-primary-500"
-              @change="onSpeedChange"
-            />
-            <UIcon
-              name="i-lucide:rabbit"
-              class="h-5 w-5 shrink-0 text-white/60"
-              aria-label="Faster"
-            />
+        <!-- Ball speed and light level, each with its reading -->
+        <div class="controls">
+          <div class="control">
+            <div class="control__label">
+              <span class="k-eyebrow">Ball speed</span>
+              <span class="k-num control__value">{{ feedRate.toFixed(2) }}×</span>
+            </div>
+            <div class="control__row">
+              <UIcon name="i-lucide:turtle" class="control__cap" aria-hidden="true" />
+              <USlider
+                :model-value="feedRate"
+                :min="1"
+                :max="5"
+                :step="0.25"
+                class="flex-1"
+                aria-label="Ball speed"
+                @update:model-value="onSpeedChange"
+              />
+              <UIcon name="i-lucide:rabbit" class="control__cap" aria-hidden="true" />
+            </div>
           </div>
+
+          <template v-if="ledBrightness !== null">
+            <hr class="k-hairline" />
+            <div class="control">
+              <div class="control__label">
+                <span class="k-eyebrow">Light</span>
+                <span class="k-num control__value">{{ ledBrightness }}%</span>
+              </div>
+              <div class="control__row">
+                <UIcon name="i-lucide:sun-dim" class="control__cap" aria-hidden="true" />
+                <USlider
+                  :model-value="ledBrightness"
+                  :min="0"
+                  :max="100"
+                  :step="5"
+                  class="flex-1"
+                  aria-label="Light level"
+                  @update:model-value="onBrightnessChange"
+                />
+                <UIcon name="i-lucide:sun" class="control__cap" aria-hidden="true" />
+              </div>
+            </div>
+          </template>
+
+          <hr class="k-hairline" />
+          <button
+            type="button"
+            class="control__link"
+            @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/lighting`)"
+          >
+            <span class="destination__icon"
+              ><UIcon name="i-fa6-solid:lightbulb" class="h-4 w-4"
+            /></span>
+            <span class="min-w-0 flex-1 text-left">
+              <span class="control__link-title">Lighting</span>
+              <span class="control__link-hint">Colour and effects for the LED ring</span>
+            </span>
+            <UIcon name="i-fa6-solid:chevron-right" class="h-3 w-3 shrink-0 text-dimmed" />
+          </button>
         </div>
 
-        <div class="flex flex-col gap-2">
-          <span class="text-sm font-medium">Brightness</span>
-          <div class="flex items-center gap-3">
-            <UIcon
-              name="i-lucide:sun-dim"
-              class="h-5 w-5 shrink-0 text-white/60"
-              aria-label="Dimmer"
-            />
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              :value="ledBrightness"
-              class="w-full accent-primary-500"
-              @change="onBrightnessChange"
-            />
-            <UIcon
-              name="i-lucide:sun"
-              class="h-5 w-5 shrink-0 text-white/60"
-              aria-label="Brighter"
-            />
-          </div>
-        </div>
+        <p v-if="store.error" class="text-center text-sm text-error">{{ store.error }}</p>
       </div>
-
-      <!-- Full lighting controls (color, effects) -->
-      <div class="mx-auto rounded-full bg-white/10 p-1.5">
-        <UButton
-          color="neutral"
-          variant="ghost"
-          size="lg"
-          square
-          icon="i-fa6-solid:lightbulb"
-          class="text-white/60"
-          aria-label="Lighting"
-          @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/lighting`)"
-        />
-      </div>
-
-      <p v-if="store.error" class="text-center text-sm text-red-400">{{ store.error }}</p>
     </div>
 
     <TranquilTabBar />
@@ -202,6 +192,7 @@ import type { Pattern } from '@/lib/tranquil/local/types'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import TranquilLedRing from '@/components/tranquil/TranquilLedRing.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
+import DeviceStage from '@/components/devices/DeviceStage.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -223,6 +214,15 @@ const ringOffset = computed(() => RING_CIRC * (1 - progressPercent.value / 100))
 const feedRate = computed(() => playerState.value?.feed_rate ?? 3)
 const isPlaying = computed(() => playerState.value?.state === 'PLAYING')
 const isStopped = computed(() => !playerState.value || playerState.value.state === 'STOPPED')
+// The one line under the title: what is running, and how far in.
+const stageMeta = computed(() => {
+  if (isStopped.value) return 'Pick a pattern to start the table'
+  const parts: string[] = []
+  if (currentPattern.value?.creator) parts.push(currentPattern.value.creator)
+  parts.push(`${Math.round(progressPercent.value)}% drawn`)
+  return parts.join(' · ')
+})
+
 const isPlaylist = computed(
   () => playerState.value?.mode !== 'SINGLE_PATTERN' && !!playerState.value?.current_playlist_uuid,
 )
@@ -268,8 +268,8 @@ async function loadBrightness() {
   }
 }
 
-async function onBrightnessChange(e: Event) {
-  const pct = Number((e.target as HTMLInputElement).value)
+async function onBrightnessChange(value: number | number[] | undefined) {
+  const pct = Array.isArray(value) ? value[0] : (value ?? 0)
   ledBrightness.value = pct
   try {
     await store.api().led.setChannel(0, { brightness: Math.round((pct / 100) * 255) })
@@ -283,9 +283,10 @@ async function togglePlayPause() {
   else if (playerState.value?.state === 'PAUSED') await store.resume()
 }
 
-function onSpeedChange(e: Event) {
-  const value = Number((e.target as HTMLInputElement).value)
-  void store.setFeedRate(value)
+function onSpeedChange(value: number | number[] | undefined) {
+  const rate = Array.isArray(value) ? value[0] : value
+  if (rate === undefined) return
+  void store.setFeedRate(rate)
 }
 
 async function refresh() {
@@ -325,3 +326,168 @@ watch(() => store.activeDevice?.id, syncHeader)
 // /tranquil/local/ section — NOT on this view's unmount, so it survives
 // navigation to the patterns/store/settings sub-pages.
 </script>
+
+<style scoped>
+.connecting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--k-ember-hi);
+  background: rgb(231 145 20 / 0.08);
+  border-bottom: 1px solid rgb(231 145 20 / 0.18);
+}
+.connecting__lamp {
+  animation: state-pulse 1.4s ease-in-out infinite;
+}
+@keyframes state-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.6);
+    opacity: 0.45;
+  }
+}
+
+/* Transport — one grouped row instead of three floating pills. */
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.3);
+  box-shadow: inset 0 0 0 1px var(--k-line);
+}
+
+.transport__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: var(--ui-text-muted);
+  transition:
+    color 0.16s,
+    background 0.16s;
+}
+.transport__btn:active:not(:disabled) {
+  background: rgb(255 255 255 / 0.06);
+}
+.transport__btn:disabled {
+  opacity: 0.3;
+}
+
+/* An engaged toggle is lit, matching every other state in the app. */
+.transport__btn--armed {
+  color: var(--k-ember-hi);
+  background: rgb(231 145 20 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(231 145 20 / 0.24);
+}
+
+.transport__play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  color: #1a0f02;
+  background: linear-gradient(180deg, var(--k-ember-hi), var(--k-ember));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 8px 22px -10px rgb(231 145 20 / 0.9);
+  transition: transform 0.14s var(--k-ease);
+}
+.transport__play:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.transport__play:disabled {
+  color: var(--ui-text-dimmed);
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px var(--k-line);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--k-line);
+  border-radius: 14px;
+  background: var(--k-panel);
+  box-shadow: var(--k-bezel);
+}
+
+.control__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.control__value {
+  font-size: 12.5px;
+  color: var(--k-ember-hi);
+}
+
+.control__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.control__cap {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  color: var(--ui-text-dimmed);
+}
+
+.control__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: -4px 0;
+  padding: 4px 0;
+}
+
+.destination__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 9px;
+  color: var(--k-ember-hi);
+  background: rgb(231 145 20 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(231 145 20 / 0.2);
+}
+
+.control__link-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ui-text-highlighted);
+}
+
+.control__link-hint {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+</style>

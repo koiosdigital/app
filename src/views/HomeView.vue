@@ -1,15 +1,50 @@
 <template>
   <PageLayout :on-refresh="loadDevices">
-    <section class="flex flex-col gap-5 px-4 py-4">
+    <section class="mx-auto flex w-full max-w-[1180px] flex-col gap-5 px-4 py-4 lg:px-6 lg:py-6">
       <!-- Ownership transfers addressed to this account (accept from here or
            via the ?transfer= email deeplink). -->
       <PendingTransfersBanner @accepted="loadDevices" />
 
-      <!-- One unified grid: LAN-discovered devices (native-only, mDNS) alongside
-           cloud account devices, deduped by device_id. -->
+      <!-- From tablet up the page stops being a wall of tiles: a summary line
+           carries the fleet's state, so the list below is only consulted when
+           something in it needs you. Hidden on phones, where the header and the
+           cards already say everything at a glance. -->
+      <div
+        v-if="!loading && !error && deviceCount"
+        class="hidden items-center justify-between gap-4 md:flex"
+      >
+        <div class="roster-stats">
+          <span class="roster-stat">
+            <span class="k-lamp k-lamp--on" aria-hidden="true" />
+            <span class="k-num">{{ reachableCount }}</span> of
+            <span class="k-num">{{ deviceCount }}</span> reachable
+          </span>
+          <span v-if="attentionCount" class="roster-stat">
+            <span class="k-lamp k-lamp--fault" aria-hidden="true" />
+            <span class="k-num">{{ attentionCount }}</span>
+            {{ attentionCount === 1 ? 'needs' : 'need' }} attention
+          </span>
+          <span v-if="visibleLocalDevices.length" class="k-chip k-chip--live">
+            <UIcon name="i-fa6-solid:wifi" class="h-2.5 w-2.5" />
+            {{ visibleLocalDevices.length }} on this network
+          </span>
+        </div>
+        <UButton
+          color="primary"
+          size="sm"
+          icon="i-fa6-solid:plus"
+          @click="router.push('/setup/new')"
+        >
+          Add device
+        </UButton>
+      </div>
+
+      <!-- One unified list: LAN-discovered devices (native-only, mDNS) alongside
+           cloud account devices, deduped by device_id. Cards on phones and
+           tablets; from lg up the same cards lay out as roster rows. -->
       <div
         v-if="loading || visibleLocalDevices.length || sortedDevices.length"
-        class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        class="device-roster grid gap-3 sm:grid-cols-2 lg:grid-cols-1 lg:gap-2"
       >
         <template v-for="local in visibleLocalDevices" :key="local.id">
           <TranquilDeviceCard
@@ -26,12 +61,14 @@
           <div
             v-for="i in 3"
             :key="i"
-            class="flex h-full flex-col rounded-[14px] border border-default bg-muted p-3.5"
+            class="skeleton-card flex h-full flex-col rounded-[14px] border border-default bg-muted p-3.5"
           >
-            <USkeleton class="h-2.5 w-20 rounded-full" />
-            <USkeleton class="mt-2.5 h-4 w-32 rounded" />
-            <USkeleton class="mt-2 h-2.5 w-24 rounded-full" />
-            <USkeleton class="mt-4 h-24 w-full rounded-lg" />
+            <USkeleton class="skeleton-screen mt-4 h-24 w-full rounded-lg lg:mt-0" />
+            <div class="skeleton-identity">
+              <USkeleton class="h-2.5 w-20 rounded-full" />
+              <USkeleton class="mt-2.5 h-4 w-32 rounded" />
+              <USkeleton class="mt-2 h-2.5 w-24 rounded-full" />
+            </div>
           </div>
         </template>
         <template v-else-if="!error">
@@ -182,6 +219,16 @@ const sortedDevices = computed(() => {
       return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' })
     })
 })
+
+// Fleet-level readouts for the wide layout's summary line.
+const deviceCount = computed(() => visibleLocalDevices.value.length + sortedDevices.value.length)
+
+// An mDNS broadcast is proof of reachability, so local devices always count.
+const reachableCount = computed(
+  () => visibleLocalDevices.value.length + sortedDevices.value.filter((d) => d.online).length,
+)
+
+const attentionCount = computed(() => sortedDevices.value.filter((d) => !d.online).length)
 
 const loadDevices = async () => {
   loading.value = true
@@ -342,3 +389,125 @@ onUnmounted(() => {
   localDevicesStore.stop()
 })
 </script>
+
+<style scoped>
+.roster-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--ui-text-muted);
+}
+
+.roster-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.roster-stat .k-num {
+  color: var(--ui-text-highlighted);
+}
+
+/* ------------------------------------------------------------------
+   Roster rows (lg and up)
+   The same device cards, relaid as rows: preview, identity, status,
+   actions — each in a fixed column so the eye runs straight down one
+   axis instead of hunting across a ragged grid. Owned here rather than
+   in BaseDeviceCard because it is a page-layout decision; the cards
+   themselves stay layout-agnostic.
+   ------------------------------------------------------------------ */
+@media (min-width: 1024px) {
+  .device-roster :deep(.k-device-card) {
+    display: grid;
+    /* A fixed action track is what keeps the right-hand edge honest: when it
+       was auto-sized, each family's differently-sized buttons moved it, and
+       the two card types with no actions collapsed it entirely. */
+    grid-template-columns: 180px minmax(0, 1fr) 196px;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 14px;
+    border-radius: 12px;
+  }
+
+  /* A row is a horizontal object — light spills from the left, off the
+     device's own display, rather than up from the bottom edge. */
+  .device-roster :deep(.k-device-card)::after {
+    background: radial-gradient(40% 120% at 10% 50%, var(--bloom), transparent 70%);
+  }
+
+  .device-roster :deep(.k-device-card:active) {
+    transform: none;
+    background: linear-gradient(180deg, var(--k-raised), var(--k-panel-2));
+  }
+
+  .device-roster :deep(.k-device-card__stage) {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start;
+    padding: 0;
+  }
+  .device-roster :deep(.k-device-card__stage > *) {
+    max-width: 180px;
+  }
+
+  .device-roster :deep(.k-device-card__head) {
+    grid-column: 2;
+    grid-row: 1;
+    align-items: center;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .device-roster :deep(.k-device-card__identity) {
+    flex: 1;
+  }
+  .device-roster :deep(.k-device-card__title) {
+    margin-top: 2px;
+    font-size: 16px;
+  }
+
+  /* Status keeps the corner it holds in card mode — pinned to the card's own
+     top-right, so it is anchored to an edge instead of drifting with whatever
+     is beside it. */
+  .device-roster :deep(.k-device-card__status) {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Actions sit in their own column with no divider — the row's own edge
+     already separates it from the next device. */
+  .device-roster :deep(.k-device-card__foot) {
+    grid-column: 3;
+    grid-row: 1;
+    padding: 0;
+    border-top: 0;
+    background: none;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  /* Card footers spread their actions apart; in a row they cluster on the
+     right rail instead. */
+  .device-roster :deep(.k-device-card__foot > .flex) {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* Skeletons take the row shape too, so nothing shifts on load. */
+  .skeleton-card {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+    padding: 12px 14px;
+  }
+  .skeleton-screen {
+    height: 72px;
+  }
+}
+</style>

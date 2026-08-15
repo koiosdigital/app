@@ -11,50 +11,48 @@
       @confirm="handleDelete"
     />
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex flex-1 items-center justify-center">
-      <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="error" class="flex flex-1 items-center justify-center p-5">
-      <UCard class="w-full max-w-md border border-red-500/20 bg-red-500/10">
-        <div class="space-y-4 text-center">
-          <UIcon name="i-fa6-solid:circle-exclamation" class="h-12 w-12 text-red-400 mx-auto" />
-          <p class="text-red-400">{{ error }}</p>
-          <UButton color="neutral" variant="soft" @click="loadDevice">Retry</UButton>
-        </div>
-      </UCard>
-    </div>
+    <PageState v-if="loading" loading />
+    <PageState v-else-if="error" :error="error" @retry="loadDevice" />
 
     <!-- Main Content -->
     <div v-else-if="device" class="flex flex-1 flex-col">
-      <!-- Current Display Preview / Pinned App -->
-      <section class="flex flex-col items-center gap-4 px-5 py-8 border-b border-white/10">
-        <!-- Pinned App State -->
-        <template v-if="pinnedInstallation">
-          <div class="flex items-center gap-2">
-            <UIcon name="i-fa6-solid:thumbtack" class="h-3 w-3 text-primary-400" />
-            <p class="text-xs uppercase tracking-widest text-primary-400">Pinned App</p>
+      <!-- One hero for both states: pinning changes the label and the action,
+           not the whole layout. -->
+      <DeviceStage
+        :eyebrow="pinnedInstallation ? 'Pinned' : 'Now playing'"
+        :title="heroInstallation ? heroAppName : 'Nothing displaying'"
+        :meta="heroMeta"
+        :lit="!!heroInstallation"
+      >
+        <template #badge>
+          <span v-if="pinnedInstallation" class="k-chip k-chip--ember">
+            <UIcon name="i-fa6-solid:thumbtack" class="h-2.5 w-2.5" />
+            Held
+          </span>
+        </template>
+
+        <InstallationPreview
+          v-if="heroInstallation"
+          :device-id="deviceId"
+          :installation-id="heroInstallation.id"
+          :app-id="heroInstallation.appId"
+          :width="deviceWidth"
+          :height="deviceHeight"
+          show-frame
+          :show-label="false"
+        />
+        <div v-else class="k-bezel">
+          <div
+            class="k-screen empty-screen"
+            :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
+          >
+            <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/25" />
           </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="now-playing-container"
-              :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
-            >
-              <InstallationPreview
-                :device-id="deviceId"
-                :installation-id="pinnedInstallation.id"
-                :app-id="pinnedInstallation.appId"
-                :width="deviceWidth"
-                :height="deviceHeight"
-                show-frame
-                :show-label="false"
-              />
-            </div>
-            <p class="text-sm text-white/70">{{ pinnedInstallation.appName }}</p>
-          </div>
+        </div>
+
+        <template #actions>
           <UButton
+            v-if="pinnedInstallation"
             size="sm"
             color="neutral"
             variant="soft"
@@ -62,54 +60,35 @@
             :loading="unpinning"
             @click="unpinPinnedInstallation"
           >
-            Unpin
+            Resume rotation
           </UButton>
-        </template>
-
-        <!-- Normal Now Playing State -->
-        <template v-else>
-          <p class="text-xs uppercase tracking-widest text-white/50">Now Playing</p>
-          <div v-if="currentInstallation" class="flex flex-col items-center gap-3">
-            <div
-              class="now-playing-container"
-              :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
-            >
-              <InstallationPreview
-                :device-id="deviceId"
-                :installation-id="currentInstallation.id"
-                :app-id="currentInstallation.appId"
-                :width="deviceWidth"
-                :height="deviceHeight"
-                show-frame
-                :show-label="false"
-              />
-            </div>
-            <p class="text-sm text-white/70">{{ currentAppName }}</p>
-          </div>
-          <div v-else class="flex flex-col items-center gap-3">
-            <!-- Empty state with frame -->
-            <div class="empty-preview-frame">
-              <div
-                class="empty-preview-screen"
-                :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
-              >
-                <UIcon name="i-fa6-regular:image" class="h-6 w-6 text-white/30" />
-              </div>
-            </div>
-            <p class="text-sm text-white/50">No app displaying</p>
-          </div>
-        </template>
-      </section>
-
-      <!-- Installations Section -->
-      <section class="relative flex-1 px-5 py-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-medium text-white/90">Apps</h2>
           <UButton
-            v-if="installations.length > 1 && !pinnedInstallation"
+            v-else-if="installations.length"
             size="sm"
             color="neutral"
             variant="ghost"
+            icon="i-fa6-solid:plus"
+            @click="addInstallation"
+          >
+            Add an app
+          </UButton>
+        </template>
+      </DeviceStage>
+
+      <!-- Apps -->
+      <section class="flex-1 px-4 py-5">
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-[15px] font-semibold tracking-tight">Apps</h2>
+            <p class="k-num text-[11.5px] text-muted">
+              {{ rotationSummary }}
+            </p>
+          </div>
+          <UButton
+            v-if="installations.length > 1 && !pinnedInstallation"
+            size="sm"
+            :color="isReordering ? 'primary' : 'neutral'"
+            :variant="isReordering ? 'solid' : 'ghost'"
             :icon="isReordering ? 'i-fa6-solid:check' : 'i-fa6-solid:grip-vertical'"
             @click="toggleReorder"
           >
@@ -117,12 +96,14 @@
           </UButton>
         </div>
 
-        <!-- Installations Grid -->
-        <div ref="installationsContainer" class="installations-grid">
+        <div
+          ref="installationsContainer"
+          class="apps-grid"
+          :class="{ 'is-reordering': isReordering }"
+        >
           <div
             v-for="(installation, index) in installations"
             :key="installation.id"
-            class="relative"
             :draggable="isReordering"
             @dragstart="handleDragStart($event, index)"
             @dragover="handleDragOver($event, index)"
@@ -131,73 +112,61 @@
           >
             <button
               type="button"
-              class="w-full rounded-lg border border-white/10 bg-white/5 p-3 transition hover:bg-white/10"
+              class="app-tile"
               :class="{
-                'ring-2 ring-primary-500':
-                  device.currentlyDisplayingInstallation === installation.id,
-                'cursor-grab': isReordering,
-                'opacity-50': dragIndex === index || installation.skippedByUser,
-                'opacity-40': installation.skippedByServer,
+                'app-tile--live': device.currentlyDisplayingInstallation === installation.id,
+                'app-tile--muted': installation.skippedByUser || installation.skippedByServer,
+                'app-tile--dragging': dragIndex === index,
               }"
               @click="!isReordering && openInstallation(installation.id)"
             >
-              <!-- Skipped state placeholder -->
-              <div v-if="installation.skippedByUser" class="flex flex-col items-center gap-2">
-                <div
-                  class="skipped-preview"
-                  :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
-                >
-                  <UIcon name="i-fa6-regular:eye-slash" class="h-5 w-5 text-white/30" />
-                </div>
-                <span class="text-sm text-white/50 text-center truncate max-w-full">{{
-                  installation.appName
-                }}</span>
+              <div class="app-tile__screen">
+                <InstallationPreview
+                  :device-id="deviceId"
+                  :installation-id="installation.id"
+                  :app-id="installation.appId"
+                  :app-name="installation.appName"
+                  :width="deviceWidth"
+                  :height="deviceHeight"
+                  show-frame
+                  :show-label="false"
+                />
+                <span v-if="isReordering" class="app-tile__grip" aria-hidden="true">
+                  <UIcon name="i-fa6-solid:grip-vertical" class="h-3 w-3" />
+                </span>
               </div>
 
-              <!-- Normal preview -->
-              <InstallationPreview
-                v-else
-                :device-id="deviceId"
-                :installation-id="installation.id"
-                :app-id="installation.appId"
-                :app-name="installation.appName"
-                :width="deviceWidth"
-                :height="deviceHeight"
-                :show-frame="true"
-              />
+              <div class="app-tile__foot">
+                <span class="app-tile__name">{{ installation.appName }}</span>
+                <!-- State is stated, not implied by opacity: a skipped app used
+                     to look identical to a slow-loading one. -->
+                <span
+                  v-if="device.currentlyDisplayingInstallation === installation.id"
+                  class="k-lamp k-lamp--ember"
+                  aria-label="On screen now"
+                />
+                <span v-else-if="installation.pinnedByUser" class="k-chip k-chip--ember">Held</span>
+                <span v-else-if="installation.skippedByUser" class="k-chip">Skipped</span>
+                <span v-else-if="installation.skippedByServer" class="k-chip">No data</span>
+              </div>
             </button>
-
-            <!-- Reorder handle -->
-            <div
-              v-if="isReordering"
-              class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 border border-white/20"
-            >
-              <UIcon name="i-fa6-solid:grip-vertical" class="h-3 w-3 text-white/70" />
-            </div>
           </div>
 
-          <!-- Add New Installation Button -->
-          <button
-            type="button"
-            class="w-full rounded-lg border-2 border-dashed border-white/20 p-3 transition hover:border-white/40 hover:bg-white/5"
-            @click="addInstallation"
-          >
-            <div class="flex flex-col items-center gap-2">
-              <div
-                class="add-button-preview"
-                :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
-              >
-                <UIcon name="i-fa6-solid:plus" class="h-6 w-6 text-white/40" />
+          <button type="button" class="app-tile app-tile--add" @click="addInstallation">
+            <div class="app-tile__screen">
+              <div class="add-screen" :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }">
+                <UIcon name="i-fa6-solid:plus" class="h-5 w-5" />
               </div>
-              <span class="text-sm text-white/50">Add App</span>
+            </div>
+            <div class="app-tile__foot">
+              <span class="app-tile__name">Add app</span>
             </div>
           </button>
         </div>
 
-        <!-- Empty State -->
-        <div v-if="installations.length === 0" class="mt-4 text-center text-sm text-white/50">
-          No apps installed yet. Add an app to get started.
-        </div>
+        <p v-if="installations.length === 0" class="mt-4 text-center text-sm text-muted">
+          No apps yet. Add one and it starts showing on the panel straight away.
+        </p>
       </section>
     </div>
   </PageLayout>
@@ -210,6 +179,8 @@ import { useHead } from '@unhead/vue'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import InstallationPreview from '@/components/installations/InstallationPreview.vue'
+import DeviceStage from '@/components/devices/DeviceStage.vue'
+import PageState from '@/components/PageState.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import { devicesApi } from '@/lib/api/devices'
 import { getErrorMessage } from '@/lib/api/errors'
@@ -254,10 +225,30 @@ const currentInstallation = computed(() => {
   return installations.value.find((i) => i.id === device.value?.currentlyDisplayingInstallation)
 })
 
-const currentAppName = computed(() => currentInstallation.value?.appName || 'Unknown App')
-
 const pinnedInstallation = computed(() => {
   return installations.value.find((i) => i.pinnedByUser)
+})
+
+// Pinned wins over rotation — it is literally what the panel is showing.
+const heroInstallation = computed(() => pinnedInstallation.value ?? currentInstallation.value)
+const heroAppName = computed(() => heroInstallation.value?.appName ?? 'Unknown app')
+
+const activeCount = computed(
+  () => installations.value.filter((i) => !i.skippedByUser && !i.skippedByServer).length,
+)
+
+const heroMeta = computed(() => {
+  if (pinnedInstallation.value) return 'Held until you resume the rotation'
+  if (!heroInstallation.value) return 'The panel is idle'
+  return `1 of ${activeCount.value} in rotation`
+})
+
+const rotationSummary = computed(() => {
+  const total = installations.value.length
+  if (!total) return 'Nothing installed'
+  const skipped = total - activeCount.value
+  const base = `${activeCount.value} in rotation`
+  return skipped ? `${base} · ${skipped} skipped` : base
 })
 
 useHead({
@@ -468,72 +459,130 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Now playing container - provides size constraints while child fills it */
-.now-playing-container {
-  width: min(80vw, 560px); /* Explicit width - uses 80vw or 400px, whichever is smaller */
-  max-width: 40vw;
+.empty-screen {
+  width: min(88vw, 520px);
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Installations grid */
-.installations-grid {
+.apps-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-@media (min-width: 768px) {
-  .installations-grid {
-    grid-template-columns: repeat(3, 1fr);
+@media (min-width: 640px) {
+  .apps-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-
 @media (min-width: 1024px) {
-  .installations-grid {
-    grid-template-columns: repeat(4, 1fr);
+  .apps-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
-
 @media (min-width: 1280px) {
-  .installations-grid {
-    grid-template-columns: repeat(5, 1fr);
+  .apps-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
-/* Empty state preview frame - matches now-playing constraints */
-.empty-preview-frame {
-  width: min(80vw, 400px);
-  max-height: 40vh;
-  padding: 6px;
-  background: #27272a;
-  border-radius: 0.5rem;
+.app-tile {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 8px 6px;
+  text-align: left;
+  border: 1px solid var(--k-line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--k-panel-2), var(--k-panel));
+  box-shadow: var(--k-bezel);
+  transition:
+    border-color 0.18s var(--k-ease),
+    transform 0.14s var(--k-ease),
+    opacity 0.18s var(--k-ease);
+}
+.app-tile:active {
+  transform: scale(0.985);
 }
 
-.empty-preview-screen {
-  width: 100%;
-  background: black;
-  border-radius: 2px;
+/* The app on screen right now is the only one wearing the ember. */
+.app-tile--live {
+  border-color: rgb(231 145 20 / 0.45);
+  box-shadow:
+    var(--k-bezel),
+    0 0 0 1px rgb(231 145 20 / 0.18),
+    0 10px 26px -18px rgb(231 145 20 / 0.9);
+}
+
+.app-tile--muted {
+  opacity: 0.55;
+}
+.app-tile--dragging {
+  opacity: 0.35;
+}
+
+.app-tile__screen {
+  position: relative;
+}
+
+.app-tile__grip {
+  position: absolute;
+  top: -5px;
+  right: -5px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  color: var(--ui-text-muted);
+  background: var(--k-raised);
+  box-shadow: inset 0 0 0 1px var(--k-line);
 }
 
-/* Skipped installation preview */
-.skipped-preview {
-  width: 100%;
-  background: black;
-  border-radius: 2px;
+.app-tile__foot {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 20px;
 }
 
-/* Add button preview */
-.add-button-preview {
-  width: 100%;
-  background: rgb(39 39 42 / 0.5);
-  border-radius: 2px;
+.app-tile__name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ui-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-tile--add {
+  border-style: dashed;
+  background: none;
+  box-shadow: none;
+  color: var(--ui-text-dimmed);
+}
+.app-tile--add .app-tile__name {
+  color: var(--ui-text-dimmed);
+}
+
+.add-screen {
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: center;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.03);
+  color: var(--ui-text-dimmed);
+}
+
+.is-reordering .app-tile {
+  cursor: grab;
 }
 </style>

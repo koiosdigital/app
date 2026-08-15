@@ -12,12 +12,14 @@
   >
     <!-- Header: mono eyebrow, name, then the one line of state that matters -->
     <div class="k-device-card__head">
-      <div class="min-w-0 flex-1">
+      <div class="k-device-card__identity">
         <p class="k-eyebrow">{{ eyebrow }}</p>
         <h3 class="k-device-card__title">{{ title }}</h3>
         <p class="k-device-card__sub k-num">{{ subtitle }}</p>
       </div>
-      <div class="flex flex-col items-end gap-1.5">
+      <!-- Named parts, not anonymous wrappers: the roster layout promotes each
+           of these to its own grid column at wide widths. -->
+      <div class="k-device-card__status">
         <slot name="header-end" />
       </div>
     </div>
@@ -113,6 +115,18 @@ defineEmits<{
   justify-content: space-between;
   gap: 12px;
   padding: 14px 14px 10px;
+}
+
+.k-device-card__identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.k-device-card__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
 }
 
 .k-device-card__title {
