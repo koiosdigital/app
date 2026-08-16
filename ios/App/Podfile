@@ -1,4 +1,4 @@
-require_relative '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios/scripts/pods_helpers'
+require_relative '../../node_modules/.pnpm/@capacitor+ios@8.5.0_@capacitor+core@8.5.0/node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 use_frameworks!
@@ -9,18 +9,18 @@ use_frameworks!
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios'
-  pod 'CapacitorCommunityBluetoothLe', :path => '../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le'
-  pod 'CapacitorApp', :path => '../../node_modules/.pnpm/@capacitor+app@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/app'
-  pod 'CapacitorBrowser', :path => '../../node_modules/.pnpm/@capacitor+browser@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/browser'
-  pod 'CapacitorDevice', :path => '../../node_modules/.pnpm/@capacitor+device@8.0.2_@capacitor+core@8.0.0/node_modules/@capacitor/device'
-  pod 'CapacitorGeolocation', :path => '../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation'
-  pod 'CapacitorInappbrowser', :path => '../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser'
-  pod 'CapacitorPreferences', :path => '../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences'
-  pod 'CapawesomeTeamCapacitorOauth', :path => '../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_4eab26ef7c2ccf0fbe81e182a28f6327/node_modules/@capawesome-team/capacitor-oauth'
-  pod 'CapawesomeCapacitorLiveUpdate', :path => '../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update'
-  pod 'CapacitorZeroconf', :path => '../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.0.0_bonjour@3.5.1/node_modules/capacitor-zeroconf'
+  pod 'Capacitor', :path => '../../node_modules/.pnpm/@capacitor+ios@8.5.0_@capacitor+core@8.5.0/node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/.pnpm/@capacitor+ios@8.5.0_@capacitor+core@8.5.0/node_modules/@capacitor/ios'
+  pod 'CapacitorCommunityBluetoothLe', :path => '../../node_modules/.pnpm/@capacitor-community+bluetooth-le@8.3.0_@capacitor+core@8.5.0/node_modules/@capacitor-community/bluetooth-le'
+  pod 'CapacitorApp', :path => '../../node_modules/.pnpm/@capacitor+app@8.1.1_@capacitor+core@8.5.0/node_modules/@capacitor/app'
+  pod 'CapacitorBrowser', :path => '../../node_modules/.pnpm/@capacitor+browser@8.0.4_@capacitor+core@8.5.0/node_modules/@capacitor/browser'
+  pod 'CapacitorDevice', :path => '../../node_modules/.pnpm/@capacitor+device@8.0.3_@capacitor+core@8.5.0/node_modules/@capacitor/device'
+  pod 'CapacitorGeolocation', :path => '../../node_modules/.pnpm/@capacitor+geolocation@8.2.2_@capacitor+core@8.5.0/node_modules/@capacitor/geolocation'
+  pod 'CapacitorInappbrowser', :path => '../../node_modules/.pnpm/@capacitor+inappbrowser@4.0.2_@capacitor+core@8.5.0/node_modules/@capacitor/inappbrowser'
+  pod 'CapacitorPreferences', :path => '../../node_modules/.pnpm/@capacitor+preferences@8.0.1_@capacitor+core@8.5.0/node_modules/@capacitor/preferences'
+  pod 'CapawesomeTeamCapacitorOauth', :path => '../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_ad47c26bf3e15aab4ce0353ead836126/node_modules/@capawesome-team/capacitor-oauth'
+  pod 'CapawesomeCapacitorLiveUpdate', :path => '../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe0_505b58c0bde189ff8f51c15a6d9fb41a/node_modules/@capawesome/capacitor-live-update'
+  pod 'CapacitorZeroconf', :path => '../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.5.0_bonjour@3.5.1/node_modules/capacitor-zeroconf'
 end
 
 target 'App' do

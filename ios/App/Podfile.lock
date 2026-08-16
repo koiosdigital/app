@@ -1,29 +1,29 @@
 PODS:
   - Alamofire (5.10.2)
-  - AppAuth (2.0.0):
-    - AppAuth/Core (= 2.0.0)
-    - AppAuth/ExternalUserAgent (= 2.0.0)
-  - AppAuth/Core (2.0.0)
-  - AppAuth/ExternalUserAgent (2.0.0):
+  - AppAuth (2.1.0):
+    - AppAuth/Core (= 2.1.0)
+    - AppAuth/ExternalUserAgent (= 2.1.0)
+  - AppAuth/Core (2.1.0)
+  - AppAuth/ExternalUserAgent (2.1.0):
     - AppAuth/Core
-  - Capacitor (8.0.0):
+  - Capacitor (8.5.0):
     - CapacitorCordova
-  - CapacitorApp (8.0.0):
+  - CapacitorApp (8.1.1):
     - Capacitor
-  - CapacitorBrowser (8.0.0):
+  - CapacitorBrowser (8.0.4):
     - Capacitor
-  - CapacitorCommunityBluetoothLe (7.3.0):
+  - CapacitorCommunityBluetoothLe (8.3.0):
     - Capacitor
-  - CapacitorCordova (8.0.0)
-  - CapacitorDevice (8.0.2):
+  - CapacitorCordova (8.5.0)
+  - CapacitorDevice (8.0.3):
     - Capacitor
-  - CapacitorGeolocation (8.1.0):
+  - CapacitorGeolocation (8.2.2):
     - Capacitor
-    - IONGeolocationLib (= 2.0.0)
-  - CapacitorInappbrowser (3.0.0):
+    - IONGeolocationLib (= 2.1.0)
+  - CapacitorInappbrowser (4.0.2):
     - Capacitor
-    - OSInAppBrowserLib (~> 2.3.1)
-  - CapacitorPreferences (8.0.0):
+    - OSInAppBrowserLib (~> 2.3.2)
+  - CapacitorPreferences (8.0.1):
     - Capacitor
   - CapacitorZeroconf (4.0.0):
     - Capacitor
@@ -34,23 +34,23 @@ PODS:
   - CapawesomeTeamCapacitorOauth (0.2.0):
     - AppAuth (~> 2.0)
     - Capacitor
-  - IONGeolocationLib (2.0.0)
-  - OSInAppBrowserLib (2.3.1)
+  - IONGeolocationLib (2.1.0)
+  - OSInAppBrowserLib (2.3.2)
   - ZIPFoundation (0.9.20)
 
 DEPENDENCIES:
-  - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios`)"
-  - "CapacitorApp (from `../../node_modules/.pnpm/@capacitor+app@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/app`)"
-  - "CapacitorBrowser (from `../../node_modules/.pnpm/@capacitor+browser@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/browser`)"
-  - "CapacitorCommunityBluetoothLe (from `../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le`)"
-  - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios`)"
-  - "CapacitorDevice (from `../../node_modules/.pnpm/@capacitor+device@8.0.2_@capacitor+core@8.0.0/node_modules/@capacitor/device`)"
-  - "CapacitorGeolocation (from `../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation`)"
-  - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser`)"
-  - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences`)"
-  - "CapacitorZeroconf (from `../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.0.0_bonjour@3.5.1/node_modules/capacitor-zeroconf`)"
-  - "CapawesomeCapacitorLiveUpdate (from `../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update`)"
-  - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_4eab26ef7c2ccf0fbe81e182a28f6327/node_modules/@capawesome-team/capacitor-oauth`)"
+  - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@8.5.0_@capacitor+core@8.5.0/node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/.pnpm/@capacitor+app@8.1.1_@capacitor+core@8.5.0/node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/.pnpm/@capacitor+browser@8.0.4_@capacitor+core@8.5.0/node_modules/@capacitor/browser`)"
+  - "CapacitorCommunityBluetoothLe (from `../../node_modules/.pnpm/@capacitor-community+bluetooth-le@8.3.0_@capacitor+core@8.5.0/node_modules/@capacitor-community/bluetooth-le`)"
+  - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@8.5.0_@capacitor+core@8.5.0/node_modules/@capacitor/ios`)"
+  - "CapacitorDevice (from `../../node_modules/.pnpm/@capacitor+device@8.0.3_@capacitor+core@8.5.0/node_modules/@capacitor/device`)"
+  - "CapacitorGeolocation (from `../../node_modules/.pnpm/@capacitor+geolocation@8.2.2_@capacitor+core@8.5.0/node_modules/@capacitor/geolocation`)"
+  - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@4.0.2_@capacitor+core@8.5.0/node_modules/@capacitor/inappbrowser`)"
+  - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@8.0.1_@capacitor+core@8.5.0/node_modules/@capacitor/preferences`)"
+  - "CapacitorZeroconf (from `../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.5.0_bonjour@3.5.1/node_modules/capacitor-zeroconf`)"
+  - "CapawesomeCapacitorLiveUpdate (from `../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe0_505b58c0bde189ff8f51c15a6d9fb41a/node_modules/@capawesome/capacitor-live-update`)"
+  - "CapawesomeTeamCapacitorOauth (from `../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_ad47c26bf3e15aab4ce0353ead836126/node_modules/@capawesome-team/capacitor-oauth`)"
 
 SPEC REPOS:
   trunk:
@@ -62,49 +62,49 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   Capacitor:
-    :path: "../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios"
+    :path: "../../node_modules/.pnpm/@capacitor+ios@8.5.0_@capacitor+core@8.5.0/node_modules/@capacitor/ios"
   CapacitorApp:
-    :path: "../../node_modules/.pnpm/@capacitor+app@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/app"
+    :path: "../../node_modules/.pnpm/@capacitor+app@8.1.1_@capacitor+core@8.5.0/node_modules/@capacitor/app"
   CapacitorBrowser:
-    :path: "../../node_modules/.pnpm/@capacitor+browser@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/browser"
+    :path: "../../node_modules/.pnpm/@capacitor+browser@8.0.4_@capacitor+core@8.5.0/node_modules/@capacitor/browser"
   CapacitorCommunityBluetoothLe:
-    :path: "../../node_modules/.pnpm/@capacitor-community+bluetooth-le@7.3.0_@capacitor+core@8.0.0/node_modules/@capacitor-community/bluetooth-le"
+    :path: "../../node_modules/.pnpm/@capacitor-community+bluetooth-le@8.3.0_@capacitor+core@8.5.0/node_modules/@capacitor-community/bluetooth-le"
   CapacitorCordova:
-    :path: "../../node_modules/.pnpm/@capacitor+ios@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/ios"
+    :path: "../../node_modules/.pnpm/@capacitor+ios@8.5.0_@capacitor+core@8.5.0/node_modules/@capacitor/ios"
   CapacitorDevice:
-    :path: "../../node_modules/.pnpm/@capacitor+device@8.0.2_@capacitor+core@8.0.0/node_modules/@capacitor/device"
+    :path: "../../node_modules/.pnpm/@capacitor+device@8.0.3_@capacitor+core@8.5.0/node_modules/@capacitor/device"
   CapacitorGeolocation:
-    :path: "../../node_modules/.pnpm/@capacitor+geolocation@8.1.0_@capacitor+core@8.0.0/node_modules/@capacitor/geolocation"
+    :path: "../../node_modules/.pnpm/@capacitor+geolocation@8.2.2_@capacitor+core@8.5.0/node_modules/@capacitor/geolocation"
   CapacitorInappbrowser:
-    :path: "../../node_modules/.pnpm/@capacitor+inappbrowser@3.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/inappbrowser"
+    :path: "../../node_modules/.pnpm/@capacitor+inappbrowser@4.0.2_@capacitor+core@8.5.0/node_modules/@capacitor/inappbrowser"
   CapacitorPreferences:
-    :path: "../../node_modules/.pnpm/@capacitor+preferences@8.0.0_@capacitor+core@8.0.0/node_modules/@capacitor/preferences"
+    :path: "../../node_modules/.pnpm/@capacitor+preferences@8.0.1_@capacitor+core@8.5.0/node_modules/@capacitor/preferences"
   CapacitorZeroconf:
-    :path: "../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.0.0_bonjour@3.5.1/node_modules/capacitor-zeroconf"
+    :path: "../../node_modules/.pnpm/capacitor-zeroconf@4.0.0_@capacitor+core@8.5.0_bonjour@3.5.1/node_modules/capacitor-zeroconf"
   CapawesomeCapacitorLiveUpdate:
-    :path: "../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+57837_936da7fd130f639a1172460a8fb1272a/node_modules/@capawesome/capacitor-live-update"
+    :path: "../../node_modules/.pnpm/@capawesome+capacitor-live-update@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe0_505b58c0bde189ff8f51c15a6d9fb41a/node_modules/@capawesome/capacitor-live-update"
   CapawesomeTeamCapacitorOauth:
-    :path: "../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_4eab26ef7c2ccf0fbe81e182a28f6327/node_modules/@capawesome-team/capacitor-oauth"
+    :path: "../../node_modules/.pnpm/@capawesome-team+capacitor-oauth@https+++codeload.github.com+acvigue+pkgs+tar.gz+42fe02_ad47c26bf3e15aab4ce0353ead836126/node_modules/@capawesome-team/capacitor-oauth"
 
 SPEC CHECKSUMS:
   Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
-  AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
-  Capacitor: 341ff7cf652ec695d1a8ebf604db448ac7b6d635
-  CapacitorApp: 3963a84197280757b84f126afd1520a85ae3b092
-  CapacitorBrowser: b7d7f05f840fe042e46f6528bb8db853e3058fb2
-  CapacitorCommunityBluetoothLe: 41f9dec8a4c16ab6b81e56402b6047fc19b4735d
-  CapacitorCordova: 5dc3912d25ef770a3fe0f431bb65c9fbfa2e92f9
-  CapacitorDevice: 14cba6f88d1c3074cbf825fea977c8c526453ff8
-  CapacitorGeolocation: 7132de914f9d853ec4642dc1d36e4e2018a4e8a8
-  CapacitorInappbrowser: 66fc8cc3ff414c2393fe5dcfd52815cf8b6a046f
-  CapacitorPreferences: 443fabe9670226200e595658a87ef0b1566716d4
+  AppAuth: ef4da5a3fc2e10b90c09a0a94a9baeaedc0341d5
+  Capacitor: 00b87168591cc006ea6f5c0de681ec5c39a2c8eb
+  CapacitorApp: 305bd13c44f6f9d164e2ee66a4faa956ed8c0e06
+  CapacitorBrowser: 752e0208aa07c7aa63d1f7cde895a3e9519b2656
+  CapacitorCommunityBluetoothLe: f9c76baa5338d206b7418c48d945d93d47800af3
+  CapacitorCordova: 9d3acbb574048e7167d2af127a0af2123e619f2f
+  CapacitorDevice: 708e742b60a61572cd593e44c809592e8f31da14
+  CapacitorGeolocation: 327f18983c8f8a55e191fcf7dee80b9294f1ab78
+  CapacitorInappbrowser: 8f4ee0ca515580efa515c92aed765d0c1c339c58
+  CapacitorPreferences: cca2021f386efb75947c850334447d9ff22b14f1
   CapacitorZeroconf: 32e19c259908ca1b97af27aeff25c26b8e948021
   CapawesomeCapacitorLiveUpdate: dddec08ed1086d61328823e20fdc52946241796f
   CapawesomeTeamCapacitorOauth: f9bc3ba2ca896bdebab51ed1ab072ca8c10664eb
-  IONGeolocationLib: a5e40b54edc2ee9902036eda5aaa41ddf07bb68d
-  OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
+  IONGeolocationLib: 6a7b6f76063fb1b01cfb14fae7d0f526e3c9b271
+  OSInAppBrowserLib: c21c8fa3d886654d2f553b9f1bded9d27a0530c7
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 4987888ad604c2ef5578612abd7ada503811fbd2
+PODFILE CHECKSUM: 39c3c6bfe8c016f0fdb1f26668e6c82cf750d1f8
 
 COCOAPODS: 1.16.2
