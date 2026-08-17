@@ -108,12 +108,14 @@ const busy = ref<'clear' | 'refresh-display' | null>(null)
 
 const hasFrame = computed(() => !!state.value?.display?.valid)
 
-const stageMeta = computed(() => {
-  if (!hasFrame.value) return 'Compose a message to put something on it'
-  const w = state.value?.display?.width ?? state.value?.setup?.gridWidth
-  const h = state.value?.display?.height ?? state.value?.setup?.gridHeight
-  return w && h ? `${w} × ${h} flaps` : undefined
-})
+/**
+ * A board showing a message needs no caption — the message is right there, in
+ * flaps, in the largest type on the screen. The grid size is a fact that never
+ * changes about a thing you are looking at.
+ */
+const stageMeta = computed(() =>
+  hasFrame.value ? undefined : 'Compose a message to put something on it',
+)
 
 const destinations = computed(() => [
   {

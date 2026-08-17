@@ -12,7 +12,7 @@
     <template #content>
       <!-- Empty disc: the table is only controllable LAN-direct, so there's no
            live pattern to preview from the cloud. -->
-      <div class="w-36">
+      <div class="w-44">
         <TranquilPatternThumb :src="null" alt="" />
       </div>
     </template>

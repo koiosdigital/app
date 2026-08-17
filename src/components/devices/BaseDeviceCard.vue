@@ -13,7 +13,7 @@
             {{ title }}
           </button>
         </h3>
-        <p class="k-device-card__sub k-num">{{ subtitle }}</p>
+        <p v-if="subtitle" class="k-device-card__sub k-num">{{ subtitle }}</p>
       </div>
       <!-- Named parts, not anonymous wrappers: the roster layout promotes each
            of these to its own grid column at wide widths. -->
@@ -40,13 +40,19 @@ withDefaults(
   defineProps<{
     eyebrow: string
     title: string
-    subtitle: string
+    /**
+     * One line under the name, and only when there is something to add. A
+     * device that is simply working says nothing here — the stage above is
+     * already showing what it is doing.
+     */
+    subtitle?: string
     /** Device is on and emitting light — the card glows with it. */
     lit?: boolean
     /** Colour of the light this device family throws. */
     bloom?: string
   }>(),
   {
+    subtitle: undefined,
     lit: false,
     bloom: 'rgb(231 145 20 / 0.13)',
   },
@@ -112,7 +118,7 @@ defineEmits<{
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 14px 10px;
+  padding: 12px 14px 8px;
 }
 
 .k-device-card__identity {
@@ -163,12 +169,14 @@ defineEmits<{
   color: var(--ui-text-muted);
 }
 
+/* The stage is the point of the card, so it gets the width. The old 14px
+   side padding was the card being polite to itself at the screen's expense. */
 .k-device-card__stage {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 14px 14px;
+  padding: 2px 9px 12px;
 }
 
 .k-device-card__foot {

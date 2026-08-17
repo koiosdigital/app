@@ -1,6 +1,6 @@
 <template>
   <BaseDeviceCard
-    eyebrow="Smart matrix"
+    eyebrow="Matrx"
     :title="displayName"
     :subtitle="subtitle"
     :lit="isLit"
@@ -14,7 +14,7 @@
       <div class="preview-container">
         <!-- Show installation preview if one is currently displaying -->
         <InstallationPreview
-          v-if="device.currentlyDisplayingInstallation"
+          v-if="screenEnabled && device.currentlyDisplayingInstallation"
           :device-id="device.id"
           :installation-id="device.currentlyDisplayingInstallation"
           :app-id="device.currentlyDisplayingInstallation"
@@ -24,16 +24,16 @@
           :show-frame="true"
           :show-label="false"
         />
-        <!-- Show empty/off state when no installation is displaying -->
+        <!-- Nothing installed to show, or the screen is off — the same empty
+             state either way. A dark panel is displaying nothing, so the card
+             shows nothing; rendering the artwork of a screen that is off would
+             claim the opposite. The subtitle says which of the two it is. -->
         <div v-else class="k-bezel">
           <div
             class="k-screen empty-preview-screen"
             :style="{ aspectRatio: `${deviceWidth} / ${deviceHeight}` }"
           >
-            <UIcon
-              :name="screenEnabled ? 'i-fa6-regular:image' : 'i-fa6-solid:power-off'"
-              class="h-5 w-5 text-white/25"
-            />
+            <UIcon name="i-fa6-regular:image" class="h-5 w-5 text-white/25" />
           </div>
         </div>
       </div>
@@ -67,6 +67,7 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
 import type { MatrxDevice } from '@/lib/api/mappers/deviceMapper'
+import { formatLastSeen } from '@/utils/device'
 import BaseDeviceCard from './BaseDeviceCard.vue'
 import DeviceStatus from './DeviceStatus.vue'
 import InstallationPreview from '../installations/InstallationPreview.vue'
@@ -91,12 +92,15 @@ const deviceHeight = computed(() => device.value.settings?.height ?? 32)
 /** The panel is actually emitting light — the card glows with it. */
 const isLit = computed(() => device.value.online && screenEnabled.value)
 
-// One line that answers "what is it doing?" before "what is installed on it?".
+/**
+ * Only when there is something to say. A panel that is up and rotating says
+ * nothing: the preview above is literally showing you what it is doing, and
+ * the rotation advances on its own.
+ */
 const subtitle = computed(() => {
-  if (!device.value.online) return 'Unreachable'
+  if (!device.value.online) return `Unreachable ${formatLastSeen(device.value.updatedAt)}`
   if (!screenEnabled.value) return 'Screen off'
-  const n = device.value.installationCount
-  return `${n} app${n !== 1 ? 's' : ''} in rotation`
+  return undefined
 })
 
 const handleOpen = () => {

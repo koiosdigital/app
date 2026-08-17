@@ -2,17 +2,22 @@
 @import '@nuxt/ui';
 
 /* ============================================================
-   Typefaces — Chivo for UI, Spline Sans Mono for data.
+   Typefaces — Hanken Grotesk for UI, Spline Sans Mono for data.
+   Hanken replaces Chivo: a humanist grotesque with a taller
+   x-height and softer terminals, so the interface around the
+   devices reads as domestic rather than as a developer tool. The
+   mono is untouched — it is still what makes a reading look like
+   a reading.
    Both variable, latin subset, SIL OFL 1.1. Self-hosted so the
    native (Capacitor) build never waits on a font CDN.
    ============================================================ */
 
 @font-face {
-  font-family: 'Chivo';
+  font-family: 'Hanken Grotesk';
   font-style: normal;
-  font-weight: 300 900;
+  font-weight: 300 800;
   font-display: swap;
-  src: url('@/assets/fonts/chivo-var.woff2') format('woff2');
+  src: url('@/assets/fonts/hanken-grotesk-var.woff2') format('woff2');
 }
 
 @font-face {
@@ -24,7 +29,7 @@
 }
 
 @theme {
-  --font-sans: 'Chivo', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -170,7 +175,9 @@ body {
 h1,
 h2,
 h3 {
-  letter-spacing: -0.02em;
+  /* Hanken sits a little wider than Chivo did, so the display tracking eases
+     off — at -0.02em its rounder counters started closing up. */
+  letter-spacing: -0.013em;
   text-wrap: balance;
 }
 
@@ -193,7 +200,9 @@ h3 {
   line-height: 1.2;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ui-text-dimmed);
+  /* A step quieter than --ui-text-dimmed. It is a label above the name, and
+     it was competing with the device's own screen for first look. */
+  color: #5f584f;
 }
 
 /* Anything that is a reading, an ID, a timestamp or a percentage. */
@@ -256,14 +265,16 @@ h3 {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--ui-text-muted);
-  background: rgb(255 255 255 / 0.04);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.055);
+  color: #8a8179;
+  background: rgb(255 255 255 / 0.028);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.045);
 }
+/* Reachability is worth stating and not worth staring at, so the fill and the
+   ring come down while the text stays readable. */
 .k-chip--live {
-  color: #86ddbc;
-  background: rgb(79 194 154 / 0.12);
-  box-shadow: inset 0 0 0 1px rgb(79 194 154 / 0.22);
+  color: #74c9a8;
+  background: rgb(79 194 154 / 0.075);
+  box-shadow: inset 0 0 0 1px rgb(79 194 154 / 0.14);
 }
 .k-chip--ember {
   color: var(--k-ember-hi);

@@ -22,7 +22,7 @@
         :eyebrow="pinnedInstallation ? 'Pinned' : 'Now playing'"
         :title="heroInstallation ? heroAppName : 'Nothing displaying'"
         :meta="heroMeta"
-        :lit="!!heroInstallation"
+        :lit="screenEnabled && !!heroInstallation"
       >
         <template #badge>
           <span v-if="pinnedInstallation" class="k-chip k-chip--ember">
@@ -32,7 +32,7 @@
         </template>
 
         <InstallationPreview
-          v-if="heroInstallation"
+          v-if="screenEnabled && heroInstallation"
           :device-id="deviceId"
           :installation-id="heroInstallation.id"
           :app-id="heroInstallation.appId"
@@ -215,6 +215,7 @@ const unpinning = ref(false)
 const deviceName = computed(
   () => device.value?.settings?.displayName || device.value?.id || 'Device',
 )
+const screenEnabled = computed(() => device.value?.settings?.typeSettings?.screenEnabled ?? true)
 const deviceWidth = computed(() => device.value?.settings?.width ?? 64)
 const deviceHeight = computed(() => device.value?.settings?.height ?? 32)
 
@@ -235,10 +236,18 @@ const activeCount = computed(
   () => installations.value.filter((i) => !i.skippedByUser && !i.skippedByServer).length,
 )
 
+/**
+ * Only the two states you would act on. "1 of 6 in rotation" changed by itself
+ * every fifteen seconds while you were reading it, in front of the panel that
+ * was already showing you the answer.
+ */
 const heroMeta = computed(() => {
+  // The hero shows an empty screen when the panel is off, so the caption has
+  // to say why — otherwise an app name sits over a blank frame with no reason.
+  if (!screenEnabled.value) return 'Screen off'
   if (pinnedInstallation.value) return 'Held until you resume the rotation'
   if (!heroInstallation.value) return 'The panel is idle'
-  return `1 of ${activeCount.value} in rotation`
+  return undefined
 })
 
 const rotationSummary = computed(() => {

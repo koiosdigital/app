@@ -12,7 +12,7 @@
     </template>
 
     <template #content>
-      <div class="relative w-36">
+      <div class="relative w-44">
         <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
         <div
           v-if="playerState && playerState.state !== 'STOPPED'"

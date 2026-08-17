@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
 import { useDeviceCard } from '@/composables/useDeviceCard'
-import { formatRelativeTime } from '@/utils/device'
+import { formatLastSeen } from '@/utils/device'
 import type { LanternDevice } from '@/lib/api/mappers/deviceMapper'
 import BaseDeviceCard from './BaseDeviceCard.vue'
 import DeviceStatus from './DeviceStatus.vue'
@@ -72,10 +72,12 @@ const { powerLabel } = useDeviceCard(device)
 
 const displayName = computed(() => device.value.settings?.displayName || device.value.id)
 
-const lastUpdatedLabel = computed(() => formatRelativeTime(device.value.updatedAt))
-
+/**
+ * A lit lantern needs no caption — you can see that it is lit. "Updated 4m
+ * ago" was a fact about the API, not about the lamp.
+ */
 const subtitle = computed(() =>
-  device.value.online ? `Updated ${lastUpdatedLabel.value}` : `Last seen ${lastUpdatedLabel.value}`,
+  device.value.online ? undefined : `Dark ${formatLastSeen(device.value.updatedAt)}`,
 )
 
 const handleOpen = () => {
@@ -90,8 +92,8 @@ const handleOpen = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 96px;
-  height: 96px;
+  width: 116px;
+  height: 116px;
   border-radius: 999px;
   transition: transform 0.16s var(--k-ease);
 }
@@ -118,8 +120,8 @@ const handleOpen = () => {
 
 .lantern__halo {
   position: absolute;
-  width: 168px;
-  height: 168px;
+  width: 196px;
+  height: 196px;
   border-radius: 999px;
   opacity: 0;
   background: radial-gradient(circle, rgb(231 145 20 / 0.5), transparent 62%);

@@ -215,12 +215,14 @@ const feedRate = computed(() => playerState.value?.feed_rate ?? 3)
 const isPlaying = computed(() => playerState.value?.state === 'PLAYING')
 const isStopped = computed(() => !playerState.value || playerState.value.state === 'STOPPED')
 // The one line under the title: what is running, and how far in.
+/**
+ * How far through it is comes off this line: the ring around the disc already
+ * draws it, and a percentage that ticks up on its own is exactly the kind of
+ * thing that should be shown rather than written.
+ */
 const stageMeta = computed(() => {
   if (isStopped.value) return 'Pick a pattern to start the table'
-  const parts: string[] = []
-  if (currentPattern.value?.creator) parts.push(currentPattern.value.creator)
-  parts.push(`${Math.round(progressPercent.value)}% drawn`)
-  return parts.join(' · ')
+  return currentPattern.value?.creator ?? undefined
 })
 
 const isPlaylist = computed(

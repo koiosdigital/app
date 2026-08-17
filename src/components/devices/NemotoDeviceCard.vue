@@ -60,6 +60,7 @@ import { computed, onMounted, ref, toRef } from 'vue'
 import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import { nemotoApi, type NemotoLiveState } from '@/lib/api/nemoto'
 import type { NemotoDevice } from '@/lib/api/mappers/deviceMapper'
+import { formatLastSeen } from '@/utils/device'
 import BaseDeviceCard from './BaseDeviceCard.vue'
 import DeviceStatus from './DeviceStatus.vue'
 import NemotoFlapGrid from '../nemoto/NemotoFlapGrid.vue'
@@ -87,11 +88,13 @@ const displayFlaps = computed(() =>
   state.value?.display?.valid && state.value.display.flaps ? state.value.display.flaps : null,
 )
 
-const subtitle = computed(() => {
-  const w = state.value?.display?.width ?? state.value?.setup?.gridWidth
-  const h = state.value?.display?.height ?? state.value?.setup?.gridHeight
-  return w && h ? `${w} × ${h} board` : 'Split-flap board'
-})
+/**
+ * "22 × 6 board" was a fact that never changes, printed forever under a board
+ * that is visibly 22 × 6. The only line worth keeping is the one you need.
+ */
+const subtitle = computed(() =>
+  device.value.online ? undefined : `Unreachable ${formatLastSeen(device.value.updatedAt)}`,
+)
 
 const handleOpen = () => emit('open', device.value.id)
 
