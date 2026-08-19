@@ -199,7 +199,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, toRef, watch } from 'vue'
+import { ref, computed, onMounted, toRef, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import MatrixDevicePreview from '@/components/MatrixDevicePreview.vue'
@@ -358,9 +358,6 @@ async function loadData() {
       displayTime.value = installation.value.displayTime ?? 10
       skippedByUser.value = installation.value.skippedByUser ?? false
       pinnedByUser.value = installation.value.pinnedByUser ?? false
-
-      // Trigger generated field handlers to restore dynamic fields
-      await triggerGeneratedHandlersOnLoad()
     } else if (props.mode === 'install' && props.appId) {
       // Install mode: load app, schema, and existing installations to get max sortOrder
       const [appData, schemaData, installationsData] = await Promise.all([
@@ -379,6 +376,15 @@ async function loadData() {
       // Form already initialized from schema defaults by useSchemaForm
     }
 
+    // Render dynamic fields for the current source values on load — in BOTH
+    // modes. A generated field may render even when its source is off/empty
+    // (e.g. flights shows the Location picker when "Track Specific Flight" is
+    // false), so this must run for a fresh install, not just when editing.
+    // nextTick lets install-mode schema defaults populate first (they're set by
+    // the schema watcher), so the handlers see the real source values.
+    await nextTick()
+    await triggerGeneratedHandlersOnLoad()
+
     // Mark data as loaded; the enabled watcher in useSchemaPreview fetches once
     dataLoaded.value = true
   } catch (err) {
@@ -390,20 +396,23 @@ async function loadData() {
 }
 
 /**
- * Trigger generated field handlers on page load for edit mode.
- * This restores dynamic fields for any source fields that have saved values.
+ * Trigger every generated field's handler on page load, in both install and
+ * edit modes, so dynamic fields render for the current source values — whether
+ * from schema defaults (install) or a saved config (edit), and including the
+ * off/empty branch (e.g. flights' Location picker when tracking is off).
  */
 async function triggerGeneratedHandlersOnLoad() {
   if (!schema.value?.schema) return
 
   const generatedFields = schema.value.schema.filter((f) => f.type === 'generated')
 
+  // Fire every generated field's handler regardless of its source value — the
+  // handler decides what to render for the current state (including the off/
+  // empty branch). triggerGeneratedHandler clears fields for a truly-empty
+  // source, so there's no need to gate on truthiness here.
   for (const field of generatedFields) {
     if ('source' in field && field.source) {
-      const sourceValue = formState.values.value[field.source]
-      if (sourceValue) {
-        await triggerGeneratedHandler(field.id)
-      }
+      await triggerGeneratedHandler(field.id)
     }
   }
 }
@@ -432,20 +441,23 @@ async function triggerGeneratedHandler(fieldId: string) {
   if (!field.handler || !field.source) return
 
   const sourceValue = formState.values.value[field.source]
-  if (!sourceValue) {
-    // Clear dynamic fields when source is empty (e.g. OAuth disconnect)
+  // Only a genuinely-empty source clears the fields (e.g. OAuth not connected,
+  // an empty text input). A legitimate falsy value like `false`/`'false'`/`0`
+  // is a real state the handler must run for (e.g. a toggle switched off).
+  if (sourceValue === undefined || sourceValue === null || sourceValue === '') {
     setDynamicFields(fieldId, [])
     return
   }
 
-  const finalValue = typeof sourceValue === 'object' ? JSON.stringify(sourceValue) : sourceValue
+  const finalValue =
+    typeof sourceValue === 'object' ? JSON.stringify(sourceValue) : String(sourceValue)
 
   try {
     const response = await appsApi.callHandler(
       resolvedAppId.value,
       field.handler,
       buildConfig(),
-      finalValue as string,
+      finalValue,
     )
 
     if (response?.result) {

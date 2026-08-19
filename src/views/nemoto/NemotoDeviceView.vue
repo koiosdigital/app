@@ -136,6 +136,12 @@ const destinations = computed(() => [
     title: 'Inspiration',
     hint: 'Ideas worth putting on the wall',
   },
+  {
+    to: `/nemoto/${deviceId.value}/history`,
+    icon: 'i-fa6-solid:clock-rotate-left',
+    title: 'History',
+    hint: 'The last 50 messages you sent',
+  },
 ])
 
 async function load() {

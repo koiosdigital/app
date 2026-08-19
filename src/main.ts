@@ -16,12 +16,17 @@ import router from './router'
 import ui from '@nuxt/ui/vue-plugin'
 
 const app = createApp(App)
+
+// Install unhead BEFORE Nuxt UI: @nuxt/ui also sets up unhead, but its head
+// plugin skips when `usehead` is already provided. Providing ours first makes it
+// the single head instance (avoiding the "already provides usehead" overwrite
+// warning) and keeps every view's useHead() on the same instance.
 const head = createHead()
+app.use(head)
 
 app.use(ui)
 app.use(createPinia())
 app.use(router)
-app.use(head)
 
 if (Capacitor.isNativePlatform()) {
   CapacitorApp.addListener('appUrlOpen', ({ url }) => {

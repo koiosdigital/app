@@ -13,6 +13,7 @@ export type NemotoLiveState = components['schemas']['NemotoLiveStateDto']
 export type NemotoDisplayState = components['schemas']['NemotoDisplayStateDto']
 export type NemotoFlapDef = components['schemas']['NemotoFlapDefDto']
 export type NemotoActivityEvent = components['schemas']['NemotoActivityEventDto']
+export type NemotoMessage = components['schemas']['NemotoMessageDto']
 export type CommandDispatchResult = components['schemas']['CommandDispatchResultDto']
 
 // Request types
@@ -135,6 +136,14 @@ export const nemotoApi = {
       params: { path: { deviceId } },
     })
     if (error) throw new Error(getErrorMessage(error, 'Failed to fetch device state'))
+    return data
+  },
+
+  async listMessages(deviceId: string, query?: { limit?: number }) {
+    const { data, error } = await apiClient.GET('/v1/devices/{deviceId}/nemoto/messages', {
+      params: { path: { deviceId }, query },
+    })
+    if (error) throw new Error(getErrorMessage(error, 'Failed to fetch message history'))
     return data
   },
 

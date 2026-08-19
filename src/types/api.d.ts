@@ -1090,6 +1090,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/nemoto/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List recently sent messages (newest first)
+         * @description Ad-hoc frames pushed to this board via display-frame. Capped at the most recent 50; older frames are pruned as new ones are sent.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sent messages */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NemotoMessageDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/devices/{deviceId}/nemoto/commands/show-preset": {
         parameters: {
             query?: never;
@@ -2700,6 +2743,15 @@ export interface components {
             kind: string;
             payload?: unknown;
         };
+        NemotoMessageDto: {
+            id: string;
+            sentAt: string;
+            width: number;
+            height: number;
+            flaps: number[][];
+            sentByMe: boolean;
+            delivered: boolean;
+        };
         CommandDispatchResultDto: {
             delivered: boolean;
         };
@@ -2829,7 +2881,7 @@ export interface components {
         }) | null;
         MatrxSettingsDto: {
             screenEnabled: boolean;
-            /** @description Screen brightness (0-255) */
+            /** @description Screen brightness (1-255). Zero is not accepted — use screenEnabled to turn the panel off. */
             screenBrightness: number;
             autoBrightnessEnabled: boolean;
             /** @description Ambient lux below which the screen turns off */
@@ -2969,7 +3021,7 @@ export interface components {
             displayName?: string;
             typeSettings?: {
                 screenEnabled?: boolean;
-                /** @description Screen brightness (0-255) */
+                /** @description Screen brightness (1-255). Zero is not accepted — use screenEnabled to turn the panel off. */
                 screenBrightness?: number;
                 autoBrightnessEnabled?: boolean;
                 /** @description Ambient lux below which the screen turns off */

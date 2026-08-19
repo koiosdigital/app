@@ -20,14 +20,15 @@ onMounted(async () => {
 
 <template>
   <AppLayout>
-    <!-- Routes are eagerly imported, so a page swap is synchronous and the
-         crossover has nothing to wait on. out-in keeps the two screens from
+    <!-- Routes are eagerly imported and no view uses async setup, so a page swap
+         is synchronous — no <Suspense> needed. (Wrapping in Suspense presented a
+         comment placeholder mid-transition, which out-in can't animate and which
+         intermittently left the page blank on back/swipe.) Each view has a single
+         element root, so out-in can animate it and keep the two screens from
          overlapping inside PageLayout's flex column. -->
     <RouterView v-slot="{ Component }">
       <Transition name="page" mode="out-in">
-        <Suspense>
-          <component :is="Component" />
-        </Suspense>
+        <component :is="Component" />
       </Transition>
     </RouterView>
   </AppLayout>
