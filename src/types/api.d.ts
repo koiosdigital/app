@@ -1133,6 +1133,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/nemoto/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List starred frames (newest first)
+         * @description Frames this user has starred on this board. Each carries its own copy of the flaps, so a favourite survives the message-history prune.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Starred frames */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NemotoFavoriteDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Star a frame
+         * @description Pass messageId to star something from history, or flaps to star an arbitrary frame (what is on the board, or a composition). Starring the same message twice returns the existing favourite rather than a duplicate.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateNemotoFavoriteDto"];
+                };
+            };
+            responses: {
+                /** @description Already starred */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NemotoFavoriteDto"];
+                    };
+                };
+                /** @description Starred frame */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NemotoFavoriteDto"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Message not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/nemoto/favorites/{favoriteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a star */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                    favoriteId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Star removed */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Favourite not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/devices/{deviceId}/nemoto/commands/show-preset": {
         parameters: {
             query?: never;
@@ -2751,6 +2895,19 @@ export interface components {
             flaps: number[][];
             sentByMe: boolean;
             delivered: boolean;
+            favoriteId: string | null;
+        };
+        NemotoFavoriteDto: {
+            id: string;
+            messageId: string | null;
+            width: number;
+            height: number;
+            flaps: number[][];
+            savedAt: string;
+        };
+        CreateNemotoFavoriteDto: {
+            messageId?: string;
+            flaps?: number[][];
         };
         CommandDispatchResultDto: {
             delivered: boolean;

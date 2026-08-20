@@ -1,5 +1,12 @@
 <template>
   <PageLayout>
+    <NemotoSavePresetModal
+      v-model:open="showSavePreset"
+      :device-id="deviceId"
+      :flaps="grid"
+      :suggested-name="suggestedPresetName"
+    />
+
     <div v-if="loading" class="flex flex-1 items-center justify-center py-20">
       <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
     </div>
@@ -52,26 +59,42 @@
 
     <Teleport to="#app-footer">
       <footer class="border-t border-white/10 bg-zinc-950/95 px-6 py-4 backdrop-blur">
-        <UButton
-          color="primary"
-          size="lg"
-          block
-          icon="i-fa6-solid:paper-plane"
-          :loading="sending"
-          :disabled="sending"
-          @click="send"
-        >
-          Display Now
-        </UButton>
+        <div class="flex items-center gap-3">
+          <UButton
+            color="primary"
+            size="lg"
+            class="flex-1 justify-center"
+            icon="i-fa6-solid:paper-plane"
+            :loading="sending"
+            :disabled="sending"
+            @click="send"
+          >
+            Display Now
+          </UButton>
+          <!-- Keeping a composition is a separate intent from showing it: a
+               preset syncs to the board and can be put on a schedule, and it
+               should not require pushing the frame first. -->
+          <UButton
+            color="neutral"
+            variant="soft"
+            size="lg"
+            square
+            icon="i-fa6-solid:bookmark"
+            :disabled="!hasContent || sending"
+            aria-label="Save as preset"
+            @click="showSavePreset = true"
+          />
+        </div>
       </footer>
     </Teleport>
   </PageLayout>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import PageLayout from '@/layouts/PageLayout.vue'
 import NemotoGridEditor from '@/components/nemoto/NemotoGridEditor.vue'
+import NemotoSavePresetModal from '@/components/nemoto/NemotoSavePresetModal.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import { NEMOTO_EFFECT_ITEMS } from '@/lib/nemoto/effects'
@@ -85,6 +108,8 @@ const props = defineProps<{ deviceId: string }>()
 
 const { setHeader } = usePageHeader()
 const { byGlyph, blankId, ensureLoaded } = useNemotoFlaps()
+
+const showSavePreset = ref(false)
 
 const text = ref('')
 // Sized from the device's reported grid on mount; the frame must match the
@@ -102,6 +127,15 @@ const overrideDelay = ref(0)
 const loading = ref(true)
 const sending = ref(false)
 const error = ref<string>()
+
+/** An all-blank board is not worth saving, and the API would happily take it. */
+const hasContent = computed(() =>
+  grid.value.some((row) => row.some((cell) => cell !== blankId.value)),
+)
+
+// The typed text is the obvious name; fall back to nothing for a frame that was
+// painted rather than typed, and let the user name it.
+const suggestedPresetName = computed(() => text.value.trim().slice(0, 32))
 
 function blankGrid(w: number, h: number): number[][] {
   const bl = blankId.value

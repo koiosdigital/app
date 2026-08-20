@@ -1,5 +1,12 @@
 <template>
   <PageLayout :on-refresh="refresh">
+    <NemotoSavePresetModal
+      v-model:open="showSavePreset"
+      :device-id="deviceId"
+      :flaps="currentFlaps"
+      :suggested-name="suggestedPresetName"
+    />
+
     <PageState v-if="loading" loading />
     <PageState v-else-if="error" :error="error" @retry="load" />
 
@@ -43,6 +50,33 @@
           >
             Clear
           </UButton>
+          <!-- Star what is on the board. Frames put up by a schedule or a
+               preset never pass through message history, so history's star is
+               the wrong and only place to keep them. -->
+          <UButton
+            :color="currentFavorite ? 'primary' : 'neutral'"
+            variant="ghost"
+            size="sm"
+            square
+            :icon="currentFavorite ? 'i-fa6-solid:star' : 'i-fa6-regular:star'"
+            :loading="starring"
+            :disabled="!hasFrame || starring"
+            :aria-label="currentFavorite ? 'Remove star' : 'Star what is on the board'"
+            @click="toggleStar"
+          />
+          <!-- Keep what is on the board right now. Without this the only way
+               to turn a frame you like into a preset was to rebuild it by hand
+               in the composer. -->
+          <UButton
+            color="neutral"
+            variant="soft"
+            size="sm"
+            square
+            icon="i-fa6-solid:bookmark"
+            :disabled="!hasFrame"
+            aria-label="Save what is on the board as a preset"
+            @click="showSavePreset = true"
+          />
           <UButton
             color="neutral"
             variant="ghost"
@@ -85,12 +119,14 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import NemotoFlapGrid from '@/components/nemoto/NemotoFlapGrid.vue'
+import NemotoSavePresetModal from '@/components/nemoto/NemotoSavePresetModal.vue'
 import DeviceStage from '@/components/devices/DeviceStage.vue'
 import PageState from '@/components/PageState.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useCommandToast } from '@/composables/useCommandToast'
+import { useNemotoFlaps } from '@/composables/useNemotoFlaps'
 import { devicesApi } from '@/lib/api/devices'
-import { nemotoApi, type NemotoLiveState } from '@/lib/api/nemoto'
+import { nemotoApi, type NemotoFavorite, type NemotoLiveState } from '@/lib/api/nemoto'
 import { getErrorMessage } from '@/lib/api/errors'
 import { isNemotoDevice, type NemotoDevice } from '@/lib/api/mappers/deviceMapper'
 
@@ -107,6 +143,66 @@ const error = ref<string>()
 const busy = ref<'clear' | 'refresh-display' | null>(null)
 
 const hasFrame = computed(() => !!state.value?.display?.valid)
+
+const { ensureLoaded, frameToText } = useNemotoFlaps()
+
+const showSavePreset = ref(false)
+
+const currentFlaps = computed(() =>
+  state.value?.display?.valid && state.value.display.flaps ? state.value.display.flaps : null,
+)
+
+// Whatever the board is spelling out is the obvious name for the preset.
+const suggestedPresetName = computed(() =>
+  currentFlaps.value ? frameToText(currentFlaps.value).slice(0, 32) : '',
+)
+
+// Stars for this board, so the button can show whether the current frame is
+// already kept — and so tapping twice doesn't save it twice. A board frame has
+// no message id behind it, so it is matched by content.
+const favorites = ref<NemotoFavorite[]>([])
+const starring = ref(false)
+
+function framesEqual(a: number[][], b: number[][]): boolean {
+  if (a.length !== b.length) return false
+  return a.every((row, y) => row.length === b[y].length && row.every((v, x) => v === b[y][x]))
+}
+
+const currentFavorite = computed(() => {
+  const frame = currentFlaps.value
+  if (!frame) return null
+  return favorites.value.find((f) => framesEqual(f.flaps, frame)) ?? null
+})
+
+async function loadFavorites() {
+  try {
+    favorites.value = await nemotoApi.listFavorites(deviceId.value)
+  } catch {
+    // Best-effort: the star renders hollow and the page still works.
+  }
+}
+
+async function toggleStar() {
+  const frame = currentFlaps.value
+  if (!frame || starring.value) return
+
+  starring.value = true
+  try {
+    const existing = currentFavorite.value
+    if (existing) {
+      await nemotoApi.removeFavorite(deviceId.value, existing.id)
+      favorites.value = favorites.value.filter((f) => f.id !== existing.id)
+    } else {
+      const favorite = await nemotoApi.addFavorite(deviceId.value, { flaps: frame })
+      favorites.value = [favorite, ...favorites.value]
+      command.ok('Starred', 'Find it under Message History.')
+    }
+  } catch (err) {
+    command.fail(err, 'Failed to update the star')
+  } finally {
+    starring.value = false
+  }
+}
 
 /**
  * A board showing a message needs no caption — the message is right there, in
@@ -222,9 +318,14 @@ function syncHeader() {
 
 watch(() => device.value?.settings?.displayName, syncHeader)
 
-onMounted(() => {
+onMounted(async () => {
   syncHeader()
+  // NemotoFlap resolves every cell against the flap set, and nothing on this
+  // route was loading it — reaching the page directly (deep link, reload)
+  // rendered the board unresolved. frameToText needs it for the same reason.
+  await ensureLoaded()
   load()
+  void loadFavorites()
 })
 </script>
 

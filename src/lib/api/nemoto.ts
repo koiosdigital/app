@@ -14,6 +14,7 @@ export type NemotoDisplayState = components['schemas']['NemotoDisplayStateDto']
 export type NemotoFlapDef = components['schemas']['NemotoFlapDefDto']
 export type NemotoActivityEvent = components['schemas']['NemotoActivityEventDto']
 export type NemotoMessage = components['schemas']['NemotoMessageDto']
+export type NemotoFavorite = components['schemas']['NemotoFavoriteDto']
 export type CommandDispatchResult = components['schemas']['CommandDispatchResultDto']
 
 // Request types
@@ -145,6 +146,38 @@ export const nemotoApi = {
     })
     if (error) throw new Error(getErrorMessage(error, 'Failed to fetch message history'))
     return data
+  },
+
+  // ---- Favourites (starred frames, per user — a shared board's stars are not
+  // shared with it) ----
+  async listFavorites(deviceId: string) {
+    const { data, error } = await apiClient.GET('/v1/devices/{deviceId}/nemoto/favorites', {
+      params: { path: { deviceId } },
+    })
+    if (error) throw new Error(getErrorMessage(error, 'Failed to fetch starred frames'))
+    return data
+  },
+
+  /**
+   * Star a frame. Pass `messageId` to keep something from history — the server
+   * copies the frame, so the star outlives the fifty-frame prune — or `flaps`
+   * to star an arbitrary frame such as whatever is on the board.
+   */
+  async addFavorite(deviceId: string, body: { messageId?: string; flaps?: number[][] }) {
+    const { data, error } = await apiClient.POST('/v1/devices/{deviceId}/nemoto/favorites', {
+      params: { path: { deviceId } },
+      body,
+    })
+    if (error) throw new Error(getErrorMessage(error, 'Failed to star this frame'))
+    return data
+  },
+
+  async removeFavorite(deviceId: string, favoriteId: string) {
+    const { error } = await apiClient.DELETE(
+      '/v1/devices/{deviceId}/nemoto/favorites/{favoriteId}',
+      { params: { path: { deviceId, favoriteId } } },
+    )
+    if (error) throw new Error(getErrorMessage(error, 'Failed to remove the star'))
   },
 
   async getActivity(deviceId: string, query?: { limit?: number; before?: string }) {

@@ -49,5 +49,27 @@ export function useNemotoFlaps() {
     await inflight
   }
 
-  return { flaps, byId, byGlyph, blankId, groups, ensureLoaded }
+  /**
+   * Read a frame back as text — the inverse of the compose view's layout pass.
+   *
+   * Lossy on purpose: colour flaps have no glyph and become spaces, and the
+   * board's centring padding is collapsed. It is only ever used to suggest a
+   * name for something the user is about to save, never to round-trip a frame.
+   */
+  function frameToText(frame: number[][]): string {
+    const map = byId.value
+    return frame
+      .map((row) =>
+        row
+          .map((id) => map.get(id)?.glyph ?? ' ')
+          .join('')
+          .trim(),
+      )
+      .filter(Boolean)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
+  return { flaps, byId, byGlyph, blankId, groups, ensureLoaded, frameToText }
 }
