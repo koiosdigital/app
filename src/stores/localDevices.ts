@@ -20,6 +20,11 @@ export const useLocalDevicesStore = defineStore('local_devices', () => {
 
   // Non-reactive: the active watch handle (not part of rendered state).
   let handle: DiscoveryHandle | null = null
+  // Generation counter, because start() is async and stop() is not. Mounting
+  // and quickly unmounting HomeView used to leave the resolved handle assigned
+  // after stop() had already run — mDNS discovery then ran for the lifetime of
+  // the app with nobody holding a reference to switch it off.
+  let generation = 0
 
   const devices = computed<LocalDevice[]>(() =>
     Object.values(byId.value).sort((a, b) =>
@@ -31,8 +36,9 @@ export const useLocalDevicesStore = defineStore('local_devices', () => {
   async function start() {
     if (!supported || discovering.value) return
     discovering.value = true
+    const request = ++generation
     try {
-      handle = await watchKoiosDevices((event) => {
+      const started = await watchKoiosDevices((event) => {
         if (event.action === 'resolved') {
           // Re-resolves refresh address/TXT for the same instance.
           byId.value = { ...byId.value, [event.device.id]: event.device }
@@ -42,14 +48,23 @@ export const useLocalDevicesStore = defineStore('local_devices', () => {
           byId.value = next
         }
       })
+
+      // stop() ran while we were resolving: this watch is already orphaned, so
+      // shut it down rather than adopting it.
+      if (request !== generation) {
+        await started.stop()
+        return
+      }
+      handle = started
     } catch (err) {
       console.warn('Failed to start mDNS discovery', err)
-      discovering.value = false
+      if (request === generation) discovering.value = false
     }
   }
 
   /** Stop discovery and clear the discovered set. */
   async function stop() {
+    generation++
     discovering.value = false
     const active = handle
     handle = null

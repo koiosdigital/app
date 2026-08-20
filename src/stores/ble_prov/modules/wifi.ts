@@ -36,7 +36,13 @@ export async function scanForAPs() {
 }
 
 async function pollOnce() {
-  if (!activeMethod.value) return
+  // The device went away (setup abandoned, BLE torn down) but the interval is
+  // still ticking. Nothing called resetWiFiState — only SetupSuccessfulView
+  // does — so stop the poll here rather than waking every 3s forever.
+  if (!activeMethod.value) {
+    clearPoll()
+    return
+  }
 
   try {
     const snapshot = await activeMethod.value.pollWifiStatus()

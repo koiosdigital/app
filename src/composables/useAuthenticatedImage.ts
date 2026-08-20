@@ -16,8 +16,15 @@ export function useAuthenticatedImage(url: Ref<string | null | undefined>) {
   const errorType = ref<ImageErrorType>(null)
 
   let currentBlobUrl: string | null = null
+  // Generation counter. Two fetches can be in flight at once (the url ref
+  // changes faster than the network answers), and the old code let whichever
+  // finished last win: the loser's blob was never revoked — it just lost its
+  // only reference — and an out-of-order pair displayed the wrong image.
+  let generation = 0
 
   async function fetchImage() {
+    const request = ++generation
+
     // Clean up previous blob URL
     if (currentBlobUrl) {
       URL.revokeObjectURL(currentBlobUrl)
@@ -58,14 +65,24 @@ export function useAuthenticatedImage(url: Ref<string | null | undefined>) {
         return
       }
 
-      currentBlobUrl = URL.createObjectURL(blob)
-      blobUrl.value = currentBlobUrl
+      const objectUrl = URL.createObjectURL(blob)
+
+      // A newer request started while this one was in flight: this blob is
+      // already stale, so hand it back rather than stranding it.
+      if (request !== generation) {
+        URL.revokeObjectURL(objectUrl)
+        return
+      }
+
+      currentBlobUrl = objectUrl
+      blobUrl.value = objectUrl
     } catch (err) {
+      if (request !== generation) return
       errorType.value = 'http'
       error.value = getErrorMessage(err, 'Failed to load image')
       console.error('Failed to fetch authenticated image:', err)
     } finally {
-      loading.value = false
+      if (request === generation) loading.value = false
     }
   }
 
@@ -80,8 +97,12 @@ export function useAuthenticatedImage(url: Ref<string | null | undefined>) {
 
   // Cleanup on unmount
   onUnmounted(() => {
+    // Also invalidates anything still in flight, so a response that lands after
+    // teardown revokes its own blob instead of creating one nobody frees.
+    generation++
     if (currentBlobUrl) {
       URL.revokeObjectURL(currentBlobUrl)
+      currentBlobUrl = null
     }
   })
 

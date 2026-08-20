@@ -47,7 +47,12 @@ export class TranquilWebSocket {
   }
 
   connect(): void {
-    if (this.ws?.readyState === WebSocket.OPEN) return
+    // CONNECTING has to count as "already connecting". Guarding only on OPEN
+    // meant two quick connect() calls built two sockets: the first was
+    // overwritten but kept its onclose, which then scheduled a reconnect for a
+    // socket nobody owned — and each of those did it again on close.
+    const state = this.ws?.readyState
+    if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) return
 
     const url = `${this.baseUrl.replace('http', 'ws')}/ws`
     this.ws = new WebSocket(url)
@@ -81,11 +86,19 @@ export class TranquilWebSocket {
   disconnect(): void {
     this.reconnect.cancel()
     if (this.ws) {
-      // Drop handlers so a closing socket doesn't trigger a reconnect.
+      // Drop every handler, not just onclose: a socket that is closing still
+      // fires onmessage/onerror, and each of those closures pins this instance
+      // (and the store subscribers behind it) until the socket finally dies.
       this.ws.onclose = null
+      this.ws.onopen = null
+      this.ws.onmessage = null
+      this.ws.onerror = null
       this.ws.close()
       this.ws = null
     }
+    // onclose used to do this, and we just unhooked it. Without it, in-flight
+    // request() promises never settle and hold their closures forever.
+    this.rejectAllPending(new Error('WebSocket disconnected'))
     this._connected.value = false
   }
 
@@ -105,22 +118,37 @@ export class TranquilWebSocket {
     return new Promise((resolve, reject) => {
       this.cleanupStale()
 
+      // The timeout has to be cancellable. It used to be left running on every
+      // request, so a resolved call still pinned its closure — and the reject
+      // it captured — for the full ten seconds.
+      const timer = setTimeout(() => {
+        this.pending.delete(expectedResponseType)
+        reject(new Error(`Request timeout: ${requestType}`))
+      }, this.timeout)
+
+      const settle =
+        <T>(fn: (value: T) => void) =>
+        (value: T) => {
+          clearTimeout(timer)
+          fn(value)
+        }
+
       this.pending.set(expectedResponseType, {
-        resolve,
-        reject,
+        resolve: settle(resolve),
+        reject: settle(reject),
         expectedResponseType,
         timestamp: Date.now(),
       })
 
-      this.send(msg)
-
-      setTimeout(() => {
-        const pending = this.pending.get(expectedResponseType)
-        if (pending && pending.timestamp <= Date.now() - this.timeout) {
-          this.pending.delete(expectedResponseType)
-          reject(new Error(`Request timeout: ${requestType}`))
-        }
-      }, this.timeout)
+      try {
+        this.send(msg)
+      } catch (e) {
+        // send() throws synchronously when the socket is down; without this the
+        // entry sat in `pending` until something else happened to sweep it.
+        clearTimeout(timer)
+        this.pending.delete(expectedResponseType)
+        reject(e instanceof Error ? e : new Error('Failed to send'))
+      }
     })
   }
 
