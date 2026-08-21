@@ -16,7 +16,7 @@
             <p v-if="selected.creator" class="text-sm text-white/60">by {{ selected.creator }}</p>
           </div>
           <UButton
-            v-if="downloadPct(selected.uuid) === undefined"
+            v-if="!downloadState(selected.uuid)"
             color="primary"
             size="lg"
             icon="i-fa6-solid:down-to-bracket"
@@ -27,7 +27,19 @@
             Add to table
           </UButton>
           <UButton
-            v-else-if="downloadPct(selected.uuid)! < 100"
+            v-else-if="downloadState(selected.uuid)!.failed"
+            color="error"
+            variant="soft"
+            size="lg"
+            icon="i-fa6-solid:arrow-rotate-right"
+            block
+            :disabled="!tranquilLocal.connected"
+            @click="retry(selected)"
+          >
+            {{ downloadState(selected.uuid)!.error || 'Download failed' }} — Retry
+          </UButton>
+          <UButton
+            v-else-if="downloadState(selected.uuid)!.pct < 100"
             color="primary"
             size="lg"
             icon="i-fa6-solid:spinner"
@@ -35,7 +47,7 @@
             block
             disabled
           >
-            Sending to your table…
+            Sending to your table… {{ downloadState(selected.uuid)!.pct }}%
           </UButton>
           <UButton
             v-else
@@ -428,7 +440,7 @@ onUnmounted(() => clearTimeout(searchTimer))
 // Tell the table to fetch this pattern from the cloud. The device does the
 // encrypt-for-device + download itself over its device-plane link; we just send
 // the uuid and watch progress via tranquilLocal.downloads.
-const downloadPct = (uuid: string): number | undefined => tranquilLocal.downloads[uuid]
+const downloadState = (uuid: string) => tranquilLocal.downloads[uuid]
 
 function addToTable(pattern: StorePattern) {
   notice.value = null
@@ -442,6 +454,12 @@ function addToTable(pattern: StorePattern) {
   } catch {
     notice.value = 'Could not reach your table. Try again.'
   }
+}
+
+// Retry a failed download: clear the terminal entry, then request again.
+function retry(pattern: StorePattern) {
+  tranquilLocal.clearDownload(pattern.uuid)
+  addToTable(pattern)
 }
 
 // Re-applied when the search panel toggles so the header icon flips.

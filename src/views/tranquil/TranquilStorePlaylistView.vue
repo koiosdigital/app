@@ -50,7 +50,7 @@
             </p>
           </div>
           <UButton
-            v-if="downloadPct(pattern.uuid) === undefined"
+            v-if="!downloadState(pattern.uuid)"
             color="primary"
             variant="ghost"
             size="sm"
@@ -60,11 +60,23 @@
             :aria-label="`Add ${pattern.name} to table`"
             @click="addToTable(pattern)"
           />
+          <UButton
+            v-else-if="downloadState(pattern.uuid)!.failed"
+            color="error"
+            variant="ghost"
+            size="sm"
+            square
+            icon="i-fa6-solid:arrow-rotate-right"
+            :disabled="!tranquilLocal.connected"
+            :aria-label="`Retry ${pattern.name}`"
+            :title="downloadState(pattern.uuid)!.error || 'Download failed'"
+            @click="retry(pattern)"
+          />
           <span
-            v-else-if="downloadPct(pattern.uuid)! < 100"
+            v-else-if="downloadState(pattern.uuid)!.pct < 100"
             class="text-xs tabular-nums text-primary-400"
           >
-            {{ downloadPct(pattern.uuid) }}%
+            {{ downloadState(pattern.uuid)!.pct }}%
           </span>
           <UIcon v-else name="i-fa6-solid:circle-check" class="h-4 w-4 text-success" />
         </div>
@@ -120,7 +132,7 @@ const featuredUuid = computed(() => {
 
 // Same download flow as the store view: the table fetches the pattern itself;
 // we send the uuid and watch progress via tranquilLocal.downloads.
-const downloadPct = (uuid: string): number | undefined => tranquilLocal.downloads[uuid]
+const downloadState = (uuid: string) => tranquilLocal.downloads[uuid]
 
 function addToTable(pattern: StorePattern) {
   notice.value = null
@@ -134,6 +146,11 @@ function addToTable(pattern: StorePattern) {
   } catch {
     notice.value = 'Could not reach your table. Try again.'
   }
+}
+
+function retry(pattern: StorePattern) {
+  tranquilLocal.clearDownload(pattern.uuid)
+  addToTable(pattern)
 }
 
 onMounted(async () => {

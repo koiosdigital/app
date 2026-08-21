@@ -6,6 +6,7 @@
  */
 
 import createClient from 'openapi-fetch'
+import { lanFetch } from '@/lib/http/lanFetch'
 import { TranquilError, ErrorCode } from './errors'
 import type {
   PlayerState,
@@ -214,7 +215,11 @@ async function handleResponse<T>(response: {
 export type TranquilRestClient = ReturnType<typeof createTranquilRest>
 
 export function createTranquilRest(baseUrl: string) {
-  const client = createClient<paths>({ baseUrl })
+  // Route JSON calls through native HTTP so cleartext http://<ip> LAN requests
+  // aren't blocked as mixed content by the https-origin WebView on native (same
+  // reason the clock client does — see lanFetch). Note: multipart upload below
+  // deliberately does NOT use lanFetch (CapacitorHttp can't stream multipart).
+  const client = createClient<paths>({ baseUrl, fetch: lanFetch })
 
   const player = {
     async getState(): Promise<PlayerState> {
