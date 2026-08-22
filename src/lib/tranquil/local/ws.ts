@@ -8,7 +8,7 @@
  */
 
 import { ref, readonly, type Ref } from 'vue'
-import { fromBinary, toBinary } from '@bufbuild/protobuf'
+import { create, fromBinary, toBinary } from '@bufbuild/protobuf'
 import { TranquilMessageSchema, type TranquilMessage } from '@/types/proto/kd/v1/tranquil_pb'
 import { ReconnectStrategy } from './reconnect'
 
@@ -37,6 +37,13 @@ export class TranquilWebSocket {
   private readonly timeout = 10000
   private _connected: Ref<boolean>
   private baseUrl: string
+  // Keepalive. The device httpd runs a small socket budget with LRU purge, and
+  // its LRU timer only advances on INBOUND frames — server-side broadcasts do
+  // not keep a socket warm. Without a periodic client ping, an idle WS is the
+  // first socket purged when thumbnail/REST traffic saturates the budget, and
+  // the app silently stops receiving state pushes. A light ping keeps it warm.
+  private heartbeat: ReturnType<typeof setInterval> | null = null
+  private readonly heartbeatMs = 4000
 
   readonly connected: Readonly<Ref<boolean>>
 
@@ -61,20 +68,24 @@ export class TranquilWebSocket {
     this.ws.onopen = () => {
       this._connected.value = true
       this.reconnect.reset()
+      this.startHeartbeat()
     }
 
     this.ws.onclose = () => {
       this._connected.value = false
+      this.stopHeartbeat()
       this.rejectAllPending(new Error('WebSocket disconnected'))
       this.reconnect.schedule(() => this.connect())
     }
 
     this.ws.onmessage = (event) => {
       try {
-        const msg = fromBinary(TranquilMessageSchema, new Uint8Array(event.data as ArrayBuffer))
+        const bytes = new Uint8Array(event.data as ArrayBuffer)
+        const msg = fromBinary(TranquilMessageSchema, bytes)
+        console.log('[wsdiag] recv frame', bytes.length, 'bytes, case=', msg.message?.case)
         this.dispatch(msg)
       } catch (e) {
-        console.error('Failed to decode message:', e)
+        console.error('[wsdiag] Failed to decode message:', e)
       }
     }
 
@@ -83,8 +94,31 @@ export class TranquilWebSocket {
     }
   }
 
+  private startHeartbeat(): void {
+    this.stopHeartbeat()
+    this.heartbeat = setInterval(() => {
+      if (this.ws?.readyState !== WebSocket.OPEN) return
+      try {
+        // Fire-and-forget (not request()): we only need the inbound frame to
+        // refresh the device's LRU timer; the pong is harmless if ignored.
+        this.send(create(TranquilMessageSchema, { message: { case: 'ping', value: {} } }))
+      } catch {
+        // Socket raced closed between the readyState check and send; the
+        // reconnect path will re-arm the heartbeat.
+      }
+    }, this.heartbeatMs)
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeat) {
+      clearInterval(this.heartbeat)
+      this.heartbeat = null
+    }
+  }
+
   disconnect(): void {
     this.reconnect.cancel()
+    this.stopHeartbeat()
     if (this.ws) {
       // Drop every handler, not just onclose: a socket that is closing still
       // fires onmessage/onerror, and each of those closures pins this instance
