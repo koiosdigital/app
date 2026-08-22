@@ -22,15 +22,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 
 const route = useRoute()
 const router = useRouter()
-const store = useTranquilLocalStore()
+// Resolve to the active transport (local or cloud) so the bar renders and links
+// correctly in both modes.
+const { store, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 const isActive = computed(() => store.activeDevice?.id === routeId.value)
-const basePath = computed(() => `/tranquil/local/${encodeURIComponent(routeId.value)}`)
+const basePath = computed(() => base)
 
 const tabs = computed(() => [
   {
