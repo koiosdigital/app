@@ -80,12 +80,10 @@ export class TranquilWebSocket {
 
     this.ws.onmessage = (event) => {
       try {
-        const bytes = new Uint8Array(event.data as ArrayBuffer)
-        const msg = fromBinary(TranquilMessageSchema, bytes)
-        console.log('[wsdiag] recv frame', bytes.length, 'bytes, case=', msg.message?.case)
+        const msg = fromBinary(TranquilMessageSchema, new Uint8Array(event.data as ArrayBuffer))
         this.dispatch(msg)
       } catch (e) {
-        console.error('[wsdiag] Failed to decode message:', e)
+        console.error('Failed to decode message:', e)
       }
     }
 

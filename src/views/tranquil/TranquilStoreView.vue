@@ -285,7 +285,7 @@ import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useAuthStore } from '@/stores/auth/auth'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 import TranquilStoreThumb from '@/components/tranquil/TranquilStoreThumb.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 import {
@@ -301,7 +301,7 @@ const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const authStore = useAuthStore()
-const tranquilLocal = useTranquilLocalStore()
+const { store: tranquilLocal, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 
@@ -421,7 +421,7 @@ const loadMore = () => fetchPage(page.value + 1)
 const plLoadMore = () => fetchPlaylistPage(plPage.value + 1)
 
 function openPlaylist(pl: StorePlaylist) {
-  router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/store/playlists/${pl.uuid}`)
+  router.push(`${base}/store/playlists/${pl.uuid}`)
 }
 
 // Refetch page 1 of the active list when the tab, sort, or (debounced) search changes.
@@ -466,7 +466,7 @@ function retry(pattern: StorePattern) {
 function applyHeader() {
   setHeader({
     title: 'Store',
-    backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}`,
+    backRoute: `${base}`,
     actions: [
       {
         icon: isSearchOpen.value ? 'i-fa6-solid:xmark' : 'i-fa6-solid:magnifying-glass',

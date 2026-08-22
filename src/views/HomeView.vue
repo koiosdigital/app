@@ -160,6 +160,7 @@ import {
 } from '@/lib/api/mappers/deviceMapper'
 import { useLocalDevicesStore } from '@/stores/localDevices'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilCloudStore } from '@/stores/tranquilCloud'
 import { useClockLocalStore } from '@/stores/clockLocal'
 import {
   CLOCK_TYPES,
@@ -179,6 +180,7 @@ const { setHeader } = usePageHeader()
 const { onReconnect } = useNetworkStatus()
 const localDevicesStore = useLocalDevicesStore()
 const tranquilLocal = useTranquilLocalStore()
+const tranquilCloud = useTranquilCloudStore()
 const clockLocal = useClockLocalStore()
 
 let stopReconnectWatch: (() => void) | undefined
@@ -332,9 +334,9 @@ const handleSendTouch = async (id: string) => {
 const deviceBasePath = (device: ApiDevice) => {
   if (device.type === 'MATRX') return '/matrx'
   if (device.type === 'NEMOTO') return '/nemoto'
-  // Tranquil has no cloud pages — it's LAN-controlled; when broadcasting, the
-  // local card (which routes to /tranquil/local/) replaces this one.
-  if (device.type === 'TRANQUIL') return null
+  // Tranquil off-LAN control. When the table is on the same network the local
+  // card (which routes to /tranquil/local/) replaces this cloud one.
+  if (device.type === 'TRANQUIL') return '/tranquil/cloud'
   return '/lantern'
 }
 
@@ -343,6 +345,11 @@ const openDevice = (id: string) => {
   if (!device) return
   const base = deviceBasePath(device)
   if (!base) return
+  // Establish the cloud connection (name in hand) before navigating, mirroring
+  // openLocalDevice; the device page then drives the already-active poll.
+  if (device.type === 'TRANQUIL') {
+    tranquilCloud.connect({ id, name: device.name, type: device.type })
+  }
   router.push(`${base}/${id}`)
 }
 

@@ -124,14 +124,14 @@ import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern, Playlist } from '@/lib/tranquil/local/types'
 
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const store = useTranquilLocalStore()
+const { store, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 const uuid = route.params.uuid as string
@@ -158,7 +158,7 @@ async function play() {
   error.value = null
   try {
     await store.play(uuid)
-    router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}`)
+    router.push(`${base}`)
   } catch (e) {
     error.value = formatTranquilError(e)
   } finally {
@@ -202,7 +202,7 @@ async function confirmDelete() {
   error.value = null
   try {
     await store.api().patterns.delete(uuid)
-    router.replace(`/tranquil/local/${encodeURIComponent(routeId.value)}/patterns`)
+    router.replace(`${base}/patterns`)
   } catch (e) {
     error.value = formatTranquilError(e)
   } finally {
@@ -213,7 +213,7 @@ async function confirmDelete() {
 onMounted(async () => {
   setHeader({
     title: 'Pattern',
-    backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}/patterns`,
+    backRoute: `${base}/patterns`,
   })
   if (!isActive.value) {
     loading.value = false
@@ -223,7 +223,7 @@ onMounted(async () => {
     pattern.value = await store.api().patterns.get(uuid)
     setHeader({
       title: pattern.value.name,
-      backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}/patterns`,
+      backRoute: `${base}/patterns`,
     })
   } catch (e) {
     error.value = formatTranquilError(e)

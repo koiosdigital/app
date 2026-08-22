@@ -80,7 +80,7 @@ import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern } from '@/lib/tranquil/local/types'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
@@ -89,7 +89,7 @@ import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const store = useTranquilLocalStore()
+const { store, isCloud, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 const isActive = computed(() => store.activeDevice?.id === routeId.value)
@@ -150,7 +150,7 @@ const refresh = () => fetchPage(0)
 const loadMore = () => fetchPage(page.value + 1)
 
 function openDetail(pattern: Pattern) {
-  router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/patterns/${pattern.uuid}`)
+  router.push(`${base}/patterns/${pattern.uuid}`)
 }
 
 function triggerUpload() {
@@ -186,8 +186,9 @@ async function onFileChosen(e: Event) {
 onMounted(() => {
   setHeader({
     title: 'Patterns',
-    backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}`,
-    actions: [{ icon: 'i-fa6-solid:upload', label: 'Upload', onClick: triggerUpload }],
+    backRoute: base,
+    // Upload streams a local file to the table — LAN only.
+    actions: isCloud ? [] : [{ icon: 'i-fa6-solid:upload', label: 'Upload', onClick: triggerUpload }],
   })
   void refresh()
 })

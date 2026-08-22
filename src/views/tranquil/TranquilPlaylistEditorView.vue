@@ -128,14 +128,14 @@ import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern, Playlist } from '@/lib/tranquil/local/types'
 
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const store = useTranquilLocalStore()
+const { store, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 const playlistUuid = computed(() => route.params.uuid as string)
@@ -192,7 +192,7 @@ async function load() {
     allPatterns.value = patterns.patterns
     setHeader({
       title: pl.name,
-      backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}/playlists`,
+      backRoute: `${base}/playlists`,
       actions: [
         { icon: 'i-fa6-solid:trash', label: 'Delete', onClick: () => (showDelete.value = true) },
       ],
@@ -209,7 +209,7 @@ async function playAll() {
   playing.value = true
   try {
     await store.play(undefined, playlist.value.uuid)
-    router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}`)
+    router.push(`${base}`)
   } catch (e) {
     error.value = formatTranquilError(e)
   } finally {
@@ -221,7 +221,7 @@ async function confirmDelete() {
   if (!playlist.value) return
   try {
     await store.api().playlists.delete(playlist.value.uuid)
-    router.replace(`/tranquil/local/${encodeURIComponent(routeId.value)}/playlists`)
+    router.replace(`${base}/playlists`)
   } catch (e) {
     error.value = formatTranquilError(e)
   } finally {
@@ -233,7 +233,7 @@ async function playFrom(patternUuid: string) {
   if (!playlist.value) return
   try {
     await store.play(patternUuid, playlist.value.uuid)
-    router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}`)
+    router.push(`${base}`)
   } catch (e) {
     error.value = formatTranquilError(e)
   }
@@ -265,7 +265,7 @@ async function addPattern(pattern: Pattern) {
 onMounted(() => {
   setHeader({
     title: 'Playlist',
-    backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}/playlists`,
+    backRoute: `${base}/playlists`,
   })
   void load()
 })

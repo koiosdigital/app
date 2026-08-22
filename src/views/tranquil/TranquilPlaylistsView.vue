@@ -73,14 +73,14 @@ import PageLayout from '@/layouts/PageLayout.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Playlist } from '@/lib/tranquil/local/types'
 
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const store = useTranquilLocalStore()
+const { store, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 const isActive = computed(() => store.activeDevice?.id === routeId.value)
@@ -114,7 +114,7 @@ async function refresh() {
 }
 
 function openEditor(pl: Playlist) {
-  router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/playlists/${pl.uuid}`)
+  router.push(`${base}/playlists/${pl.uuid}`)
 }
 
 async function create() {
@@ -135,7 +135,7 @@ async function create() {
 onMounted(() => {
   setHeader({
     title: 'Playlists',
-    backRoute: `/tranquil/local/${encodeURIComponent(routeId.value)}`,
+    backRoute: `${base}`,
     actions: [
       { icon: 'i-fa6-solid:plus', label: 'New playlist', onClick: () => (showNew.value = true) },
     ],

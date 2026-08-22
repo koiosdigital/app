@@ -36,6 +36,7 @@ import TranquilSettingsView from '@/views/tranquil/TranquilSettingsView.vue'
 import ClockDeviceView from '@/views/clock/ClockDeviceView.vue'
 import { useAuthStore } from '@/stores/auth/auth'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilCloudStore } from '@/stores/tranquilCloud'
 import { useClockLocalStore } from '@/stores/clockLocal'
 
 const router = createRouter({
@@ -242,6 +243,44 @@ const router = createRouter({
       name: 'tranquil-local-settings',
       component: TranquilSettingsView,
     },
+    // Cloud control (off-LAN) reuses the same views via the mode-aware
+    // useTranquilControl() resolver. Motion config / homing (settings) and
+    // per-channel LED (lighting) stay LAN-only, so they have no cloud route.
+    {
+      path: '/tranquil/cloud/:id',
+      name: 'tranquil-cloud-device',
+      component: TranquilDeviceView,
+    },
+    {
+      path: '/tranquil/cloud/:id/patterns',
+      name: 'tranquil-cloud-patterns',
+      component: TranquilPatternsView,
+    },
+    {
+      path: '/tranquil/cloud/:id/patterns/:uuid',
+      name: 'tranquil-cloud-pattern-detail',
+      component: TranquilPatternDetailView,
+    },
+    {
+      path: '/tranquil/cloud/:id/playlists',
+      name: 'tranquil-cloud-playlists',
+      component: TranquilPlaylistsView,
+    },
+    {
+      path: '/tranquil/cloud/:id/playlists/:uuid',
+      name: 'tranquil-cloud-playlist-editor',
+      component: TranquilPlaylistEditorView,
+    },
+    {
+      path: '/tranquil/cloud/:id/store',
+      name: 'tranquil-cloud-store',
+      component: TranquilStoreView,
+    },
+    {
+      path: '/tranquil/cloud/:id/store/playlists/:uuid',
+      name: 'tranquil-cloud-store-playlist',
+      component: TranquilStorePlaylistView,
+    },
     {
       // LAN-direct clock (nixie/wordclock/fibonacci), keyed by its mDNS service
       // name. The active connection is set up in HomeView.openLocalDevice.
@@ -287,10 +326,15 @@ router.beforeEach(async (to) => {
 // torn down only when they leave the device entirely. (connect() happens in
 // HomeView.openLocalDevice.)
 const TRANQUIL_PREFIX = '/tranquil/local/'
+const TRANQUIL_CLOUD_PREFIX = '/tranquil/cloud/'
 const CLOCK_PREFIX = '/clock/local/'
 router.afterEach((to, from) => {
   if (from.path.startsWith(TRANQUIL_PREFIX) && !to.path.startsWith(TRANQUIL_PREFIX)) {
     useTranquilLocalStore().disconnect()
+  }
+  // Cloud control polls while a table is open; stop it on leaving the section.
+  if (from.path.startsWith(TRANQUIL_CLOUD_PREFIX) && !to.path.startsWith(TRANQUIL_CLOUD_PREFIX)) {
+    useTranquilCloudStore().disconnect()
   }
   if (from.path.startsWith(CLOCK_PREFIX) && !to.path.startsWith(CLOCK_PREFIX)) {
     useClockLocalStore().disconnect()

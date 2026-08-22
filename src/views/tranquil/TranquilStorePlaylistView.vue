@@ -124,7 +124,7 @@ import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useAuthStore } from '@/stores/auth/auth'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 import TranquilStoreThumb from '@/components/tranquil/TranquilStoreThumb.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 import { tranquilStore, type StorePattern, type StorePlaylist } from '@/lib/tranquil/cloudStore'
@@ -133,12 +133,12 @@ const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const authStore = useAuthStore()
-const tranquilLocal = useTranquilLocalStore()
+const { store: tranquilLocal, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 const uuid = route.params.uuid as string
 const backRoute = computed(
-  () => `/tranquil/local/${encodeURIComponent(routeId.value)}/store?tab=playlists`,
+  () => `${base}/store?tab=playlists`,
 )
 
 const playlist = ref<StorePlaylist | null>(null)

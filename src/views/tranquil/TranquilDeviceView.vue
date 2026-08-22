@@ -157,11 +157,12 @@
             </div>
           </template>
 
-          <hr class="k-hairline" />
+          <hr v-if="!isCloud" class="k-hairline" />
           <button
+            v-if="!isCloud"
             type="button"
             class="control__link"
-            @click="router.push(`/tranquil/local/${encodeURIComponent(routeId)}/lighting`)"
+            @click="router.push(`${base}/lighting`)"
           >
             <span class="destination__icon"
               ><UIcon name="i-fa6-solid:lightbulb" class="h-4 w-4"
@@ -187,7 +188,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilControl } from '@/composables/useTranquilControl'
 import type { Pattern } from '@/lib/tranquil/local/types'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import TranquilLedRing from '@/components/tranquil/TranquilLedRing.vue'
@@ -197,7 +198,7 @@ import DeviceStage from '@/components/devices/DeviceStage.vue'
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const store = useTranquilLocalStore()
+const { store, isCloud, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
 // The connection is established by HomeView.openLocalDevice before navigation;
@@ -260,6 +261,9 @@ const ledBrightness = ref<number | null>(null)
 
 async function loadBrightness() {
   if (!isActive.value) return
+  // Per-channel LED state isn't mirrored to the cloud; the brightness control
+  // stays hidden (ledBrightness null) when driving the table off-LAN.
+  if (isCloud) return
   try {
     const cfg = await store.api().led.getConfig()
     if (!cfg.channels.length) return
@@ -301,18 +305,22 @@ function syncHeader() {
   setHeader({
     title: d?.model || d?.name || 'Sand Table',
     backRoute: '/',
-    actions: [
-      {
-        icon: 'i-fa6-solid:lightbulb',
-        label: 'Lighting',
-        onClick: () => router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/lighting`),
-      },
-      {
-        icon: 'i-fa6-solid:gear',
-        label: 'Settings',
-        onClick: () => router.push(`/tranquil/local/${encodeURIComponent(routeId.value)}/settings`),
-      },
-    ],
+    // Lighting (per-channel LED) and Settings (motion config / homing) are
+    // LAN-only — omit them when driving the table over the cloud.
+    actions: isCloud
+      ? []
+      : [
+          {
+            icon: 'i-fa6-solid:lightbulb',
+            label: 'Lighting',
+            onClick: () => router.push(`${base}/lighting`),
+          },
+          {
+            icon: 'i-fa6-solid:gear',
+            label: 'Settings',
+            onClick: () => router.push(`${base}/settings`),
+          },
+        ],
   })
 }
 
