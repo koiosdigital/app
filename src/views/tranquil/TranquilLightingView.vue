@@ -39,6 +39,42 @@
         </div>
       </UCard>
 
+      <!-- White channels (RGBCCT strips only) -->
+      <UCard v-if="isRGBCCT" class="bg-white/5">
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-medium">Warm white</span>
+              <span class="text-white/60">{{ warmPct }}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="255"
+              step="5"
+              :value="channel.w ?? 0"
+              class="w-full accent-amber-400"
+              @change="onWarmWhite"
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-medium">Cool white</span>
+              <span class="text-white/60">{{ coolPct }}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="255"
+              step="5"
+              :value="channel.cw ?? 0"
+              class="w-full accent-sky-300"
+              @change="onCoolWhite"
+            />
+          </div>
+        </div>
+      </UCard>
+
       <!-- Brightness -->
       <UCard class="bg-white/5">
         <div class="flex flex-col gap-2">
@@ -101,7 +137,7 @@
       </UCard>
 
       <p class="text-center text-xs text-white/40">
-        {{ ledCount }} LEDs • {{ isRGBW ? 'RGBW' : 'RGB' }}
+        {{ ledCount }} LEDs • {{ channelType }}
         <span v-if="pixdriverVersion"> • v{{ pixdriverVersion }}</span>
       </p>
     </div>
@@ -144,11 +180,12 @@ const isAnimatedEffect = computed(() => channel.effect_id.toUpperCase() !== 'SOL
 
 const hasLEDs = computed(() => (config.value?.channels.length ?? 0) > 0)
 const ledCount = computed(() => config.value?.channels[0]?.num_leds ?? 0)
-const isRGBW = computed(() =>
-  (config.value?.channels[0]?.type ?? '').toUpperCase().includes('RGBW'),
-)
+const channelType = computed(() => (config.value?.channels[0]?.type ?? 'RGB').toUpperCase())
+const isRGBCCT = computed(() => channelType.value === 'RGBCCT')
 const pixdriverVersion = computed(() => config.value?.version ?? '')
 const brightnessPct = computed(() => Math.round((channel.brightness / 255) * 100))
+const warmPct = computed(() => Math.round(((channel.w ?? 0) / 255) * 100))
+const coolPct = computed(() => Math.round(((channel.cw ?? 0) / 255) * 100))
 
 async function load() {
   if (!isActive.value) {
@@ -188,6 +225,8 @@ const onBrightness = (e: Event) =>
   apply({ brightness: Math.round((Number((e.target as HTMLInputElement).value) / 100) * 255) })
 const onSpeed = (e: Event) => apply({ speed: Number((e.target as HTMLInputElement).value) })
 const onColor = (color: string) => apply({ color })
+const onWarmWhite = (e: Event) => apply({ w: Number((e.target as HTMLInputElement).value) })
+const onCoolWhite = (e: Event) => apply({ cw: Number((e.target as HTMLInputElement).value) })
 
 onMounted(() => {
   setHeader({

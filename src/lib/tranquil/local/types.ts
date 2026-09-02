@@ -189,7 +189,16 @@ export interface MotionConfig {
 export interface LEDHardwareConfig {
   has_leds: boolean
   led_count: number
+  /** @deprecated superseded by format; still sent by firmware for old clients */
   is_rgbw: boolean
+  /** Strip pixel format: 'rgb' | 'rgbw' | 'rgbcct' */
+  format?: string
+  /** Driver IC: 'ws2812' | 'sk6812' | 'fw1906' */
+  ic_type?: string
+  /** R/G/B wire order, e.g. 'grb' */
+  color_order?: string
+  /** Swap warm/cool white wire order (RGBCCT) */
+  white_swap?: boolean
 }
 
 export interface CalibrationData {
@@ -249,6 +258,7 @@ export interface LEDEffect {
 export interface LEDChannelInfo {
   index: number
   num_leds: number
+  /** Pixel format: 'RGB' | 'RGBW' | 'RGBCCT' (RGB + warm/cool white, e.g. FW1906) */
   type: string
 }
 
@@ -263,6 +273,10 @@ export interface LEDChannelState {
   speed: number
   on: boolean
   color: string
+  /** Warm white level 0-255 (RGBCCT channels only) */
+  w?: number
+  /** Cool white level 0-255 (RGBCCT channels only) */
+  cw?: number
 }
 
 export interface LEDChannelUpdate {
@@ -271,4 +285,8 @@ export interface LEDChannelUpdate {
   speed?: number
   on?: boolean
   color?: string
+  /** Warm white level 0-255 (RGBCCT channels only) */
+  w?: number
+  /** Cool white level 0-255 (RGBCCT channels only) */
+  cw?: number
 }
