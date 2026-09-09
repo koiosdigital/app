@@ -1,7 +1,6 @@
 /**
- * Tranquil LAN-direct REST DTOs, ported verbatim from tranquil-app
- * (src/api/rest/types.ts). These describe the device's local `/api/*` server,
- * not the cloud device-api.
+ * Tranquil LAN-direct REST DTOs. These describe the device's local `/api/*`
+ * server (docs/swagger.json in tranquil-fw), not the cloud device-api.
  */
 
 export interface Pagination {
@@ -67,6 +66,7 @@ export interface Pattern {
   last_played_at?: string
   download_url?: string
   thumb_url: string
+  is_owned?: boolean
 }
 
 export interface PatternsListResponse {
@@ -159,11 +159,20 @@ export interface SystemInfo {
   device_id: string
   hostname: string
   is_homed: boolean
+  /** A homing/calibration run is in progress */
+  is_homing?: boolean
   free_heap: number
+  free_psram?: number
+  uptime_s?: number
+  /** dBm; 0 when unknown */
+  wifi_rssi?: number
+  ip_address?: string
 }
 
 export interface HomeResponse {
   success: boolean
+  /** True when the run was started (it completes asynchronously) */
+  started?: boolean
   error?: string
 }
 
@@ -175,28 +184,36 @@ export interface OkResponse {
 export interface MotionConfig {
   steps_per_rev: number
   microsteps: number
-  theta_gear_ratio_x100: number
-  pinion_diameter_mm: number
-  theta_max_rpm: number
+  /** Default path speed (units/min) */
   rho_max_rpm: number
   theta_current_ma: number
   rho_current_ma: number
   stallguard_threshold: number
-  default_accel_mm_s2: number
-  max_accel_mm_s2: number
+  /** Per-motor step acceleration (steps/s²) — applied live */
+  accel_steps_s2: number
+  /** Max per-axis step-rate jump at a segment junction (steps/s) — applied live */
+  junction_dv_steps_s: number
+  /** Theta spin-rate safety cap (rotations/min) — applied live */
+  theta_max_rot_per_min: number
+  /** De-energize motors after this long idle; 0 = never */
+  motor_idle_timeout_s: number
 }
+
+export type LedFormat = 'rgb' | 'rgbw' | 'rgbcct'
+export type LedIcType = 'ws2812' | 'sk6812' | 'fw1906'
+export type LedColorOrder = 'rgb' | 'rbg' | 'grb' | 'gbr' | 'brg' | 'bgr'
 
 export interface LEDHardwareConfig {
   has_leds: boolean
   led_count: number
   /** @deprecated superseded by format; still sent by firmware for old clients */
   is_rgbw: boolean
-  /** Strip pixel format: 'rgb' | 'rgbw' | 'rgbcct' */
-  format?: string
-  /** Driver IC: 'ws2812' | 'sk6812' | 'fw1906' */
-  ic_type?: string
+  /** Strip pixel format */
+  format?: LedFormat | string
+  /** Driver IC */
+  ic_type?: LedIcType | string
   /** R/G/B wire order, e.g. 'grb' */
-  color_order?: string
+  color_order?: LedColorOrder | string
   /** Swap warm/cool white wire order (RGBCCT) */
   white_swap?: boolean
 }
@@ -205,6 +222,7 @@ export interface CalibrationData {
   theta_steps_per_rotation: number
   rho_max_steps: number
   is_valid: boolean
+  /** Epoch seconds of the last full calibration; 0 if none */
   timestamp: number
 }
 
@@ -213,6 +231,11 @@ export interface DeviceConfig {
   led: LEDHardwareConfig
   calibration: CalibrationData
   active_preset_id: string
+  is_homed?: boolean
+  /** PATCH/preset response: the LED strip was rebuilt live */
+  led_applied?: boolean
+  /** PATCH/preset response: microsteps/steps_per_rev changed; reboot + re-home needed */
+  reboot_required?: boolean
 }
 
 export interface DeviceConfigPatch {
@@ -255,21 +278,11 @@ export interface LEDEffect {
   id: string
 }
 
-export interface LEDChannelInfo {
-  index: number
-  num_leds: number
-  /** Pixel format: 'RGB' | 'RGBW' | 'RGBCCT' (RGB + warm/cool white, e.g. FW1906) */
-  type: string
-}
-
-export interface LEDConfigResponse {
-  version: string
-  channels: LEDChannelInfo[]
-}
-
 export interface LEDChannelState {
   effect_id: string
+  /** 0-255 */
   brightness: number
+  /** 1-10 (firmware effect engine scale) */
   speed: number
   on: boolean
   color: string
@@ -279,9 +292,34 @@ export interface LEDChannelState {
   cw?: number
 }
 
+export interface LEDChannelInfo {
+  index: number
+  num_leds: number
+  /** Pixel format: 'RGB' | 'RGBW' | 'RGBCCT' (RGB + warm/cool white, e.g. FW1906) */
+  type: string
+  /** Live effect state of the channel */
+  state?: LEDChannelState
+}
+
+export interface LEDConfigResponse {
+  version: string
+  has_leds?: boolean
+  channels: LEDChannelInfo[]
+  /** Configured (NVS) strip hardware, even when currently disabled */
+  hardware?: {
+    has_leds: boolean
+    led_count: number
+    ic_type: number
+    format: number
+    color_order: number
+    white_swap: boolean
+  }
+}
+
 export interface LEDChannelUpdate {
   effect_id?: string
   brightness?: number
+  /** 1-10 */
   speed?: number
   on?: boolean
   color?: string

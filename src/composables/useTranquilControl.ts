@@ -15,7 +15,8 @@ import { useTranquilCloudStore } from '@/stores/tranquilCloud'
  *  - `base`   — the current mode's device path prefix, for building links.
  *
  * On a cloud route it also (idempotently) connects the cloud store to the route
- * device, so deep-links work without going through the home screen.
+ * device, so deep-links work without going through the home screen. On a LAN
+ * route the session is restored by useTranquilSession() (mDNS re-resolve).
  */
 export function useTranquilControl() {
   const route = useRoute()

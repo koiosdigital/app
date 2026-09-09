@@ -1622,6 +1622,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/tranquil/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One-request poll: online flag, player state and active downloads */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Live state */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TranquilLiveDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/devices/{deviceId}/tranquil/state": {
         parameters: {
             query?: never;
@@ -1755,8 +1793,17 @@ export interface paths {
                         "application/json": components["schemas"]["TranquilDispatchDto"];
                     };
                 };
-                /** @description Not found */
-                404: {
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1904,8 +1951,17 @@ export interface paths {
                         "application/json": components["schemas"]["TranquilDispatchDto"];
                     };
                 };
-                /** @description Not found */
-                404: {
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1929,7 +1985,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** LED hardware config */
+        /** LED hardware config + live channel state */
         get: {
             parameters: {
                 query?: never;
@@ -2470,7 +2526,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Refresh cached device state */
+        /** Refresh cached device state / keep fast progress updates flowing */
         post: {
             parameters: {
                 query?: never;
@@ -2545,8 +2601,17 @@ export interface paths {
                         "application/json": components["schemas"]["TranquilDispatchDto"];
                     };
                 };
-                /** @description Not found */
-                404: {
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2585,8 +2650,17 @@ export interface paths {
                         "application/json": components["schemas"]["TranquilDispatchDto"];
                     };
                 };
-                /** @description Not found */
-                404: {
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2633,8 +2707,17 @@ export interface paths {
                         "application/json": components["schemas"]["TranquilDispatchDto"];
                     };
                 };
-                /** @description Not found */
-                404: {
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2667,8 +2750,17 @@ export interface paths {
                         "application/json": components["schemas"]["TranquilDispatchDto"];
                     };
                 };
-                /** @description Not found */
-                404: {
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2692,7 +2784,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Set an LED channel */
+        /** Update an LED channel (partial: absent fields are unchanged) */
         post: {
             parameters: {
                 query?: never;
@@ -2718,8 +2810,139 @@ export interface paths {
                         "application/json": components["schemas"]["TranquilDispatchDto"];
                     };
                 };
-                /** @description Not found */
-                404: {
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/tranquil/commands/reboot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restart the table (settings and library are kept) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TranquilRebootDto"];
+                };
+            };
+            responses: {
+                /** @description Dispatch result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TranquilDispatchDto"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/tranquil/commands/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start a homing run (progress via /system isHoming / isHomed) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TranquilHomeDto"];
+                };
+            };
+            responses: {
+                /** @description Dispatch result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TranquilDispatchDto"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3463,6 +3686,308 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/apps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List apps
+         * @description Paginated catalog of published apps, built from the R2 manifests, with free-text search and sorting.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    search?: string;
+                    sortBy?: "name" | "author";
+                    order?: "asc" | "desc";
+                    limit?: number | null;
+                    page?: number | null;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Paginated catalog */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaginatedAppsResponseDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/apps/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get app manifest */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description App manifest */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AppManifestDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/apps/{id}/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get app config schema */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description App config schema */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AppSchemaDto"];
+                    };
+                };
+                /** @description Invalid schema */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/apps/{id}/render": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Render an app with a config */
+        post: {
+            parameters: {
+                query?: {
+                    width?: string;
+                    height?: string;
+                    tz?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Raw app configuration */
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AppConfigDto"];
+                };
+            };
+            responses: {
+                /** @description Render output + normalized config */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RenderResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/apps/{id}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate a config against an app schema */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Raw app configuration */
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AppConfigDto"];
+                };
+            };
+            responses: {
+                /** @description Validation result + normalized config */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidateSchemaResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/apps/{id}/call_handler": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Invoke a schema handler */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Handler invocation */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CallSchemaHandlerRequestDto"];
+                };
+            };
+            responses: {
+                /** @description Handler result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CallSchemaHandlerResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/apps/{id}/preview/{dims}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview render (default config) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    dims: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description WebP preview image */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "image/webp": string;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3751,9 +4276,15 @@ export interface components {
             /** @default false */
             forceQuiet: boolean;
         };
+        TranquilLiveDto: {
+            /** @description Gateway connection state (device.connected/disconnected) */
+            online: boolean;
+            player: components["schemas"]["TranquilPlayerStateDto"];
+            downloads: components["schemas"]["TranquilDownloadEntryDto"][];
+        };
         TranquilPlayerStateDto: {
-            state: string;
-            mode: string;
+            state: components["schemas"]["TranquilPlaybackState"];
+            mode: components["schemas"]["TranquilPlayMode"];
             currentPatternUuid: string;
             currentPlaylistUuid: string;
             progressPercent: number;
@@ -3762,7 +4293,22 @@ export interface components {
             feedRate: number;
             shuffle: boolean;
             loop: boolean;
+            /** @description ms epoch of the device report; null when never reported */
             at: number | null;
+        };
+        /** @enum {string} */
+        TranquilPlaybackState: "UNSPECIFIED" | "STOPPED" | "PLAYING" | "PAUSED";
+        /** @enum {string} */
+        TranquilPlayMode: "UNSPECIFIED" | "SINGLE" | "PLAYLIST" | "PLAYLIST_LOOP" | "PLAYLIST_SHUFFLE";
+        TranquilDownloadEntryDto: {
+            uuid: string;
+            progressPct: number;
+            failed: boolean;
+            error?: string;
+            /** @description Reached 100% (terminal) */
+            done: boolean;
+            /** @description ms epoch of the last report for this entry */
+            updatedAt: number;
         };
         TranquilPatternsDto: {
             patterns: components["schemas"]["TranquilPatternDto"][];
@@ -3800,18 +4346,17 @@ export interface components {
             downloads: components["schemas"]["TranquilDownloadEntryDto"][];
             at: number | null;
         };
-        TranquilDownloadEntryDto: {
-            uuid?: string;
-            progressPct?: number;
-            failed?: boolean;
-            error?: string;
-        };
         TranquilSystemDto: {
             firmwareVersion?: string;
             hardwareModel?: string;
             deviceId?: string;
             isHomed?: boolean;
+            isHoming?: boolean;
             freeHeap?: number;
+            freePsram?: number;
+            uptimeS?: number;
+            wifiRssi?: number;
+            ipAddress?: string;
             hostname?: string;
             at?: number | null;
         };
@@ -3832,8 +4377,27 @@ export interface components {
             /** @description kd.v1.LEDFormat: 0=UNSPECIFIED, 1=RGB, 2=RGBW, 3=RGBCCT */
             format?: number;
             pixdriverVersion?: string;
+            /** @description Live per-channel effect state */
+            channels?: components["schemas"]["TranquilLedChannelStateDto"][];
             at?: number | null;
         };
+        TranquilLedChannelStateDto: {
+            channel: number;
+            effectId: string;
+            brightness: number;
+            speed: number;
+            enabled: boolean;
+            color: components["schemas"]["TranquilLedColorDto"];
+        };
+        TranquilLedColorDto: {
+            r: number;
+            g: number;
+            b: number;
+            /** @description Single white (RGBW) / warm white (RGBCCT) */
+            w?: number;
+            /** @description Cool white (RGBCCT only) */
+            cw?: number;
+        } | null;
         TranquilLedEffectsDto: {
             effects: {
                 id: string;
@@ -3875,7 +4439,9 @@ export interface components {
             patternUuid: string;
         };
         TranquilRefreshDto: {
-            targets?: ("player" | "patterns" | "playlists" | "led" | "schedule")[];
+            targets?: ("player" | "patterns" | "playlists" | "led" | "schedule" | "system")[];
+            /** @default 60 */
+            watchSeconds: number;
         };
         TranquilRenamePatternDto: {
             name: string;
@@ -3899,23 +4465,11 @@ export interface components {
         };
         TranquilLedChannelDto: {
             channel: number;
-            /** @default  */
-            effectId: string;
-            /** @default 0 */
-            brightness: number;
-            /** @default 0 */
-            speed: number;
-            /** @default true */
-            enabled: boolean;
-            color?: {
-                r: number;
-                g: number;
-                b: number;
-                /** @description Single white (RGBW) / warm white (RGBCCT) */
-                w?: number;
-                /** @description Cool white (RGBCCT only) */
-                cw?: number;
-            };
+            effectId?: string;
+            brightness?: number;
+            speed?: number;
+            enabled?: boolean;
+            color?: components["schemas"]["TranquilLedColorDto"];
         };
         TranquilSetScheduleDto: {
             items: {
@@ -3924,6 +4478,14 @@ export interface components {
                 actionType: number;
                 uuid?: string;
             }[];
+        };
+        TranquilRebootDto: {
+            /** @default app */
+            reason: string;
+        };
+        TranquilHomeDto: {
+            /** @default false */
+            forceFullCalibration: boolean;
         };
         LanternDeviceResponseDto: {
             /**
@@ -4283,6 +4845,934 @@ export interface components {
         GeocoderRequestDto: {
             lat: number;
             lng: number;
+        };
+        PaginatedAppsResponseDto: {
+            /** @description Array of app manifests for current page */
+            data: components["schemas"]["AppManifestDto"][];
+            meta: components["schemas"]["PaginationMetaDto"];
+        };
+        AppManifestDto: {
+            /**
+             * @description Unique app identifier
+             * @example weather
+             */
+            id: string;
+            /**
+             * @description Display name shown in the catalog
+             * @example Weather
+             */
+            name: string;
+            /**
+             * @description Short summary of the app
+             * @example Local weather on your Matrx
+             */
+            summary: string;
+            /**
+             * @description Long form description
+             * @example Displays the current forecast, highs, lows, and alerts.
+             */
+            description: string;
+            /**
+             * @description App author
+             * @example Koios Labs
+             */
+            author: string;
+            /**
+             * @description Primary .star filename
+             * @example weather.star
+             */
+            fileName: string;
+            /**
+             * @description Internal package name
+             * @example com.koios.weather
+             */
+            packageName: string;
+            /**
+             * @description Absolute path to the app directory
+             * @example /apps/weather
+             */
+            directoryPath?: string;
+            /**
+             * @description Absolute path to the entry .star file
+             * @example /apps/weather/weather.star
+             */
+            starFilePath?: string;
+        };
+        /** @description Pagination metadata */
+        PaginationMetaDto: {
+            /**
+             * @description Current page number
+             * @example 1
+             */
+            page: number;
+            /**
+             * @description Number of items per page
+             * @example 20
+             */
+            limit: number;
+            /**
+             * @description Total number of items
+             * @example 45
+             */
+            total: number;
+            /**
+             * @description Total number of pages
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Whether there is a previous page
+             * @example false
+             */
+            hasPrevious: boolean;
+            /**
+             * @description Whether there is a next page
+             * @example true
+             */
+            hasNext: boolean;
+        };
+        AppSchemaDto: {
+            /**
+             * @description Schema version
+             * @example 1.0.0
+             */
+            version: string;
+            /** @description List of configurable fields (empty array if no configuration required) */
+            schema: (components["schemas"]["AppSchemaColorFieldDto"] | components["schemas"]["AppSchemaDatetimeFieldDto"] | components["schemas"]["AppSchemaDropdownFieldDto"] | components["schemas"]["AppSchemaMultiSelectFieldDto"] | components["schemas"]["AppSchemaGeneratedFieldDto"] | components["schemas"]["AppSchemaLocationFieldDto"] | components["schemas"]["AppSchemaLocationBasedFieldDto"] | components["schemas"]["AppSchemaOnOffFieldDto"] | components["schemas"]["AppSchemaRadioFieldDto"] | components["schemas"]["AppSchemaTextFieldDto"] | components["schemas"]["AppSchemaTypeaheadFieldDto"] | components["schemas"]["AppSchemaOAuth2FieldDto"] | components["schemas"]["AppSchemaOAuth1FieldDto"] | components["schemas"]["AppSchemaWebCallbackFieldDto"] | components["schemas"]["AppSchemaPNGFieldDto"] | components["schemas"]["AppSchemaNotificationFieldDto"] | components["schemas"]["AppSchemaGeoJSONFieldDto"])[];
+            /** @description Notification field definitions */
+            notifications?: components["schemas"]["AppSchemaNotificationFieldDto"][];
+        };
+        AppSchemaColorFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for color field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "color";
+            /** @description Palette of colors for selection fields */
+            palette?: string[];
+        };
+        /** @description Conditional visibility definition */
+        AppSchemaVisibilityDto: {
+            /**
+             * @description Visibility behavior
+             * @example invisible
+             * @enum {string}
+             */
+            type: "invisible" | "disabled";
+            /**
+             * @description Comparison mode
+             * @example equal
+             * @enum {string}
+             */
+            condition: "equal" | "not_equal";
+            /**
+             * @description Source variable used for comparison
+             * @example unit
+             */
+            variable: string;
+            /**
+             * @description Value used for comparison
+             * @example metric
+             */
+            value?: string;
+        };
+        AppSchemaDatetimeFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for datetime field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "datetime";
+        };
+        AppSchemaDropdownFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for dropdown field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "dropdown";
+            /** @description Selectable options */
+            options: components["schemas"]["AppSchemaOptionDto"][];
+        };
+        AppSchemaOptionDto: {
+            /**
+             * @description Optional display label
+             * @example Seattle
+             */
+            display?: string;
+            /**
+             * @description Primary option label
+             * @example Seattle, WA
+             */
+            text: string;
+            /**
+             * @description Underlying value used in config
+             * @example seattle
+             */
+            value: string;
+        };
+        AppSchemaMultiSelectFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for multi-select field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "multiselect";
+            /** @description Selectable options */
+            options: components["schemas"]["AppSchemaOptionDto"][];
+        };
+        AppSchemaGeneratedFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for generated field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "generated";
+            /**
+             * @description Field ID used as source for generated fields
+             * @example city
+             */
+            source: string;
+            /**
+             * @description Pixlet handler invoked for dynamic data
+             * @example fetch_cities
+             */
+            handler: string;
+        };
+        AppSchemaLocationFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for location field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "location";
+        };
+        AppSchemaLocationBasedFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for location based field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "locationbased";
+            /**
+             * @description Pixlet handler invoked with location JSON to generate options
+             * @example fetch_options
+             */
+            handler: string;
+        };
+        AppSchemaOnOffFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for on/off field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "onoff";
+        };
+        AppSchemaRadioFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for radio field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "radio";
+            /** @description Selectable options */
+            options: components["schemas"]["AppSchemaOptionDto"][];
+        };
+        AppSchemaTextFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for text field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "text";
+        };
+        AppSchemaTypeaheadFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for typeahead field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "typeahead";
+            /**
+             * @description Pixlet handler invoked with search pattern to generate options
+             * @example search_handler
+             */
+            handler: string;
+        };
+        AppSchemaOAuth2FieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for OAuth2 field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "oauth2";
+            /**
+             * @description Pixlet handler invoked for dynamic data
+             * @example oauth_handler
+             */
+            handler: string;
+            /**
+             * @description OAuth client identifier
+             * @example pixlet-google
+             */
+            client_id?: string;
+            /**
+             * @description Indicates if PKCE is used, S256 method will be used if true, and the handler will receive an additional code_verifier parameter.
+             * @example true
+             */
+            pkce?: boolean;
+            /**
+             * @description OAuth authorization endpoint
+             * @example https://accounts.google.com/o/oauth2/v2/auth
+             */
+            authorization_endpoint: string;
+            /**
+             * @description OAuth scopes requested for the flow
+             * @example [
+             *       "profile",
+             *       "email"
+             *     ]
+             */
+            scopes: string[];
+            /**
+             * @description If true, the user provides their own OAuth client credentials. Mutually exclusive with client_id.
+             * @example false
+             */
+            user_defined_client?: boolean;
+        };
+        AppSchemaOAuth1FieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for OAuth1 field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "oauth1";
+        };
+        AppSchemaWebCallbackFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for web callback field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "webcallback";
+            /**
+             * @description Handler invoked with the callback query params (plus callback_url) as a JSON object; returns the field's config value
+             * @example sessionHandler
+             */
+            handler: string;
+            /**
+             * @description Provider login URL the popup opens (may already carry query params)
+             * @example https://www.last.fm/api/auth/?api_key=abc123
+             */
+            authorization_endpoint: string;
+            /**
+             * @description Query param the provider reads the callback URL from (last.fm: cb). Omit when the provider only redirects to a callback pre-registered with the API account.
+             * @example cb
+             */
+            redirect_param?: string;
+            /**
+             * @description Callback query param that must be present for the login to count (last.fm: token). Omit to accept any error-free callback.
+             * @example token
+             */
+            success_param?: string;
+        };
+        AppSchemaPNGFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for PNG upload field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "png";
+        };
+        AppSchemaNotificationFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for notification field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "notification";
+            /** @description Available notification sounds */
+            sounds: components["schemas"]["AppSchemaSoundDto"][];
+        };
+        AppSchemaSoundDto: {
+            /**
+             * @description Unique sound identifier
+             * @example alert
+             */
+            id: string;
+            /**
+             * @description Display title
+             * @example Alert Tone
+             */
+            title: string;
+            /**
+             * @description Relative file path
+             * @example sounds/alert.wav
+             */
+            path: string;
+        };
+        AppSchemaGeoJSONFieldDto: {
+            /**
+             * @description Field identifier
+             * @example city
+             */
+            id: string;
+            /**
+             * @description Human readable label
+             * @example City
+             */
+            name?: string;
+            /**
+             * @description Helper text for the field
+             * @example Pick the city to display
+             */
+            description?: string;
+            /**
+             * @description Optional icon name
+             * @example weather
+             */
+            icon?: string;
+            visibility?: components["schemas"]["AppSchemaVisibilityDto"];
+            /**
+             * @description Default value serialized as text
+             * @example seattle
+             */
+            default?: string;
+            /**
+             * @description Discriminator for GeoJSON field (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "geojson";
+            /**
+             * @description If true, enables point collection on the map UI in addition to polygon drawing
+             * @example true
+             */
+            collect_point?: boolean;
+        };
+        Error: {
+            error: string;
+        };
+        RenderResponseDto: {
+            result: components["schemas"]["RenderResultDto"];
+            /**
+             * @description Normalized configuration returned by the renderer
+             * @example {
+             *       "city": "seattle",
+             *       "units": "imperial"
+             *     }
+             */
+            normalized_config: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description Renderer output metadata */
+        RenderResultDto: {
+            /**
+             * @description Renderer result type identifier
+             * @example render
+             */
+            type: string;
+            /**
+             * @description App identifier that produced the render
+             * @example weather
+             */
+            app_id: string;
+            /**
+             * @description Base64 encoded WebP payload
+             * @example UklGRjYAAABXRUJQVlA4WAoAAAAQAAAAMgAA...
+             */
+            render_output: string;
+            /**
+             * @description Render ETag (sha256 of the WebP payload)
+             * @example 8f3d2a1b…
+             */
+            etag: string;
+            /**
+             * @description Number of animation frames in the render
+             * @example 1
+             */
+            frame_count: number;
+            /**
+             * @description Per-frame delay in milliseconds
+             * @example 0
+             */
+            delay_ms: number;
+        };
+        /**
+         * @description Raw app configuration keyed by schema field id
+         * @example {
+         *       "city": "seattle",
+         *       "units": "imperial"
+         *     }
+         */
+        AppConfigDto: {
+            [key: string]: unknown;
+        };
+        ValidateSchemaResponseDto: {
+            /**
+             * @description Whether the configuration passed validation
+             * @example true
+             */
+            valid: boolean;
+            /** @description List of validation errors, if any */
+            errors?: components["schemas"]["ValidationErrorDto"][];
+            /**
+             * @description Normalized configuration returned by the renderer
+             * @example {
+             *       "city": "seattle",
+             *       "units": "imperial"
+             *     }
+             */
+            normalized_config: {
+                [key: string]: unknown;
+            };
+        };
+        ValidationErrorDto: {
+            /**
+             * @description Field identifier that failed validation
+             * @example city
+             */
+            field: string;
+            /**
+             * @description Human readable error message
+             * @example City is required
+             */
+            message: string;
+            /**
+             * @description Machine readable error code
+             * @example required
+             */
+            code: string;
+        };
+        CallSchemaHandlerResponseDto: {
+            /**
+             * @description Raw handler response payload
+             * @example {"results":["Seattle","Portland"]}
+             */
+            result: string;
+        };
+        CallSchemaHandlerRequestDto: {
+            /**
+             * @description Handler to invoke
+             * @example search_locations
+             */
+            handler_name: string;
+            /**
+             * @description Serialized payload passed to the handler
+             * @example {"query":"Seattle"}
+             */
+            data?: string;
+            /**
+             * @description Current app configuration passed to handlers that accept a config argument
+             * @example {
+             *       "location": "{\"lat\":\"47.6\",\"lng\":\"-122.3\"}",
+             *       "color": "#FF0000"
+             *     }
+             */
+            config: {
+                [key: string]: string;
+            };
         };
     };
     responses: never;

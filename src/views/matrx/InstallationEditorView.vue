@@ -176,26 +176,28 @@
         </section>
       </div>
     </div>
-  </div>
 
-  <!-- Footer Actions (teleported to app-footer for safe area handling) -->
-  <Teleport to="#app-footer">
-    <footer class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4">
-      <div v-if="saveError" class="mb-3">
-        <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
-      </div>
-      <UButton
-        color="primary"
-        size="lg"
-        block
-        :loading="saving"
-        :disabled="saving"
-        @click="handleSave"
-      >
-        {{ mode === 'install' ? 'Install App' : 'Save Changes' }}
-      </UButton>
-    </footer>
-  </Teleport>
+    <!-- Footer Actions (teleported to app-footer for safe area handling).
+         Kept INSIDE the root element: a second root node turns this view into
+         a Fragment, which the page transition can never finish leaving. -->
+    <Teleport to="#app-footer">
+      <footer class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4">
+        <div v-if="saveError" class="mb-3">
+          <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
+        </div>
+        <UButton
+          color="primary"
+          size="lg"
+          block
+          :loading="saving"
+          :disabled="saving"
+          @click="handleSave"
+        >
+          {{ mode === 'install' ? 'Install App' : 'Save Changes' }}
+        </UButton>
+      </footer>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">

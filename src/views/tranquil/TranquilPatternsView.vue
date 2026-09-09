@@ -8,68 +8,64 @@
       @change="onFileChosen"
     />
 
-    <div v-if="!isActive" class="flex flex-col items-center gap-4 px-5 py-16 text-center">
-      <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-white/30" />
-      <p class="text-white/70">This table isn't connected. Open it from your device list.</p>
-      <UButton color="primary" variant="soft" @click="router.replace('/')">Go to devices</UButton>
-    </div>
+    <TranquilSessionGate :state="session.state.value" @retry="session.retry">
+      <!-- pb clears the fixed bottom tab bar -->
+      <div class="flex flex-col gap-4 px-5 pt-6 pb-28">
+        <UAlert v-if="error" color="error" icon="i-fa6-solid:circle-exclamation" :title="error" />
 
-    <!-- pb clears the fixed bottom tab bar -->
-    <div v-else class="flex flex-col gap-4 px-5 pt-6 pb-28">
-      <UAlert v-if="error" color="error" icon="i-fa6-solid:circle-exclamation" :title="error" />
-
-      <div
-        v-if="uploading"
-        class="flex items-center gap-2 rounded-lg border border-primary-500/20 bg-primary-500/10 px-3 py-2 text-sm text-primary-300"
-      >
-        <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin" />
-        Uploading pattern…
-      </div>
-
-      <div
-        v-else-if="processing && !processing.failed"
-        class="flex items-center gap-2 rounded-lg border border-primary-500/20 bg-primary-500/10 px-3 py-2 text-sm text-primary-300"
-      >
-        <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin" />
-        {{ processing.phase === 'converting' ? 'Converting pattern' : 'Rendering preview' }}…
-        {{ processing.pct }}%
-      </div>
-
-      <div v-if="loading && !patterns.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <USkeleton v-for="i in 6" :key="i" class="aspect-square w-full rounded-lg" />
-      </div>
-
-      <div
-        v-else-if="!patterns.length"
-        class="rounded-lg border border-dashed border-white/20 p-8 text-center text-white/60"
-      >
-        No patterns on this table yet. Upload one, or add from the store.
-      </div>
-
-      <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <button
-          v-for="pattern in patterns"
-          :key="pattern.uuid"
-          type="button"
-          class="flex flex-col gap-1.5 text-left"
-          @click="openDetail(pattern)"
+        <div
+          v-if="uploading"
+          class="flex items-center gap-2 rounded-lg border border-primary-500/20 bg-primary-500/10 px-3 py-2 text-sm text-primary-300"
         >
-          <TranquilPatternThumb :src="thumbUrl(pattern.uuid)" :alt="pattern.name" />
-          <p class="w-full truncate text-sm">{{ pattern.name }}</p>
-        </button>
-      </div>
+          <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin" />
+          Uploading pattern…
+        </div>
 
-      <UButton
-        v-if="hasMore"
-        color="neutral"
-        variant="soft"
-        block
-        :loading="loading"
-        @click="loadMore"
-      >
-        Load more
-      </UButton>
-    </div>
+        <div
+          v-else-if="processing && !processing.failed"
+          class="flex items-center gap-2 rounded-lg border border-primary-500/20 bg-primary-500/10 px-3 py-2 text-sm text-primary-300"
+        >
+          <UIcon name="i-fa6-solid:spinner" class="h-4 w-4 animate-spin" />
+          {{ processing.phase === 'converting' ? 'Converting pattern' : 'Rendering preview' }}…
+          {{ processing.pct }}%
+        </div>
+
+        <div v-if="loading && !patterns.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <USkeleton v-for="i in 6" :key="i" class="aspect-square w-full rounded-lg" />
+        </div>
+
+        <div
+          v-else-if="!patterns.length"
+          class="rounded-lg border border-dashed border-white/20 p-8 text-center text-white/60"
+        >
+          No patterns on this table yet. Upload one, or add from the store.
+        </div>
+
+        <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <button
+            v-for="pattern in patterns"
+            :key="pattern.uuid"
+            type="button"
+            class="flex flex-col gap-1.5 text-left"
+            @click="openDetail(pattern)"
+          >
+            <TranquilPatternThumb :src="thumbUrl(pattern.uuid)" :alt="pattern.name" />
+            <p class="w-full truncate text-sm">{{ pattern.name }}</p>
+          </button>
+        </div>
+
+        <UButton
+          v-if="hasMore"
+          color="neutral"
+          variant="soft"
+          block
+          :loading="loading"
+          @click="loadMore"
+        >
+          Load more
+        </UButton>
+      </div>
+    </TranquilSessionGate>
 
     <TranquilTabBar />
   </PageLayout>
@@ -77,22 +73,20 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilControl } from '@/composables/useTranquilControl'
+import { useTranquilSession } from '@/composables/useTranquilSession'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern } from '@/lib/tranquil/local/types'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
+import TranquilSessionGate from '@/components/tranquil/TranquilSessionGate.vue'
 
-const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const { store, isCloud, base } = useTranquilControl()
-
-const routeId = computed(() => route.params.id as string)
-const isActive = computed(() => store.activeDevice?.id === routeId.value)
+const session = useTranquilSession()
+const { store, isCloud, base, isActive } = session
 
 const patterns = ref<Pattern[]>([])
 const page = ref(0) // local device is 0-based
@@ -122,6 +116,15 @@ watch(processing, (p) => {
     void refresh()
   }
 })
+
+// The device pushes its list whenever the library changes (download from
+// another client, delete, rename): refetch so this grid never goes stale.
+watch(
+  () => store.libraryVersion.patterns,
+  () => {
+    if (isActive.value) void refresh()
+  },
+)
 
 const hasMore = computed(() => page.value + 1 < totalPages.value)
 
@@ -191,5 +194,8 @@ onMounted(() => {
     actions: isCloud ? [] : [{ icon: 'i-fa6-solid:upload', label: 'Upload', onClick: triggerUpload }],
   })
   void refresh()
+})
+watch(isActive, (active) => {
+  if (active) void refresh()
 })
 </script>

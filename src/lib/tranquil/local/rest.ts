@@ -151,6 +151,9 @@ interface paths {
   '/api/system/factory-reset': {
     post: { responses: { 200: { content: { 'application/json': OkResponse } } } }
   }
+  '/api/system/reboot': {
+    post: { responses: { 200: { content: { 'application/json': OkResponse } } } }
+  }
   '/api/config': {
     get: { responses: { 200: { content: { 'application/json': DeviceConfig } } } }
     patch: {
@@ -330,15 +333,23 @@ export function createTranquilRest(baseUrl: string) {
     async getInfo(): Promise<SystemInfo> {
       return handleResponse(await client.GET('/api/system/info'))
     },
+    // Starts the run and returns immediately (202); completion is visible via
+    // getInfo().is_homing / is_homed and the device's SystemInfo push.
     async home(forceFullCalibration = false): Promise<HomeResponse> {
-      return handleResponse(
-        await client.POST('/api/system/home', {
-          body: { force_full_calibration: forceFullCalibration },
-        }),
-      )
+      const res = await client.POST('/api/system/home', {
+        body: { force_full_calibration: forceFullCalibration },
+      })
+      if (res.response.status === 409) {
+        return { success: false, error: 'Homing is already in progress.' }
+      }
+      return handleResponse(res)
     },
     async factoryReset(): Promise<OkResponse> {
       return handleResponse(await client.POST('/api/system/factory-reset'))
+    },
+    // Restart the table (settings and library are kept).
+    async reboot(): Promise<OkResponse> {
+      return handleResponse(await client.POST('/api/system/reboot'))
     },
   }
 

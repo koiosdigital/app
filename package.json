@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "pnpm generate:icons && vite",
     "dev:ios": "CAP_DEV_SERVER_URL=http://${CAP_DEV_HOST:-10.0.4.57}:5173 npx cap sync ios && npx cap open ios",
-    "build": "vite build && npx cap sync",
+    "build": "pnpm generate:icons && vite build && npx cap sync",
     "ios": "npx cap sync ios && npx cap open ios",
     "android": "npx cap sync android && npx cap open android",
     "preview": "pnpm run build && wrangler dev",
@@ -13,11 +13,12 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,vue,js,json,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,vue,js,json,css}\"",
-    "typecheck": "vue-tsc -p ./tsconfig.app.json",
+    "typecheck": "pnpm -C tools/ts5 exec vue-tsc -p ../../tsconfig.app.json",
     "postinstall": "buf generate",
-    "generate:api": "openapi-typescript ../device-api/openapi.json -o src/types/api.d.ts",
+    "generate:api": "pnpm -C tools/ts5 exec openapi-typescript ../../../device-api/openapi.json -o ../../src/types/api.d.ts",
     "generate:provisioning-api": "openapi-typescript https://provisioning.api.koiosdigital.net/swagger.json -o src/types/provisioning-api.d.ts",
-    "deploy": "pnpm run build && wrangler deploy"
+    "deploy": "pnpm run build && wrangler deploy",
+    "generate:icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.14.0",

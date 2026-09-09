@@ -17,6 +17,30 @@ import ui from '@nuxt/ui/vue-plugin'
 
 const app = createApp(App)
 
+// A render/setup error used to leave the RouterView empty with nothing in the
+// UI and nothing in the console on device. Log it; the page transition and
+// the router recover on the next navigation.
+app.config.errorHandler = (err, _instance, info) => {
+  console.error(`[app] ${info}:`, err)
+}
+
+// Lazy route chunks can 404 after a live-update swaps the bundle underneath a
+// running app. Reload once to pick up the new asset names instead of leaving
+// the user on a page that will never load.
+router.onError((err, to) => {
+  const text = String(err)
+  const chunkFailure = /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk/i.test(
+    text,
+  )
+  if (chunkFailure && !sessionStorage.getItem('chunk-reload')) {
+    sessionStorage.setItem('chunk-reload', '1')
+    window.location.assign(to.fullPath)
+    return
+  }
+  console.error('[router] navigation failed', err)
+})
+window.addEventListener('load', () => sessionStorage.removeItem('chunk-reload'))
+
 // Install unhead BEFORE Nuxt UI: @nuxt/ui also sets up unhead, but its head
 // plugin skips when `usehead` is already provided. Providing ours first makes it
 // the single head instance (avoiding the "already provides usehead" overwrite

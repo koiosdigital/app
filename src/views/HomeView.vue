@@ -348,7 +348,12 @@ const openDevice = (id: string) => {
   // Establish the cloud connection (name in hand) before navigating, mirroring
   // openLocalDevice; the device page then drives the already-active poll.
   if (device.type === 'TRANQUIL') {
-    tranquilCloud.connect({ id, name: device.name, type: device.type })
+    tranquilCloud.connect({
+      id,
+      name: device.settings?.displayName ?? device.id,
+      type: device.type,
+      online: device.online,
+    })
   }
   router.push(`${base}/${id}`)
 }
@@ -408,7 +413,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopReconnectWatch?.()
-  localDevicesStore.stop()
+  // Discovery stays up: the Tranquil session follows a table's address in the
+  // discovery results while its pages are open, and re-entering Home renders
+  // from the warm list instead of an empty one.
 })
 </script>
 

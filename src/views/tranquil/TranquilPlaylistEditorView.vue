@@ -27,13 +27,8 @@
       @confirm="confirmDelete"
     />
 
-    <div v-if="!isActive" class="flex flex-col items-center gap-4 px-5 py-16 text-center">
-      <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-white/30" />
-      <p class="text-white/70">This table isn't connected. Open it from your device list.</p>
-      <UButton color="primary" variant="soft" @click="router.replace('/')">Go to devices</UButton>
-    </div>
-
-    <div v-else-if="loading" class="flex flex-1 items-center justify-center py-20">
+    <TranquilSessionGate :state="session.state.value" @retry="session.retry">
+    <div v-if="loading" class="flex flex-1 items-center justify-center py-20">
       <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
     </div>
 
@@ -103,6 +98,7 @@
         </UCard>
       </div>
     </div>
+    </TranquilSessionGate>
 
     <Teleport v-if="isActive && playlist" to="#app-footer">
       <div class="border-t border-white/10 bg-black/80 p-3 backdrop-blur">
@@ -122,24 +118,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
+import TranquilSessionGate from '@/components/tranquil/TranquilSessionGate.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilControl } from '@/composables/useTranquilControl'
+import { useTranquilSession } from '@/composables/useTranquilSession'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern, Playlist } from '@/lib/tranquil/local/types'
 
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const { store, base } = useTranquilControl()
+const session = useTranquilSession()
+const { store, base, isActive } = session
 
-const routeId = computed(() => route.params.id as string)
 const playlistUuid = computed(() => route.params.uuid as string)
-const isActive = computed(() => store.activeDevice?.id === routeId.value)
+watch(isActive, (active) => {
+  if (active) void load()
+})
 
 const playlist = ref<Playlist | null>(null)
 const allPatterns = ref<Pattern[]>([])

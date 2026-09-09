@@ -235,26 +235,27 @@
         @confirm="deleteDevice"
       />
     </div>
-  </div>
 
-  <!-- Footer (teleported to app-footer for safe area handling) -->
-  <Teleport v-if="device" to="#app-footer">
-    <footer class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4">
-      <div v-if="saveError" class="mb-3">
-        <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
-      </div>
-      <UButton
-        color="primary"
-        size="lg"
-        block
-        :loading="saving"
-        :disabled="saving || !hasChanges"
-        @click="saveSettings"
-      >
-        Save Changes
-      </UButton>
-    </footer>
-  </Teleport>
+    <!-- Footer (teleported to app-footer for safe area handling). Inside the
+         root element on purpose - see App.vue. -->
+    <Teleport v-if="device" to="#app-footer">
+      <footer class="border-t border-white/10 bg-zinc-950/95 backdrop-blur px-6 py-4">
+        <div v-if="saveError" class="mb-3">
+          <UAlert color="error" icon="i-fa6-solid:circle-exclamation" :title="saveError" />
+        </div>
+        <UButton
+          color="primary"
+          size="lg"
+          block
+          :loading="saving"
+          :disabled="saving || !hasChanges"
+          @click="saveSettings"
+        >
+          Save Changes
+        </UButton>
+      </footer>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -49,13 +49,8 @@
       @confirm="confirmDelete"
     />
 
-    <div v-if="!isActive" class="flex flex-col items-center gap-4 px-5 py-16 text-center">
-      <UIcon name="i-fa6-solid:wifi" class="h-8 w-8 text-white/30" />
-      <p class="text-white/70">This table isn't connected. Open it from your device list.</p>
-      <UButton color="primary" variant="soft" @click="router.replace('/')">Go to devices</UButton>
-    </div>
-
-    <div v-else-if="loading" class="flex flex-1 items-center justify-center py-20">
+    <TranquilSessionGate :state="session.state.value" @retry="session.retry">
+    <div v-if="loading" class="flex flex-1 items-center justify-center py-20">
       <UIcon name="i-fa6-solid:spinner" class="h-8 w-8 animate-spin text-white/50" />
     </div>
 
@@ -111,31 +106,32 @@
       <p class="text-white/70">{{ error ?? 'Pattern not found on this table.' }}</p>
       <UButton color="neutral" variant="soft" @click="router.back()">Go back</UButton>
     </div>
+    </TranquilSessionGate>
 
     <TranquilTabBar />
   </PageLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import DangerConfirmModal from '@/components/DangerConfirmModal.vue'
 import TranquilPatternThumb from '@/components/tranquil/TranquilPatternThumb.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
+import TranquilSessionGate from '@/components/tranquil/TranquilSessionGate.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
-import { useTranquilControl } from '@/composables/useTranquilControl'
+import { useTranquilSession } from '@/composables/useTranquilSession'
 import { formatTranquilError } from '@/lib/tranquil/local/errors'
 import type { Pattern, Playlist } from '@/lib/tranquil/local/types'
 
 const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
-const { store, base } = useTranquilControl()
+const session = useTranquilSession()
+const { store, base, isActive } = session
 
-const routeId = computed(() => route.params.id as string)
 const uuid = route.params.uuid as string
-const isActive = computed(() => store.activeDevice?.id === routeId.value)
 
 const pattern = ref<Pattern | null>(null)
 const loading = ref(true)
@@ -210,15 +206,12 @@ async function confirmDelete() {
   }
 }
 
-onMounted(async () => {
-  setHeader({
-    title: 'Pattern',
-    backRoute: `${base}/patterns`,
-  })
+async function load() {
   if (!isActive.value) {
     loading.value = false
     return
   }
+  loading.value = true
   try {
     pattern.value = await store.api().patterns.get(uuid)
     setHeader({
@@ -230,5 +223,16 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  setHeader({
+    title: 'Pattern',
+    backRoute: `${base}/patterns`,
+  })
+  void load()
+})
+watch(isActive, (active) => {
+  if (active) void load()
 })
 </script>

@@ -31,6 +31,8 @@ const router = useRouter()
 const { store, base } = useTranquilControl()
 
 const routeId = computed(() => route.params.id as string)
+// Shown whenever the store is bound to this table, including while its socket
+// is reconnecting: the bar is navigation, not live state.
 const isActive = computed(() => store.activeDevice?.id === routeId.value)
 const basePath = computed(() => base)
 

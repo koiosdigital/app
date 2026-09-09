@@ -13,6 +13,7 @@ export enum ErrorCode {
   InvalidRequest = 'INVALID_REQUEST',
   NotFound = 'NOT_FOUND',
   Unauthorized = 'UNAUTHORIZED',
+  Forbidden = 'FORBIDDEN',
   CloudError = 'CLOUD_ERROR',
 }
 
@@ -39,7 +40,9 @@ export function formatTranquilError(error: unknown): string {
       case ErrorCode.NotFound:
         return 'Resource not found'
       case ErrorCode.NetworkError:
-        return 'Cannot reach the table on your network.'
+        return error.message || 'Cannot reach the table on your network.'
+      case ErrorCode.Forbidden:
+        return error.message || 'Only the owner can do that.'
       default:
         return error.message
     }

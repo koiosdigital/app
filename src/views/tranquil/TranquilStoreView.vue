@@ -285,7 +285,7 @@ import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useAuthStore } from '@/stores/auth/auth'
-import { useTranquilControl } from '@/composables/useTranquilControl'
+import { useTranquilSession } from '@/composables/useTranquilSession'
 import TranquilStoreThumb from '@/components/tranquil/TranquilStoreThumb.vue'
 import TranquilTabBar from '@/components/tranquil/TranquilTabBar.vue'
 import {
@@ -301,9 +301,8 @@ const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const authStore = useAuthStore()
-const { store: tranquilLocal, base } = useTranquilControl()
+const { store: tranquilLocal, base } = useTranquilSession()
 
-const routeId = computed(() => route.params.id as string)
 
 const MODES = [
   { value: 'patterns', label: 'Patterns' },

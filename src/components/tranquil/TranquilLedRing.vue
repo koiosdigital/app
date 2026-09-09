@@ -164,4 +164,15 @@ watch(
     void start()
   },
 )
+
+// Follow live LED changes (this device view's own slider, the lighting page,
+// another client, the schedule): the device pushes its LED snapshot on every
+// change and the store mirrors it in `led`.
+watch(
+  () => store.led?.channels[0],
+  (state) => {
+    if (state) applyState(state)
+  },
+  { deep: true },
+)
 </script>

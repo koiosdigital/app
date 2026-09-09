@@ -1,31 +1,20 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { onMounted } from 'vue'
 
 import AppLayout from './layouts/AppLayout.vue'
-import { useAuthStore } from '@/stores/auth/auth'
 
-const authStore = useAuthStore()
-
-const hydrateAuth = async () => {
-  if (!authStore.isLoggedIn) {
-    await authStore.initialize()
-  }
-}
-
-onMounted(async () => {
-  await hydrateAuth()
-})
+// Auth hydration happens once in the router's beforeEach (single-flight in the
+// store). Starting a second initialize() here raced the first and could
+// overwrite a freshly rotated refresh token with the spent one.
 </script>
 
 <template>
   <AppLayout>
-    <!-- Routes are eagerly imported and no view uses async setup, so a page swap
-         is synchronous — no <Suspense> needed. (Wrapping in Suspense presented a
-         comment placeholder mid-transition, which out-in can't animate and which
-         intermittently left the page blank on back/swipe.) Each view has a single
-         element root, so out-in can animate it and keep the two screens from
-         overlapping inside PageLayout's flex column. -->
+    <!-- Every view renders a single element root: out-in attaches its leave
+         hooks to that element and only an element completes them. A view whose
+         root is a Fragment (two root nodes, e.g. a div plus a sibling Teleport)
+         leaves `isLeaving` stuck and every page after it renders blank. Keep
+         Teleports INSIDE the root element. -->
     <RouterView v-slot="{ Component }">
       <Transition name="page" mode="out-in">
         <component :is="Component" />

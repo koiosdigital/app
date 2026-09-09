@@ -1,10 +1,20 @@
 /**
- * Tranquil LAN WebSocket client, ported from tranquil-app (src/api/ws/index.ts).
+ * Tranquil LAN WebSocket client.
  *
- * Real-time only: the device pushes state snapshots (player state) and keepalive
- * over `ws(s)://<device>/ws` as binary `TranquilMessage` protobufs. All CRUD/
- * config is REST (see rest.ts). Unlike the source, there is NO module singleton —
- * koios-app connects per-device by `baseUrl` (from mDNS discovery).
+ * Real-time only: the device pushes state snapshots (player state, LED state,
+ * library changes, download progress) and keepalive over `ws(s)://<device>/ws`
+ * as binary `TranquilMessage` protobufs. All CRUD/config is REST (see rest.ts).
+ * There is NO module singleton — koios-app connects per-device by `baseUrl`
+ * (from mDNS discovery).
+ *
+ * Liveness: the browser only tells us about a dead socket once TCP gives up,
+ * which after an iOS background/resume or a WiFi flap can be minutes. So:
+ *  - a connect attempt that hasn't opened within `connectTimeoutMs` is
+ *    abandoned and retried;
+ *  - the heartbeat ping expects the device's pong; missing several in a row
+ *    means the socket is half-open and it is torn down and reopened;
+ *  - `forceReconnect()` lets the owner (app resume, network back, address
+ *    change) skip the backoff entirely.
  */
 
 import { ref, readonly, type Ref } from 'vue'
@@ -19,6 +29,7 @@ type MessageHandler = (msg: TranquilMessage) => void
 // is REST, so this map is intentionally tiny.
 const responseMap: Partial<Record<MessageCase, MessageCase>> = {
   getPlayerState: 'playerState',
+  ledConfigRequest: 'ledConfig',
   ping: 'pong',
 }
 
@@ -37,15 +48,24 @@ export class TranquilWebSocket {
   private readonly timeout = 10000
   private _connected: Ref<boolean>
   private baseUrl: string
+  private closed = false
+  private connectTimer: ReturnType<typeof setTimeout> | null = null
+  private readonly connectTimeoutMs = 6000
   // Keepalive. The device httpd runs a small socket budget with LRU purge, and
   // its LRU timer only advances on INBOUND frames — server-side broadcasts do
-  // not keep a socket warm. Without a periodic client ping, an idle WS is the
-  // first socket purged when thumbnail/REST traffic saturates the budget, and
-  // the app silently stops receiving state pushes. A light ping keeps it warm.
+  // not keep a socket warm. A periodic client ping keeps it warm, and the pong
+  // doubles as our liveness check.
   private heartbeat: ReturnType<typeof setInterval> | null = null
   private readonly heartbeatMs = 4000
+  private lastInboundAt = 0
+  private readonly deadAfterMs = 3 * 4000 + 500
 
   readonly connected: Readonly<Ref<boolean>>
+
+  /** Consecutive failed connection attempts since the last successful open. */
+  get failures(): number {
+    return this.reconnect.failures
+  }
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
@@ -54,6 +74,7 @@ export class TranquilWebSocket {
   }
 
   connect(): void {
+    if (this.closed) return
     // CONNECTING has to count as "already connecting". Guarding only on OPEN
     // meant two quick connect() calls built two sockets: the first was
     // overwritten but kept its onclose, which then scheduled a reconnect for a
@@ -62,23 +83,50 @@ export class TranquilWebSocket {
     if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) return
 
     const url = `${this.baseUrl.replace('http', 'ws')}/ws`
-    this.ws = new WebSocket(url)
-    this.ws.binaryType = 'arraybuffer'
+    let socket: WebSocket
+    try {
+      socket = new WebSocket(url)
+    } catch (e) {
+      console.warn('WebSocket construct failed', e)
+      this.reconnect.schedule(() => this.connect())
+      return
+    }
+    socket.binaryType = 'arraybuffer'
+    this.ws = socket
 
-    this.ws.onopen = () => {
+    // A socket stuck in CONNECTING (iOS suspended us mid-handshake, or the
+    // table's IP changed) never fires onclose on its own. Give up and retry.
+    this.clearConnectTimer()
+    this.connectTimer = setTimeout(() => {
+      if (this.ws === socket && socket.readyState === WebSocket.CONNECTING) {
+        console.warn('WebSocket connect timed out')
+        this.dropSocket(socket)
+        this.reconnect.schedule(() => this.connect())
+      }
+    }, this.connectTimeoutMs)
+
+    socket.onopen = () => {
+      if (this.ws !== socket) return
+      this.clearConnectTimer()
+      this.lastInboundAt = Date.now()
       this._connected.value = true
       this.reconnect.reset()
       this.startHeartbeat()
     }
 
-    this.ws.onclose = () => {
+    socket.onclose = () => {
+      if (this.ws !== socket) return
+      this.clearConnectTimer()
+      this.ws = null
       this._connected.value = false
       this.stopHeartbeat()
       this.rejectAllPending(new Error('WebSocket disconnected'))
-      this.reconnect.schedule(() => this.connect())
+      if (!this.closed) this.reconnect.schedule(() => this.connect())
     }
 
-    this.ws.onmessage = (event) => {
+    socket.onmessage = (event) => {
+      if (this.ws !== socket) return
+      this.lastInboundAt = Date.now()
       try {
         const msg = fromBinary(TranquilMessageSchema, new Uint8Array(event.data as ArrayBuffer))
         this.dispatch(msg)
@@ -87,18 +135,78 @@ export class TranquilWebSocket {
       }
     }
 
-    this.ws.onerror = (e) => {
+    socket.onerror = (e) => {
       console.error('WebSocket error:', e)
+    }
+  }
+
+  /**
+   * Drop whatever socket exists and connect again immediately, skipping the
+   * backoff. For external "the world changed" signals: app came to the
+   * foreground, network came back, the table's address was re-resolved.
+   */
+  forceReconnect(): void {
+    if (this.closed) return
+    this.reconnect.reset()
+    if (this.ws) {
+      const dead = this.ws
+      this.dropSocket(dead)
+    }
+    this.connect()
+  }
+
+  /** Point at a new base URL (DHCP gave the table a new address). */
+  rebase(baseUrl: string): void {
+    if (baseUrl === this.baseUrl) return
+    this.baseUrl = baseUrl
+    this.forceReconnect()
+  }
+
+  private dropSocket(socket: WebSocket): void {
+    // Detach every handler first: a closing socket still fires
+    // onmessage/onerror/onclose, and those closures would schedule a
+    // reconnect for a socket nobody owns.
+    socket.onclose = null
+    socket.onopen = null
+    socket.onmessage = null
+    socket.onerror = null
+    try {
+      socket.close()
+    } catch {
+      /* already closed */
+    }
+    if (this.ws === socket) this.ws = null
+    this.clearConnectTimer()
+    this._connected.value = false
+    this.stopHeartbeat()
+    this.rejectAllPending(new Error('WebSocket disconnected'))
+  }
+
+  private clearConnectTimer(): void {
+    if (this.connectTimer) {
+      clearTimeout(this.connectTimer)
+      this.connectTimer = null
     }
   }
 
   private startHeartbeat(): void {
     this.stopHeartbeat()
     this.heartbeat = setInterval(() => {
-      if (this.ws?.readyState !== WebSocket.OPEN) return
+      const socket = this.ws
+      if (!socket || socket.readyState !== WebSocket.OPEN) return
+      // Half-open detection: nothing (not even our pongs) arrived for three
+      // beats. iOS leaves sockets like this after a background/resume; TCP
+      // would take minutes to notice.
+      if (Date.now() - this.lastInboundAt > this.deadAfterMs) {
+        console.warn('WebSocket silent; reconnecting')
+        this.dropSocket(socket)
+        this.reconnect.reset()
+        this.connect()
+        return
+      }
       try {
-        // Fire-and-forget (not request()): we only need the inbound frame to
-        // refresh the device's LRU timer; the pong is harmless if ignored.
+        // Fire-and-forget (not request()): the device's pong refreshes
+        // lastInboundAt via onmessage.
         this.send(create(TranquilMessageSchema, { message: { case: 'ping', value: {} } }))
       } catch {
         // Socket raced closed between the readyState check and send; the
@@ -115,18 +223,13 @@ export class TranquilWebSocket {
   }
 
   disconnect(): void {
+    this.closed = true
     this.reconnect.cancel()
     this.stopHeartbeat()
+    this.clearConnectTimer()
     if (this.ws) {
-      // Drop every handler, not just onclose: a socket that is closing still
-      // fires onmessage/onerror, and each of those closures pins this instance
-      // (and the store subscribers behind it) until the socket finally dies.
-      this.ws.onclose = null
-      this.ws.onopen = null
-      this.ws.onmessage = null
-      this.ws.onerror = null
-      this.ws.close()
-      this.ws = null
+      const socket = this.ws
+      this.dropSocket(socket)
     }
     // onclose used to do this, and we just unhooked it. Without it, in-flight
     // request() promises never settle and hold their closures forever.
@@ -208,7 +311,8 @@ export class TranquilWebSocket {
     if (pending) {
       this.pending.delete(type)
       pending.resolve(msg)
-      return
+      // A broadcast of the same type (LEDConfig, PlayerState) is also news
+      // for subscribers - fall through.
     }
 
     this.handlers.get(type)?.forEach((h) => h(msg))

@@ -1,0 +1,10 @@
+{
+  "name": "koios-app-ts5-tools",
+  "private": true,
+  "description": "TypeScript 5 toolchain for vue-tsc and openapi-typescript. The app itself is on TypeScript 7 (native), which neither tool supports yet.",
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3",
+    "vue-tsc": "3.3.10"
+  }
+}

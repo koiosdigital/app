@@ -32,6 +32,18 @@ async function setOrRemovePreference(key: string, value?: string) {
 }
 
 /**
+ * A refresh failure that means the session is genuinely over (the refresh
+ * token was consumed, expired or revoked) - as opposed to a transient network
+ * or server error, which must NOT sign the user out.
+ */
+function isTerminalRefreshError(error: unknown): boolean {
+  const text = error instanceof Error ? `${error.name} ${error.message}` : String(error)
+  return /invalid_grant|invalid_token|invalid_client|unauthorized_client|Token is not active|Session not active/i.test(
+    text,
+  )
+}
+
+/**
  * Authentication store
  * Manages user authentication state and tokens
  */
@@ -45,6 +57,11 @@ export const useAuthStore = defineStore('auth', () => {
   // single-use under Keycloak rotation, so parallel refreshes would invalidate
   // each other and spuriously log the user out — coalesce them into one call.
   let refreshInFlight: Promise<string | undefined> | null = null
+
+  // Single-flight initialisation. The router guard and App.vue used to each
+  // start their own, and the second run could overwrite a freshly rotated
+  // refresh token with the already-spent one it had read moments earlier.
+  let initPromise: Promise<void> | null = null
 
   // Seconds the current access token stays valid; 0 if absent/undecodable.
   function tokenLifetimeSeconds(): number {
@@ -62,17 +79,26 @@ export const useAuthStore = defineStore('auth', () => {
   // Hard expiry (no skew): used to gate isLoggedIn / route access.
   const accessTokenExpired = computed(() => tokenLifetimeSeconds() <= 0)
 
+  // Logged in = we can obtain a token: either the access token is still
+  // valid, or we hold a refresh token to get one with. Routing no longer waits
+  // for the network on a cold start; the first API call refreshes lazily.
   const isLoggedIn = computed(() => {
-    return accessToken.value !== undefined && !accessTokenExpired.value
+    if (accessToken.value !== undefined && !accessTokenExpired.value) return true
+    return refreshToken.value !== undefined
   })
 
   // Actions
 
   /**
-   * Initialize auth state from stored tokens
-   * Should be called on app startup
+   * Initialize auth state from stored tokens. Should be called on app
+   * startup. Reads local storage only - never blocks on the network.
    */
-  async function initialize() {
+  function initialize(): Promise<void> {
+    if (!initPromise) initPromise = doInitialize()
+    return initPromise
+  }
+
+  async function doInitialize() {
     const [accessResult, refreshResult, idResult] = await Promise.all([
       Preferences.get({ key: TOKEN_KEYS.ACCESS }),
       Preferences.get({ key: TOKEN_KEYS.REFRESH }),
@@ -83,9 +109,11 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = refreshResult.value ?? undefined
     idToken.value = idResult.value ?? undefined
 
-    // Auto-refresh if access token is expired but refresh token exists
+    // Warm the token in the background. Not awaited: first paint must not
+    // wait for OIDC discovery + token endpoint round trips (multiple seconds
+    // on a cold radio). getAccessToken() joins this same in-flight refresh.
     if (accessTokenExpired.value && refreshToken.value) {
-      await refreshAccessToken()
+      void refreshAccessToken()
     }
   }
 
@@ -144,8 +172,9 @@ export const useAuthStore = defineStore('auth', () => {
    *
    * Single-flight: concurrent callers share one refresh so the rotating
    * refresh token is only spent once. Returns the new access token, or
-   * undefined on a true failure (missing/expired/revoked refresh token),
-   * in which case the user is logged out.
+   * undefined on a TERMINAL failure (missing/expired/revoked refresh token),
+   * in which case the user is logged out. A transient failure (no network,
+   * server error) keeps the session and returns the current token, if any.
    */
   async function refreshAccessToken(): Promise<string | undefined> {
     if (refreshInFlight) return refreshInFlight
@@ -170,9 +199,15 @@ export const useAuthStore = defineStore('auth', () => {
       )
       return accessToken.value
     } catch (error) {
-      console.error('Token refresh failed', error)
-      await logout()
-      return undefined
+      if (isTerminalRefreshError(error)) {
+        console.error('Token refresh rejected; signing out', error)
+        await logout()
+        return undefined
+      }
+      // Offline, DNS, 5xx: keep the session, retry on the next call. Signing
+      // out here turned every WiFi flap at launch into a forced re-login.
+      console.warn('Token refresh failed (transient); keeping session', error)
+      return accessTokenExpired.value ? undefined : accessToken.value
     }
   }
 

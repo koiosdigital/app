@@ -101,3 +101,41 @@ export const apiClient = createClient<paths>({
 // Register middleware
 apiClient.use(authMiddleware)
 apiClient.use(errorMiddleware)
+
+/**
+ * Authenticated fetch against the API for callers that map responses by hand
+ * (the Tranquil cloud client). Same contract as the typed client: bearer
+ * token attached, one shared refresh + retry on 401, login redirect on a
+ * terminal auth failure. `path` is relative to the API base URL.
+ */
+export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const authStore = useAuthStore()
+  const url = `${ENV.apiBaseUrl}${path}`
+  const doFetch = async (token: string | undefined) => {
+    const headers = new Headers(init?.headers ?? {})
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+    if (init?.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    return fetch(url, { ...init, headers })
+  }
+
+  let token: string | undefined
+  try {
+    token = await authStore.getAccessToken()
+  } catch (error) {
+    console.error('Failed to get access token for API request:', error)
+  }
+  const response = await doFetch(token)
+  if (response.status !== 401) return response
+
+  let fresh: string | undefined
+  try {
+    fresh = await authStore.refreshAccessToken()
+  } catch (error) {
+    console.error('Token refresh failed during 401 retry:', error)
+  }
+  if (!fresh) {
+    redirectToLogin()
+    return response
+  }
+  return doFetch(fresh)
+}

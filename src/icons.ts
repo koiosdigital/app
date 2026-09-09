@@ -1,22 +1,38 @@
 /**
  * Icon registration - must be imported FIRST before any UI components.
- * This registers Font Awesome icon collections with @iconify/vue for offline use.
+ *
+ * Boot registers only the icons the app statically references
+ * (`src/icons.generated.json`, produced by `scripts/build-icons.mjs`) - a few
+ * hundred glyphs instead of the full Font Awesome 6 collections, which cost
+ * ~1.5 MB of JSON parse on every cold start.
+ *
+ * The Matrx app schemas name icons at runtime (`utils/schemaIcons.ts`), so the
+ * complete solid collection is still loaded - lazily, in the background, once
+ * the first paint is done - to keep those working offline.
  *
  * Icon naming convention for Nuxt UI:
  * - Use "i-fa6-solid:icon-name" format (colon before icon name)
  * - The "i-" prefix is stripped by UIcon, resulting in "fa6-solid:icon-name"
- * - Iconify then looks up the icon using the prefix "fa6-solid" and name "icon-name"
  */
-import { addCollection } from '@iconify/vue'
+import { addCollection, type IconifyJSON } from '@iconify/vue'
 
-// Import icon collections - these contain the prefix (e.g., "fa6-solid") and all icons
-import fa6Solid from '@iconify-json/fa6-solid/icons.json'
-import fa6Regular from '@iconify-json/fa6-regular/icons.json'
-import fa6Brands from '@iconify-json/fa6-brands/icons.json'
+import subset from './icons.generated.json'
 
-// Register collections before any component renders
-addCollection(fa6Solid)
-addCollection(fa6Regular)
-addCollection(fa6Brands)
+for (const collection of subset as unknown as IconifyJSON[]) {
+  addCollection(collection)
+}
 
-console.log('[Icons] Registered Font Awesome 6 collections for offline use')
+// Full solid set for runtime-named (schema) icons. Deferred past first paint;
+// `requestIdleCallback` where available, else a short timeout.
+function loadFullSolid() {
+  import('@iconify-json/fa6-solid/icons.json')
+    .then((mod) => addCollection((mod.default ?? mod) as IconifyJSON))
+    .catch((err) => console.warn('[Icons] Full fa6-solid load failed', err))
+}
+
+if (typeof window !== 'undefined') {
+  const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number })
+    .requestIdleCallback
+  if (idle) idle(loadFullSolid)
+  else setTimeout(loadFullSolid, 1500)
+}

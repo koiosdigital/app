@@ -2,38 +2,45 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import LoginCallbackView from '@/views/LoginCallbackView.vue'
-import SettingsView from '@/views/SettingsView.vue'
-import SetupNewView from '@/views/setup/SetupNewView.vue'
-import SetupBindDpopView from '@/views/setup/SetupBindDpopView.vue'
-import SetupCryptoView from '@/views/setup/SetupCryptoView.vue'
-import SetupFailedView from '@/views/setup/SetupFailedView.vue'
-import SetupNetworkView from '@/views/setup/SetupNetworkView.vue'
-import SetupSuccessfulView from '@/views/setup/SetupSuccessfulView.vue'
-import SetupLicenseCallbackView from '@/views/setup/SetupLicenseCallbackView.vue'
 import OAuthCallbackView from '@/views/OAuthCallbackView.vue'
-import ShareAcceptView from '@/views/ShareAcceptView.vue'
-import MatrxDeviceView from '@/views/matrx/MatrxDeviceView.vue'
-import MatrxDeviceSettingsView from '@/views/matrx/MatrxDeviceSettingsView.vue'
-import MatrxAppsView from '@/views/matrx/MatrxAppsView.vue'
-import InstallationEditorView from '@/views/matrx/InstallationEditorView.vue'
-import NemotoDeviceView from '@/views/nemoto/NemotoDeviceView.vue'
-import NemotoDeviceSettingsView from '@/views/nemoto/NemotoDeviceSettingsView.vue'
-import NemotoPresetsView from '@/views/nemoto/NemotoPresetsView.vue'
-import NemotoPresetEditorView from '@/views/nemoto/NemotoPresetEditorView.vue'
-import NemotoMessageView from '@/views/nemoto/NemotoMessageView.vue'
-import NemotoInspirationView from '@/views/nemoto/NemotoInspirationView.vue'
-import NemotoMessageHistoryView from '@/views/nemoto/NemotoMessageHistoryView.vue'
-import NemotoSchedulesView from '@/views/nemoto/NemotoSchedulesView.vue'
-import TranquilDeviceView from '@/views/tranquil/TranquilDeviceView.vue'
-import TranquilPatternsView from '@/views/tranquil/TranquilPatternsView.vue'
-import TranquilPatternDetailView from '@/views/tranquil/TranquilPatternDetailView.vue'
-import TranquilPlaylistsView from '@/views/tranquil/TranquilPlaylistsView.vue'
-import TranquilPlaylistEditorView from '@/views/tranquil/TranquilPlaylistEditorView.vue'
-import TranquilLightingView from '@/views/tranquil/TranquilLightingView.vue'
-import TranquilStoreView from '@/views/tranquil/TranquilStoreView.vue'
-import TranquilStorePlaylistView from '@/views/tranquil/TranquilStorePlaylistView.vue'
-import TranquilSettingsView from '@/views/tranquil/TranquilSettingsView.vue'
-import ClockDeviceView from '@/views/clock/ClockDeviceView.vue'
+
+// Everything off the launch path is code-split. The initial bundle used to
+// carry every view (BLE provisioning, Matrx editors with the Google Maps and
+// colour-picker deps, Nemoto, Tranquil, clocks): ~770 KB of JS parsed before
+// the device list could paint. Routes resolve their chunk inside the
+// navigation, so <component :is> still receives a resolved component and the
+// page transition needs no Suspense.
+const SettingsView = () => import('@/views/SettingsView.vue')
+const SetupNewView = () => import('@/views/setup/SetupNewView.vue')
+const SetupBindDpopView = () => import('@/views/setup/SetupBindDpopView.vue')
+const SetupCryptoView = () => import('@/views/setup/SetupCryptoView.vue')
+const SetupFailedView = () => import('@/views/setup/SetupFailedView.vue')
+const SetupNetworkView = () => import('@/views/setup/SetupNetworkView.vue')
+const SetupSuccessfulView = () => import('@/views/setup/SetupSuccessfulView.vue')
+const SetupLicenseCallbackView = () => import('@/views/setup/SetupLicenseCallbackView.vue')
+const ShareAcceptView = () => import('@/views/ShareAcceptView.vue')
+const MatrxDeviceView = () => import('@/views/matrx/MatrxDeviceView.vue')
+const MatrxDeviceSettingsView = () => import('@/views/matrx/MatrxDeviceSettingsView.vue')
+const MatrxAppsView = () => import('@/views/matrx/MatrxAppsView.vue')
+const InstallationEditorView = () => import('@/views/matrx/InstallationEditorView.vue')
+const NemotoDeviceView = () => import('@/views/nemoto/NemotoDeviceView.vue')
+const NemotoDeviceSettingsView = () => import('@/views/nemoto/NemotoDeviceSettingsView.vue')
+const NemotoPresetsView = () => import('@/views/nemoto/NemotoPresetsView.vue')
+const NemotoPresetEditorView = () => import('@/views/nemoto/NemotoPresetEditorView.vue')
+const NemotoMessageView = () => import('@/views/nemoto/NemotoMessageView.vue')
+const NemotoInspirationView = () => import('@/views/nemoto/NemotoInspirationView.vue')
+const NemotoMessageHistoryView = () => import('@/views/nemoto/NemotoMessageHistoryView.vue')
+const NemotoSchedulesView = () => import('@/views/nemoto/NemotoSchedulesView.vue')
+const TranquilDeviceView = () => import('@/views/tranquil/TranquilDeviceView.vue')
+const TranquilPatternsView = () => import('@/views/tranquil/TranquilPatternsView.vue')
+const TranquilPatternDetailView = () => import('@/views/tranquil/TranquilPatternDetailView.vue')
+const TranquilPlaylistsView = () => import('@/views/tranquil/TranquilPlaylistsView.vue')
+const TranquilPlaylistEditorView = () => import('@/views/tranquil/TranquilPlaylistEditorView.vue')
+const TranquilLightingView = () => import('@/views/tranquil/TranquilLightingView.vue')
+const TranquilStoreView = () => import('@/views/tranquil/TranquilStoreView.vue')
+const TranquilStorePlaylistView = () => import('@/views/tranquil/TranquilStorePlaylistView.vue')
+const TranquilSettingsView = () => import('@/views/tranquil/TranquilSettingsView.vue')
+const ClockDeviceView = () => import('@/views/clock/ClockDeviceView.vue')
 import { useAuthStore } from '@/stores/auth/auth'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
 import { useTranquilCloudStore } from '@/stores/tranquilCloud'
@@ -244,8 +251,14 @@ const router = createRouter({
       component: TranquilSettingsView,
     },
     // Cloud control (off-LAN) reuses the same views via the mode-aware
-    // useTranquilControl() resolver. Motion config / homing (settings) and
-    // per-channel LED (lighting) stay LAN-only, so they have no cloud route.
+    // useTranquilControl() resolver. Lighting works over the cloud too (the
+    // device mirrors its LED state); motion config / calibration (settings)
+    // stay LAN-only, so they have no cloud route.
+    {
+      path: '/tranquil/cloud/:id/lighting',
+      name: 'tranquil-cloud-lighting',
+      component: TranquilLightingView,
+    },
     {
       path: '/tranquil/cloud/:id',
       name: 'tranquil-cloud-device',
@@ -329,16 +342,20 @@ const TRANQUIL_PREFIX = '/tranquil/local/'
 const TRANQUIL_CLOUD_PREFIX = '/tranquil/cloud/'
 const CLOCK_PREFIX = '/clock/local/'
 router.afterEach((to, from) => {
-  if (from.path.startsWith(TRANQUIL_PREFIX) && !to.path.startsWith(TRANQUIL_PREFIX)) {
-    useTranquilLocalStore().disconnect()
+  const leftSection = (prefix: string) => from.path.startsWith(prefix) && !to.path.startsWith(prefix)
+  if (!leftSection(TRANQUIL_PREFIX) && !leftSection(TRANQUIL_CLOUD_PREFIX) && !leftSection(CLOCK_PREFIX)) {
+    return
   }
-  // Cloud control polls while a table is open; stop it on leaving the section.
-  if (from.path.startsWith(TRANQUIL_CLOUD_PREFIX) && !to.path.startsWith(TRANQUIL_CLOUD_PREFIX)) {
-    useTranquilCloudStore().disconnect()
-  }
-  if (from.path.startsWith(CLOCK_PREFIX) && !to.path.startsWith(CLOCK_PREFIX)) {
-    useClockLocalStore().disconnect()
-  }
+  // After the page-leave fade: the old view is still mounted while it fades,
+  // and tearing the store down under it re-rendered it as "Not connected"
+  // (and yanked the teleported tab bar) for the last frames. Re-check the
+  // route when the timer fires in case the user already navigated back in.
+  setTimeout(() => {
+    const path = router.currentRoute.value.path
+    if (!path.startsWith(TRANQUIL_PREFIX)) useTranquilLocalStore().disconnect()
+    if (!path.startsWith(TRANQUIL_CLOUD_PREFIX)) useTranquilCloudStore().disconnect()
+    if (!path.startsWith(CLOCK_PREFIX)) useClockLocalStore().disconnect()
+  }, 200)
 })
 
 export default router
