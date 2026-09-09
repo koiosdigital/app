@@ -18,7 +18,13 @@ export interface CommandResult {
 
 // Player
 export type PlayerStateEnum = 'STOPPED' | 'PLAYING' | 'PAUSED'
-export type PlayerModeEnum = 'SINGLE_PATTERN' | 'PLAYLIST' | 'PLAYLIST_LOOP' | 'PLAYLIST_SHUFFLE'
+/** RANDOM_LOOP: a random library pattern follows each one until stopped */
+export type PlayerModeEnum =
+  | 'SINGLE_PATTERN'
+  | 'PLAYLIST'
+  | 'PLAYLIST_LOOP'
+  | 'PLAYLIST_SHUFFLE'
+  | 'RANDOM_LOOP'
 
 export interface PlayerState {
   state: PlayerStateEnum
@@ -38,6 +44,9 @@ export interface PlayerPatchRequest {
   loop?: boolean
   shuffle?: boolean
   feed_rate?: number
+  /** Random-loop mode: on keeps the current pattern and chains random ones after it
+   *  (starts one if idle); off lets the current pattern finish, then stops. */
+  random_loop?: boolean
   pattern_uuid?: string
   playlist_uuid?: string
 }
@@ -45,6 +54,8 @@ export interface PlayerPatchRequest {
 export interface PlayRequest {
   pattern_uuid?: string
   playlist_uuid?: string
+  /** Play a random library pattern now; with loop, chain random patterns forever */
+  random?: boolean
   shuffle?: boolean
   loop?: boolean
 }

@@ -263,6 +263,10 @@ export const useTranquilCloudStore = defineStore('tranquil_cloud', () => {
     run((r) => r.player.patch({ shuffle: enabled }), 'Failed to set shuffle')
   const setLoop = (enabled: boolean) =>
     run((r) => r.player.patch({ loop: enabled }), 'Failed to set repeat')
+  // Random loop: on chains random patterns after the current one (or starts
+  // one if idle); off lets the current pattern finish, then stops.
+  const setRandomLoop = (enabled: boolean) =>
+    run((r) => r.player.patch({ random_loop: enabled }), 'Failed to set random loop')
 
   return {
     activeDevice,
@@ -295,5 +299,6 @@ export const useTranquilCloudStore = defineStore('tranquil_cloud', () => {
     setFeedRate,
     setShuffle,
     setLoop,
+    setRandomLoop,
   }
 })

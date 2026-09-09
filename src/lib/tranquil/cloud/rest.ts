@@ -97,7 +97,9 @@ function mapState(s: PlayerStateDto): PlayerState {
         ? 'PLAYLIST_LOOP'
         : s.mode === 'PLAYLIST_SHUFFLE'
           ? 'PLAYLIST_SHUFFLE'
-          : 'SINGLE_PATTERN'
+          : s.mode === 'RANDOM_LOOP'
+            ? 'RANDOM_LOOP'
+            : 'SINGLE_PATTERN'
   return {
     state,
     mode,
@@ -221,11 +223,15 @@ export function createTranquilCloudRest(deviceId: string) {
       if (data.loop !== undefined) jobs.push(dispatch('/commands/loop', { enabled: data.loop }))
       if (data.shuffle !== undefined) jobs.push(dispatch('/commands/shuffle', { shuffle: data.shuffle }))
       if (data.feed_rate !== undefined) jobs.push(dispatch('/commands/feed-rate', { feedRateRpm: data.feed_rate }))
+      if (data.random_loop !== undefined)
+        jobs.push(dispatch('/commands/random-loop', { enabled: data.random_loop }))
       await Promise.all(jobs)
       return this.getState()
     },
     async play(data: PlayRequest): Promise<PlayerState> {
-      if (data.playlist_uuid) {
+      if (data.random) {
+        await dispatch('/commands/play-random', { loop: data.loop ?? true })
+      } else if (data.playlist_uuid) {
         await dispatch('/commands/playlist-play', {
           playlistUuid: data.playlist_uuid,
           shuffle: data.shuffle ?? false,

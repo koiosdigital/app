@@ -330,9 +330,20 @@
                 </p>
               </template>
 
-              <p v-else-if="form.kind === 'random'" class="text-xs text-white/50">
-                Plays one pattern picked at random from the table's library.
-              </p>
+              <template v-else-if="form.kind === 'random'">
+                <div class="flex items-center justify-between gap-3 text-sm">
+                  <div>
+                    <p>Keep going</p>
+                    <p class="text-xs text-white/50">
+                      Another random pattern after each one, until stopped.
+                    </p>
+                  </div>
+                  <USwitch v-model="form.randomLoop" />
+                </div>
+                <p v-if="!form.randomLoop" class="text-xs text-white/50">
+                  Plays one pattern picked at random from the table's library.
+                </p>
+              </template>
 
               <!-- Lights -->
               <template v-else-if="form.kind === 'lights'">
@@ -577,7 +588,7 @@ function actionLabel(a: ScheduleAction): string {
     case ScheduleActionType.LedOn:
       return 'Lights on'
     case ScheduleActionType.PlayRandomPattern:
-      return 'Play a random pattern'
+      return a.loop ? 'Random patterns, on repeat' : 'Play a random pattern'
     case ScheduleActionType.PlayPlaylist: {
       const flags = [a.shuffle && 'shuffle', a.loop && 'loop'].filter(Boolean).join(', ')
       return `Play playlist: ${playlistName(a.uuid ?? '')}${flags ? ` (${flags})` : ''}`
@@ -686,6 +697,7 @@ const form = reactive({
   shuffle: false,
   loop: true,
   patternUuid: '',
+  randomLoop: true,
   lightsOn: true,
   customize: false,
   effectId: 'SOLID',
@@ -715,7 +727,7 @@ function buildAction(): ScheduleAction {
     case 'pattern':
       return { type: ScheduleActionType.PlayPattern, uuid: form.patternUuid }
     case 'random':
-      return { type: ScheduleActionType.PlayRandomPattern }
+      return { type: ScheduleActionType.PlayRandomPattern, loop: form.randomLoop }
     case 'lights':
       if (!form.lightsOn) return { type: ScheduleActionType.SetLedState, led: { on: false } }
       return {
@@ -745,6 +757,7 @@ function fillFormFromAction(a: ScheduleAction) {
       break
     case ScheduleActionType.PlayRandomPattern:
       form.kind = 'random'
+      form.randomLoop = !!a.loop
       break
     case ScheduleActionType.LedOff:
       form.kind = 'lights'
@@ -783,6 +796,7 @@ function resetForm() {
     shuffle: false,
     loop: true,
     patternUuid: '',
+    randomLoop: true,
     lightsOn: true,
     customize: false,
     effectId: effects.value[0]?.id ?? 'SOLID',

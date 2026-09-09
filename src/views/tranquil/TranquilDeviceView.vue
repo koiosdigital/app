@@ -50,18 +50,32 @@
         </DeviceStage>
 
         <div class="flex flex-col gap-5 px-4 py-5">
-          <!-- Transport: one row, thumb-height, play as the only lit control -->
+          <!-- Transport: play stays dead centre; the playlist toggles sit on
+               its left, next / random loop on its right. -->
           <div class="transport">
-            <button
-              type="button"
-              class="transport__btn"
-              :class="{ 'transport__btn--armed': playerState?.shuffle }"
-              :disabled="!isPlaylist"
-              aria-label="Shuffle"
-              @click="store.setShuffle(!playerState?.shuffle)"
-            >
-              <UIcon name="i-fa6-solid:shuffle" class="h-4 w-4" />
-            </button>
+            <div class="transport__side transport__side--left">
+              <button
+                type="button"
+                class="transport__btn"
+                :class="{ 'transport__btn--armed': playerState?.shuffle }"
+                :disabled="!isPlaylist"
+                aria-label="Shuffle"
+                @click="store.setShuffle(!playerState?.shuffle)"
+              >
+                <UIcon name="i-fa6-solid:shuffle" class="h-4 w-4" />
+              </button>
+
+              <button
+                type="button"
+                class="transport__btn"
+                :class="{ 'transport__btn--armed': playerState?.loop }"
+                :disabled="!isPlaylist"
+                aria-label="Repeat"
+                @click="store.setLoop(!playerState?.loop)"
+              >
+                <UIcon name="i-fa6-solid:repeat" class="h-4 w-4" />
+              </button>
+            </div>
 
             <button
               type="button"
@@ -73,26 +87,31 @@
               <UIcon :name="isPlaying ? 'i-fa6-solid:pause' : 'i-fa6-solid:play'" class="h-6 w-6" />
             </button>
 
-            <button
-              type="button"
-              class="transport__btn"
-              :disabled="!isPlaylist"
-              aria-label="Skip to next pattern"
-              @click="store.skip()"
-            >
-              <UIcon name="i-fa6-solid:forward-step" class="h-4 w-4" />
-            </button>
+            <div class="transport__side transport__side--right">
+              <button
+                type="button"
+                class="transport__btn"
+                :disabled="!canSkip"
+                aria-label="Skip to next pattern"
+                @click="store.skip()"
+              >
+                <UIcon name="i-fa6-solid:forward-step" class="h-4 w-4" />
+              </button>
 
-            <button
-              type="button"
-              class="transport__btn"
-              :class="{ 'transport__btn--armed': playerState?.loop }"
-              :disabled="!isPlaylist"
-              aria-label="Repeat"
-              @click="store.setLoop(!playerState?.loop)"
-            >
-              <UIcon name="i-fa6-solid:repeat" class="h-4 w-4" />
-            </button>
+              <!-- Random loop: a random pattern after every pattern until
+                   stopped. Starting a pattern or playlist by hand ends it. -->
+              <button
+                type="button"
+                class="transport__btn"
+                :class="{ 'transport__btn--armed': isRandomLoop }"
+                :disabled="randomBusy"
+                :aria-label="isRandomLoop ? 'Stop random loop after this pattern' : 'Random loop'"
+                :aria-pressed="isRandomLoop"
+                @click="toggleRandomLoop"
+              >
+                <UIcon name="i-fa6-solid:dice" class="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <!-- Ball speed and light level, each with its reading -->
@@ -216,8 +235,14 @@ const stageMeta = computed(() => {
 })
 
 const isPlaylist = computed(
-  () => playerState.value?.mode !== 'SINGLE_PATTERN' && !!playerState.value?.current_playlist_uuid,
+  () =>
+    playerState.value?.mode !== 'SINGLE_PATTERN' &&
+    playerState.value?.mode !== 'RANDOM_LOOP' &&
+    !!playerState.value?.current_playlist_uuid,
 )
+const isRandomLoop = computed(() => playerState.value?.mode === 'RANDOM_LOOP')
+// Next makes sense inside a playlist and while random-looping (another pick).
+const canSkip = computed(() => isPlaylist.value || isRandomLoop.value)
 
 // Resolve the currently-playing pattern's metadata/thumbnail on demand.
 const currentPattern = ref<Pattern | null>(null)
@@ -310,6 +335,21 @@ async function togglePlayPause() {
   else if (playerState.value?.state === 'PAUSED') await store.resume()
 }
 
+// Random loop toggle. On: keep whatever is drawing and chain random patterns
+// after it, or start one now if the table is idle. Off: finish the current
+// pattern, then stop. Play/pause keep working while it is on.
+const randomBusy = ref(false)
+async function toggleRandomLoop() {
+  randomBusy.value = true
+  try {
+    await store.setRandomLoop(!isRandomLoop.value)
+  } catch {
+    /* the store surfaces the error; the device push resyncs the state */
+  } finally {
+    randomBusy.value = false
+  }
+}
+
 async function refresh() {
   if (!isActive.value) {
     session.retry()
@@ -381,15 +421,30 @@ watch(isActive, (active) => {
 <style scoped>
 /* Transport — one grouped row instead of three floating pills. */
 .transport {
-  display: flex;
+  /* Equal side tracks keep the play button on the row's centre line no
+     matter how many controls sit on either side of it. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
   gap: 6px;
   padding: 6px;
   margin: 0 auto;
+  width: 100%;
+  max-width: 340px;
   border-radius: 999px;
   background: rgb(0 0 0 / 0.3);
   box-shadow: inset 0 0 0 1px var(--k-line);
+}
+.transport__side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.transport__side--left {
+  justify-self: end;
+}
+.transport__side--right {
+  justify-self: start;
 }
 
 .transport__btn {

@@ -569,6 +569,10 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
     run((r) => r.player.patch({ shuffle: enabled }), 'Failed to set shuffle')
   const setLoop = (enabled: boolean) =>
     run((r) => r.player.patch({ loop: enabled }), 'Failed to set repeat')
+  // Random loop: on chains random patterns after the current one (or starts
+  // one if idle); off lets the current pattern finish, then stops.
+  const setRandomLoop = (enabled: boolean) =>
+    run((r) => r.player.patch({ random_loop: enabled }), 'Failed to set random loop')
 
   return {
     activeDevice,
@@ -599,6 +603,7 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
     setFeedRate,
     setShuffle,
     setLoop,
+    setRandomLoop,
     // Session restore lives under a distinct name so `resume` keeps meaning
     // "resume playback" for the shared control surface.
     restoreSession: resume,

@@ -2465,6 +2465,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/tranquil/commands/play-random": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Play a random library pattern now (loop = keep chaining random patterns) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TranquilPlayRandomDto"];
+                };
+            };
+            responses: {
+                /** @description Dispatch result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TranquilDispatchDto"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{deviceId}/tranquil/commands/random-loop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Random-loop toggle: on keeps the current pattern and chains random ones after it (starts one if idle); off finishes the current pattern then stops */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TranquilToggleDto"];
+                };
+            };
+            responses: {
+                /** @description Dispatch result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TranquilDispatchDto"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/devices/{deviceId}/tranquil/commands/request-download": {
         parameters: {
             query?: never;
@@ -4360,7 +4464,7 @@ export interface components {
         /** @enum {string} */
         TranquilPlaybackState: "UNSPECIFIED" | "STOPPED" | "PLAYING" | "PAUSED";
         /** @enum {string} */
-        TranquilPlayMode: "UNSPECIFIED" | "SINGLE" | "PLAYLIST" | "PLAYLIST_LOOP" | "PLAYLIST_SHUFFLE";
+        TranquilPlayMode: "UNSPECIFIED" | "SINGLE" | "PLAYLIST" | "PLAYLIST_LOOP" | "PLAYLIST_SHUFFLE" | "RANDOM_LOOP";
         TranquilDownloadEntryDto: {
             uuid: string;
             progressPct: number;
@@ -4543,6 +4647,13 @@ export interface components {
         };
         TranquilToggleDto: {
             enabled: boolean;
+        };
+        TranquilPlayRandomDto: {
+            /**
+             * @description Keep chaining random patterns after each one (mode RANDOM_LOOP)
+             * @default true
+             */
+            loop: boolean;
         };
         TranquilRequestDownloadDto: {
             patternUuid: string;
