@@ -36,6 +36,11 @@ import type {
   LEDChannelState,
   LEDChannelUpdate,
   Schedule,
+  ScheduleAction,
+  ScheduleItem,
+  ScheduleLedState,
+  ScheduleRunResult,
+  QuietHours,
 } from '../local/types'
 import type { components } from '@/types/api'
 
@@ -43,6 +48,11 @@ type LiveDto = components['schemas']['TranquilLiveDto']
 type PlayerStateDto = components['schemas']['TranquilPlayerStateDto']
 type DownloadEntryDto = components['schemas']['TranquilDownloadEntryDto']
 type LedConfigDto = components['schemas']['TranquilLedConfigDto']
+type ScheduleDto = components['schemas']['TranquilScheduleDto']
+type ScheduleItemDto = components['schemas']['TranquilScheduleItemDto']
+type ScheduleActionDto = components['schemas']['TranquilScheduleActionDto']
+type QuietHoursDto = components['schemas']['TranquilQuietHoursDto']
+type LedColorDto = components['schemas']['TranquilLedColorDto']
 
 // Hand-mapped calls through the shared authenticated fetch (bearer token,
 // single-flight refresh + retry on 401). The generated `paths` type covers
@@ -447,6 +457,8 @@ export function createTranquilCloudRest(deviceId: string) {
         uptime_s: s.uptimeS,
         wifi_rssi: s.wifiRssi,
         ip_address: s.ipAddress,
+        quiet_hours_active: s.quietHoursActive,
+        timezone: s.timezone,
       }
     },
     async reboot(): Promise<void> {
@@ -457,18 +469,136 @@ export function createTranquilCloudRest(deviceId: string) {
     },
   }
 
+  // --- schedule (camelCase DTO <-> LAN snake_case domain) -------------------
+
+  const hex2 = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')
+  function colorFromDto(c: LedColorDto | undefined): Pick<ScheduleLedState, 'color' | 'w' | 'cw'> {
+    if (!c) return {}
+    return { color: `#${hex2(c.r)}${hex2(c.g)}${hex2(c.b)}`, w: c.w, cw: c.cw }
+  }
+  function colorToDto(led: ScheduleLedState): LedColorDto | undefined {
+    if (!led.color && led.w == null && led.cw == null) return undefined
+    const hex = (led.color ?? '#000000').replace('#', '')
+    const r = parseInt(hex.slice(0, 2), 16) || 0
+    const g = parseInt(hex.slice(2, 4), 16) || 0
+    const b = parseInt(hex.slice(4, 6), 16) || 0
+    return { r, g, b, w: led.w, cw: led.cw }
+  }
+  function mapAction(a: ScheduleActionDto): ScheduleAction {
+    const out: ScheduleAction = {
+      type: a.type,
+      uuid: a.uuid || undefined,
+      shuffle: a.shuffle,
+      loop: a.loop,
+      feed_rate: a.feedRate,
+    }
+    if (a.led) {
+      out.led = {
+        on: a.led.enabled,
+        effect_id: a.led.effectId,
+        brightness: a.led.brightness,
+        speed: a.led.speed,
+        ...colorFromDto(a.led.color),
+      }
+    }
+    return out
+  }
+  function actionToDto(a: ScheduleAction): ScheduleActionDto {
+    return {
+      type: a.type,
+      uuid: a.uuid,
+      shuffle: a.shuffle,
+      loop: a.loop,
+      feedRate: a.feed_rate,
+      led: a.led
+        ? {
+            enabled: a.led.on,
+            effectId: a.led.effect_id,
+            brightness: a.led.brightness,
+            speed: a.led.speed,
+            color: colorToDto(a.led),
+          }
+        : undefined,
+    }
+  }
+  function mapItem(it: ScheduleItemDto): ScheduleItem {
+    return {
+      id: it.id ?? 0,
+      name: it.name ?? '',
+      days_of_week: it.daysOfWeek,
+      time_of_day: it.timeOfDay,
+      enabled: it.enabled ?? true,
+      obey_quiet_hours: it.obeyQuietHours ?? true,
+      action: mapAction(it.action),
+    }
+  }
+  function itemToDto(it: ScheduleItem): ScheduleItemDto {
+    return {
+      id: it.id,
+      name: it.name,
+      daysOfWeek: it.days_of_week,
+      timeOfDay: it.time_of_day,
+      enabled: it.enabled,
+      obeyQuietHours: it.obey_quiet_hours,
+      action: actionToDto(it.action),
+    }
+  }
+  function mapQuiet(q: QuietHoursDto | undefined): QuietHours {
+    return {
+      windows: (q?.windows ?? []).map((w) => ({
+        day_mask: w.dayMask,
+        start_min: w.startMin,
+        end_min: w.endMin,
+        enabled: w.enabled ?? true,
+      })),
+      stop_playback: !!q?.stopPlayback,
+      lights_off: !!q?.lightsOff,
+    }
+  }
+  function quietToDto(q: QuietHours): QuietHoursDto {
+    return {
+      windows: q.windows.map((w) => ({
+        dayMask: w.day_mask,
+        startMin: w.start_min,
+        endMin: w.end_min,
+        enabled: w.enabled,
+      })),
+      stopPlayback: q.stop_playback,
+      lightsOff: q.lights_off,
+    }
+  }
+
   const schedule = {
     async get(): Promise<Schedule> {
-      const res = await get<{ items?: Schedule['items'] }>('/schedule')
-      return { items: res.items ?? [] }
+      let res = await get<ScheduleDto>('/schedule')
+      if (res.at == null) {
+        try {
+          await post('/commands/refresh', { targets: ['schedule'], watchSeconds: 0 })
+          await new Promise((r) => setTimeout(r, 900))
+          res = await get<ScheduleDto>('/schedule')
+        } catch {
+          /* fall through to whatever is cached */
+        }
+      }
+      return { items: (res.items ?? []).map(mapItem), quiet_hours: mapQuiet(res.quietHours) }
     },
-    async set(data: Schedule): Promise<{ delivered: boolean }> {
+    /** Replace the schedule. The device's own echo lands in the cloud cache a
+     *  moment later; callers refetch to pick up assigned ids. */
+    async set(data: Schedule): Promise<Schedule> {
       const res = await call<{ delivered?: boolean }>(`${base}/schedule`, {
         method: 'PUT',
-        body: JSON.stringify({ items: data.items }),
+        body: JSON.stringify({
+          items: data.items.map(itemToDto),
+          quietHours: data.quiet_hours ? quietToDto(data.quiet_hours) : undefined,
+        }),
       })
       requireDelivered(res)
-      return { delivered: true }
+      return data
+    },
+    /** Over the cloud only delivery is confirmed; the table answers the gateway. */
+    async run(action: ScheduleAction, force = false): Promise<ScheduleRunResult> {
+      await dispatch('/commands/run-schedule', { action: actionToDto(action), force })
+      return { success: true }
     },
   }
 

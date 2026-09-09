@@ -40,6 +40,7 @@ const TranquilLightingView = () => import('@/views/tranquil/TranquilLightingView
 const TranquilStoreView = () => import('@/views/tranquil/TranquilStoreView.vue')
 const TranquilStorePlaylistView = () => import('@/views/tranquil/TranquilStorePlaylistView.vue')
 const TranquilSettingsView = () => import('@/views/tranquil/TranquilSettingsView.vue')
+const TranquilSchedulesView = () => import('@/views/tranquil/TranquilSchedulesView.vue')
 const ClockDeviceView = () => import('@/views/clock/ClockDeviceView.vue')
 import { useAuthStore } from '@/stores/auth/auth'
 import { useTranquilLocalStore } from '@/stores/tranquilLocal'
@@ -250,6 +251,11 @@ const router = createRouter({
       name: 'tranquil-local-settings',
       component: TranquilSettingsView,
     },
+    {
+      path: '/tranquil/local/:id/schedules',
+      name: 'tranquil-local-schedules',
+      component: TranquilSchedulesView,
+    },
     // Cloud control (off-LAN) reuses the same views via the mode-aware
     // useTranquilControl() resolver. Lighting works over the cloud too (the
     // device mirrors its LED state); motion config / calibration (settings)
@@ -258,6 +264,11 @@ const router = createRouter({
       path: '/tranquil/cloud/:id/lighting',
       name: 'tranquil-cloud-lighting',
       component: TranquilLightingView,
+    },
+    {
+      path: '/tranquil/cloud/:id/schedules',
+      name: 'tranquil-cloud-schedules',
+      component: TranquilSchedulesView,
     },
     {
       path: '/tranquil/cloud/:id',

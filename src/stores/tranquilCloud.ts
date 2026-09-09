@@ -57,7 +57,7 @@ export const useTranquilCloudStore = defineStore('tranquil_cloud', () => {
   const error = ref<string | null>(null)
   const downloads = ref<Record<string, DownloadState>>({})
   const uploads = ref<Record<string, UploadProgress>>({})
-  const libraryVersion = ref({ patterns: 0, playlists: 0 })
+  const libraryVersion = ref({ patterns: 0, playlists: 0, schedule: 0 })
   const resuming = ref(false)
   const resumeFailed = ref(false)
 

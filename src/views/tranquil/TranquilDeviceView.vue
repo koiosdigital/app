@@ -348,6 +348,7 @@ function syncHeader() {
     // Settings (motion config / calibration) is LAN-only; lighting works over
     // both transports now that the device mirrors its LED state.
     actions: [
+      { icon: 'i-fa6-solid:calendar', label: 'Schedules', onClick: () => router.push(`${base}/schedules`) },
       { icon: 'i-fa6-solid:lightbulb', label: 'Lighting', onClick: () => router.push(`${base}/lighting`) },
       ...(isCloud
         ? []

@@ -69,7 +69,7 @@ const RESOLVE_TIMEOUT_MS = 8000
 // list on every change so every client stays in sync). Views subscribe to
 // re-fetch; the payload itself is not kept here - the REST list is paginated
 // and richer than the socket copy.
-export type LibraryChange = 'patterns' | 'playlists'
+export type LibraryChange = 'patterns' | 'playlists' | 'schedule'
 
 /**
  * Active LAN-direct connection to ONE Tranquil table, discovered over mDNS.
@@ -94,7 +94,7 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
   // Live upload post-processing progress, keyed by pattern uuid.
   const uploads = ref<Record<string, UploadProgress>>({})
   // Monotonic counters views watch to refetch their lists.
-  const libraryVersion = ref<Record<LibraryChange, number>>({ patterns: 0, playlists: 0 })
+  const libraryVersion = ref<Record<LibraryChange, number>>({ patterns: 0, playlists: 0, schedule: 0 })
   // resume() in progress (reload / deep link / address lost).
   const resuming = ref(false)
   // resume() gave up: the table is not reachable on this network.
@@ -186,6 +186,13 @@ export const useTranquilLocalStore = defineStore('tranquil_local', () => {
     unsubs.push(
       ws.subscribe('playlists', () => {
         libraryVersion.value = { ...libraryVersion.value, playlists: libraryVersion.value.playlists + 1 }
+      }),
+    )
+    // Schedule pushes (after any client's set, LAN or cloud): the schedules
+    // view refetches over REST.
+    unsubs.push(
+      ws.subscribe('schedule', () => {
+        libraryVersion.value = { ...libraryVersion.value, schedule: libraryVersion.value.schedule + 1 }
       }),
     )
     // Reports arrive incrementally and merge by uuid: a normal frame carries all

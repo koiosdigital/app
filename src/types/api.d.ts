@@ -2836,6 +2836,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/tranquil/commands/run-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run a schedule action now (Run now / Test); honours quiet hours unless force */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                };
+                cookie?: never;
+            };
+            /** @description Request body */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TranquilRunScheduleActionDto"];
+                };
+            };
+            responses: {
+                /** @description Dispatch result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TranquilDispatchDto"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+                /** @description Owner only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/devices/{deviceId}/tranquil/commands/reboot": {
         parameters: {
             query?: never;
@@ -4358,16 +4419,73 @@ export interface components {
             wifiRssi?: number;
             ipAddress?: string;
             hostname?: string;
+            /** @description A quiet-hours window is active right now */
+            quietHoursActive?: boolean;
+            /** @description IANA zone the schedule is evaluated in */
+            timezone?: string;
             at?: number | null;
         };
         TranquilScheduleDto: {
-            items: {
-                daysOfWeek: number;
-                timeOfDay: number;
-                actionType: number;
-                uuid?: string;
-            }[];
+            items: components["schemas"]["TranquilScheduleItemDto"][];
+            quietHours: components["schemas"]["TranquilQuietHoursDto"];
             at: number | null;
+        };
+        TranquilScheduleItemDto: {
+            /** @description Stable id; 0/absent = device assigns */
+            id?: number;
+            name?: string;
+            daysOfWeek: number;
+            timeOfDay: number;
+            /** @description Default true */
+            enabled?: boolean;
+            /** @description Default true */
+            obeyQuietHours?: boolean;
+            action: components["schemas"]["TranquilScheduleActionDto"];
+        };
+        TranquilScheduleActionDto: {
+            /** @description 0=unspecified 1=led_off 2=led_on 3=play_random_pattern 4=play_playlist 5=play_pattern 6=set_led_state 7=set_speed 8=stop */
+            type: number;
+            /** @description play_pattern / play_playlist */
+            uuid?: string;
+            /** @description play_playlist */
+            shuffle?: boolean;
+            /** @description play_playlist */
+            loop?: boolean;
+            /** @description set_speed: ball speed 1.0-5.0 */
+            feedRate?: number;
+            led?: components["schemas"]["TranquilScheduleLedStateDto"];
+        };
+        /** @description set_led_state: partial patch applied to every channel */
+        TranquilScheduleLedStateDto: {
+            effectId?: string;
+            brightness?: number;
+            /** @description Effect speed */
+            speed?: number;
+            enabled?: boolean;
+            color?: components["schemas"]["TranquilLedColorDto"];
+        };
+        TranquilLedColorDto: {
+            r: number;
+            g: number;
+            b: number;
+            /** @description Single white (RGBW) / warm white (RGBCCT) */
+            w?: number;
+            /** @description Cool white (RGBCCT only) */
+            cw?: number;
+        };
+        TranquilQuietHoursDto: {
+            windows: components["schemas"]["TranquilQuietWindowDto"][];
+            stopPlayback?: boolean;
+            lightsOff?: boolean;
+        };
+        TranquilQuietWindowDto: {
+            /** @description Days the window starts on; bit0 = Sunday */
+            dayMask: number;
+            startMin: number;
+            /** @description Before startMin = wraps past midnight */
+            endMin: number;
+            /** @description Default true */
+            enabled?: boolean;
         };
         TranquilLedConfigDto: {
             hasLeds?: boolean;
@@ -4387,17 +4505,8 @@ export interface components {
             brightness: number;
             speed: number;
             enabled: boolean;
-            color: components["schemas"]["TranquilLedColorDto"];
+            color: components["schemas"]["TranquilLedColorDto"] & (Record<string, never> | null);
         };
-        TranquilLedColorDto: {
-            r: number;
-            g: number;
-            b: number;
-            /** @description Single white (RGBW) / warm white (RGBCCT) */
-            w?: number;
-            /** @description Cool white (RGBCCT only) */
-            cw?: number;
-        } | null;
         TranquilLedEffectsDto: {
             effects: {
                 id: string;
@@ -4472,12 +4581,16 @@ export interface components {
             color?: components["schemas"]["TranquilLedColorDto"];
         };
         TranquilSetScheduleDto: {
-            items: {
-                daysOfWeek: number;
-                timeOfDay: number;
-                actionType: number;
-                uuid?: string;
-            }[];
+            items: components["schemas"]["TranquilScheduleItemDto"][];
+            quietHours?: components["schemas"]["TranquilQuietHoursDto"] & unknown;
+        };
+        TranquilRunScheduleActionDto: {
+            action: components["schemas"]["TranquilScheduleActionDto"];
+            /**
+             * @description Run even while quiet hours are active
+             * @default false
+             */
+            force: boolean;
         };
         TranquilRebootDto: {
             /** @default app */

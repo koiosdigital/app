@@ -34,6 +34,8 @@ import type {
   DeviceConfigPatch,
   PresetsListResponse,
   Schedule,
+  ScheduleRunRequest,
+  ScheduleRunResult,
   TimezoneEntry,
   LEDEffect,
   LEDConfigResponse,
@@ -178,6 +180,12 @@ interface paths {
     put: {
       requestBody: { content: { 'application/json': Schedule } }
       responses: { 200: { content: { 'application/json': Schedule } } }
+    }
+  }
+  '/api/schedule/run': {
+    post: {
+      requestBody: { content: { 'application/json': ScheduleRunRequest } }
+      responses: { 200: { content: { 'application/json': ScheduleRunResult } } }
     }
   }
   '/api/led/effects': {
@@ -382,6 +390,11 @@ export function createTranquilRest(baseUrl: string) {
     },
     async set(data: Schedule): Promise<Schedule> {
       return handleResponse(await client.PUT('/api/schedule', { body: data }))
+    },
+    /** Run one action now (Run now / Test). success=false with a detail when
+     *  quiet hours block it or the action could not start. */
+    async run(action: ScheduleRunRequest['action'], force = false): Promise<ScheduleRunResult> {
+      return handleResponse(await client.POST('/api/schedule/run', { body: { action, force } }))
     },
   }
 

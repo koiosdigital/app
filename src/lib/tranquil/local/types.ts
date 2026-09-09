@@ -167,6 +167,10 @@ export interface SystemInfo {
   /** dBm; 0 when unknown */
   wifi_rssi?: number
   ip_address?: string
+  /** A quiet-hours window is active right now */
+  quiet_hours_active?: boolean
+  /** IANA zone the schedule is evaluated in */
+  timezone?: string
 }
 
 export interface HomeResponse {
@@ -256,18 +260,99 @@ export interface PresetsListResponse {
 }
 
 // Schedule
+/** kd.v1.ScheduleAction.ScheduleActionType */
+export const ScheduleActionType = {
+  Unspecified: 0,
+  LedOff: 1,
+  LedOn: 2,
+  PlayRandomPattern: 3,
+  PlayPlaylist: 4,
+  PlayPattern: 5,
+  SetLedState: 6,
+  SetSpeed: 7,
+  Stop: 8,
+} as const
+export type ScheduleActionTypeValue = (typeof ScheduleActionType)[keyof typeof ScheduleActionType]
+
+/** Partial LED patch applied to every channel; absent fields are unchanged. */
+export interface ScheduleLedState {
+  on?: boolean
+  effect_id?: string
+  /** 0-255 */
+  brightness?: number
+  /** Effect speed 1-10 */
+  speed?: number
+  /** Hex RGB (#rrggbb) */
+  color?: string
+  /** Warm white 0-255 (RGBW/RGBCCT) */
+  w?: number
+  /** Cool white 0-255 (RGBCCT) */
+  cw?: number
+}
+
+export interface ScheduleAction {
+  type: number
+  /** play_pattern / play_playlist */
+  uuid?: string
+  /** play_playlist */
+  shuffle?: boolean
+  /** play_playlist */
+  loop?: boolean
+  /** set_speed: ball speed 1.0-5.0 */
+  feed_rate?: number
+  /** set_led_state */
+  led?: ScheduleLedState
+}
+
 export interface ScheduleItem {
+  /** Stable id; 0 = let the device assign one */
+  id: number
+  name: string
   /** Bitmask, bit 0 = Sunday .. bit 6 = Saturday (0x7F = all days) */
   days_of_week: number
-  /** Seconds since local midnight (0-86399) */
+  /** Seconds since local midnight (0-86399), in the table's timezone */
   time_of_day: number
-  /** 0=unspecified, 1=led_off, 2=led_on, 3=play_random_pattern, 4=play_playlist, 5=play_pattern */
-  action_type: number
-  uuid?: string
+  enabled: boolean
+  /** Skip this item while a quiet-hours window is active */
+  obey_quiet_hours: boolean
+  action: ScheduleAction
+}
+
+export interface QuietWindow {
+  /** Days the window starts on, bit 0 = Sunday .. bit 6 = Saturday */
+  day_mask: number
+  /** Minutes since local midnight */
+  start_min: number
+  /** Minutes since local midnight; before start = wraps past midnight */
+  end_min: number
+  enabled: boolean
+}
+
+export interface QuietHours {
+  windows: QuietWindow[]
+  /** Stop the table when a window starts */
+  stop_playback: boolean
+  /** LEDs off when a window starts, restored when it ends */
+  lights_off: boolean
 }
 
 export interface Schedule {
   items: ScheduleItem[]
+  /** Omit on a set to leave the table's quiet hours unchanged */
+  quiet_hours?: QuietHours
+  /** Read-only: a quiet-hours window is active right now */
+  quiet_now?: boolean
+}
+
+export interface ScheduleRunRequest {
+  action: ScheduleAction
+  /** Run even while quiet hours are active */
+  force?: boolean
+}
+
+export interface ScheduleRunResult {
+  success: boolean
+  detail?: string
 }
 
 // LED
