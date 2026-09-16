@@ -6,7 +6,7 @@
         <!-- Now playing: the disc, ringed by playback progress -->
         <DeviceStage
           eyebrow="Now playing"
-          :title="isStopped ? 'Nothing running' : currentPattern?.name"
+          :title="stageTitle"
           :meta="stageMeta"
           :lit="isPlaying"
           bloom="rgb(216 196 160 / 0.13)"
@@ -43,15 +43,15 @@
             <div class="p-[6%]">
               <div class="relative">
                 <TranquilPatternThumb :src="thumbnailUrl" alt="Current pattern" />
-                <TranquilLedRing v-if="!isCloud" />
+                <TranquilLedRing v-if="capabilities.livePush" />
               </div>
             </div>
           </div>
         </DeviceStage>
 
         <div class="flex flex-col gap-5 px-4 py-5">
-          <!-- Transport: play stays dead centre; the playlist toggles sit on
-               its left, next / random loop on its right. -->
+          <!-- Transport: play stays dead centre; the playlist toggles and
+               previous sit on its left, next / random loop on its right. -->
           <div class="transport">
             <div class="transport__side transport__side--left">
               <button
@@ -74,6 +74,17 @@
                 @click="store.setLoop(!playerState?.loop)"
               >
                 <UIcon name="i-fa6-solid:repeat" class="h-4 w-4" />
+              </button>
+
+              <button
+                v-if="capabilities.previous"
+                type="button"
+                class="transport__btn"
+                :disabled="!canSkip"
+                aria-label="Back to previous pattern"
+                @click="store.previous()"
+              >
+                <UIcon name="i-fa6-solid:backward-step" class="h-4 w-4" />
               </button>
             </div>
 
@@ -211,7 +222,7 @@ import DeviceStage from '@/components/devices/DeviceStage.vue'
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const session = useTranquilSession()
-const { store, isCloud, base, isActive } = session
+const { store, capabilities, base, isActive } = session
 
 const playerState = computed(() => store.playerState)
 const progressPercent = computed(() => playerState.value?.progress_percent ?? 0)
@@ -223,6 +234,14 @@ const ringOffset = computed(() => RING_CIRC * (1 - progressPercent.value / 100))
 const feedRate = computed(() => playerState.value?.feed_rate ?? 3)
 const isPlaying = computed(() => playerState.value?.state === 'PLAYING')
 const isStopped = computed(() => !playerState.value || playerState.value.state === 'STOPPED')
+// Until the table has reported once there is nothing to say about playback:
+// over the cloud that can take a poll or two, or the table may never have
+// checked in. "Nothing running" would be a claim we can't back.
+const hasReported = computed(() => store.playerAt != null)
+const stageTitle = computed(() => {
+  if (!hasReported.value) return 'Waiting for the table'
+  return isStopped.value ? 'Nothing running' : currentPattern.value?.name
+})
 // The one line under the title: what is running, and how far in.
 /**
  * How far through it is comes off this line: the ring around the disc already
@@ -230,6 +249,7 @@ const isStopped = computed(() => !playerState.value || playerState.value.state =
  * thing that should be shown rather than written.
  */
 const stageMeta = computed(() => {
+  if (!hasReported.value) return 'No playback report yet'
   if (isStopped.value) return 'Pick a pattern to start the table'
   return currentPattern.value?.creator ?? undefined
 })
@@ -241,15 +261,15 @@ const isPlaylist = computed(
     !!playerState.value?.current_playlist_uuid,
 )
 const isRandomLoop = computed(() => playerState.value?.mode === 'RANDOM_LOOP')
-// Next makes sense inside a playlist and while random-looping (another pick).
+// Next / previous make sense inside a playlist and while random-looping
+// (another pick).
 const canSkip = computed(() => isPlaylist.value || isRandomLoop.value)
 
 // Resolve the currently-playing pattern's metadata/thumbnail on demand.
 const currentPattern = ref<Pattern | null>(null)
 const thumbnailUrl = computed(() => {
   const uuid = playerState.value?.current_pattern_uuid
-  const base = store.baseUrl()
-  return uuid && base ? `${base}/api/pattern_thumbs/${uuid}.png` : ''
+  return uuid ? store.thumbUrl(uuid) : ''
 })
 
 watch(
@@ -290,8 +310,8 @@ function onSpeedChange(value: number | number[] | undefined) {
 }
 
 // --- LED: brightness/power for channel 0, shown as 0-100% (device 0-255).
-// Fed by the device's LEDConfig push (both LAN and cloud), so another client
-// or the schedule changing the lights is reflected here too.
+// Fed by the transport's `led` snapshot (pushed on LAN, polled over the
+// cloud), so another client or the schedule changing the lights shows here.
 const ledChannel = computed(() => store.led?.channels[0] ?? null)
 const hasLeds = computed(() => !!store.led?.hasLeds && (store.led?.channels.length ?? 0) > 0)
 const ledOn = computed(() => ledChannel.value?.on ?? false)
@@ -356,28 +376,6 @@ async function refresh() {
     return
   }
   await Promise.all([store.fetchPlayerState().catch(() => {}), store.requestLedSnapshot()])
-  if (isCloud) {
-    // Cloud mode has no push for LED state; pull it.
-    void loadCloudLed()
-  }
-}
-
-// Cloud mode: the device mirrors its LED snapshot to the cloud; read it once
-// per mount (and on refresh) into the same `led` shape the LAN push fills.
-async function loadCloudLed() {
-  if (!isCloud || !isActive.value) return
-  try {
-    const cfg = await store.api().led.getConfig()
-    const cloud = store as unknown as { led: unknown }
-    cloud.led = {
-      hasLeds: !!cfg.has_leds && cfg.channels.length > 0,
-      ledCount: cfg.channels[0]?.num_leds ?? 0,
-      format: cfg.channels[0]?.type ?? 'RGB',
-      channels: cfg.channels.map((c) => c.state).filter((s) => !!s),
-    }
-  } catch {
-    /* no LED info over cloud yet */
-  }
 }
 
 function syncHeader() {
@@ -385,14 +383,14 @@ function syncHeader() {
   setHeader({
     title: d?.model || d?.name || 'Sand Table',
     backRoute: '/',
-    // Settings (motion config / calibration) is LAN-only; lighting works over
-    // both transports now that the device mirrors its LED state.
+    // Settings (motion config / calibration) needs the config capability;
+    // lighting works over both transports (the device mirrors its LED state).
     actions: [
       { icon: 'i-fa6-solid:calendar', label: 'Schedules', onClick: () => router.push(`${base}/schedules`) },
       { icon: 'i-fa6-solid:lightbulb', label: 'Lighting', onClick: () => router.push(`${base}/lighting`) },
-      ...(isCloud
-        ? []
-        : [{ icon: 'i-fa6-solid:gear', label: 'Settings', onClick: () => router.push(`${base}/settings`) }]),
+      ...(capabilities.config
+        ? [{ icon: 'i-fa6-solid:gear', label: 'Settings', onClick: () => router.push(`${base}/settings`) }]
+        : []),
     ],
   })
 }
@@ -414,8 +412,8 @@ watch(isActive, (active) => {
 })
 
 // The connection is torn down by the router guard when leaving the
-// /tranquil/local/ section — NOT on this view's unmount, so it survives
-// navigation to the patterns/store/settings sub-pages.
+// /tranquil/ section — NOT on this view's unmount, so it survives navigation
+// to the patterns/store/settings sub-pages.
 </script>
 
 <style scoped>

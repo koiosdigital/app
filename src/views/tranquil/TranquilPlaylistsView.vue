@@ -89,8 +89,7 @@ const creating = ref(false)
 
 function playlistThumb(pl: Playlist): string {
   const uuid = pl.featured_pattern || pl.pattern_uuids[0]
-  const base = store.baseUrl()
-  return uuid && base ? `${base}/api/pattern_thumbs/${uuid}.png` : ''
+  return uuid ? store.thumbUrl(uuid) : ''
 }
 
 async function refresh() {

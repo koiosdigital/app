@@ -11,7 +11,7 @@
       >
         No LED strip is enabled on this table.
         <UButton
-          v-if="!isCloud"
+          v-if="capabilities.config"
           color="neutral"
           variant="soft"
           size="sm"
@@ -166,7 +166,7 @@ import type { LEDConfigResponse, LEDChannelState, LEDChannelUpdate, LEDEffect } 
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const session = useTranquilSession()
-const { store, isCloud, base, isActive } = session
+const { store, capabilities, base, isActive } = session
 
 const loading = ref(true)
 const error = ref<string | null>(null)

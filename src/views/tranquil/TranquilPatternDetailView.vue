@@ -144,10 +144,8 @@ const playlists = ref<Playlist[]>([])
 const playlistsLoading = ref(false)
 const addingTo = ref<string | null>(null)
 
-const thumbnailUrl = computed(() => {
-  const base = store.baseUrl()
-  return base ? `${base}/api/pattern_thumbs/${uuid}.png` : ''
-})
+// Resolved once the pattern is loaded (the transport is bound by then).
+const thumbnailUrl = computed(() => (pattern.value ? store.thumbUrl(uuid) : ''))
 
 async function play() {
   playing.value = true

@@ -159,8 +159,7 @@ import {
   isTranquilDevice,
 } from '@/lib/api/mappers/deviceMapper'
 import { useLocalDevicesStore } from '@/stores/localDevices'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
-import { useTranquilCloudStore } from '@/stores/tranquilCloud'
+import { useTranquilStore } from '@/stores/tranquil'
 import { useClockLocalStore } from '@/stores/clockLocal'
 import {
   CLOCK_TYPES,
@@ -179,8 +178,7 @@ const toast = useToast()
 const { setHeader } = usePageHeader()
 const { onReconnect } = useNetworkStatus()
 const localDevicesStore = useLocalDevicesStore()
-const tranquilLocal = useTranquilLocalStore()
-const tranquilCloud = useTranquilCloudStore()
+const tranquil = useTranquilStore()
 const clockLocal = useClockLocalStore()
 
 let stopReconnectWatch: (() => void) | undefined
@@ -348,11 +346,14 @@ const openDevice = (id: string) => {
   // Establish the cloud connection (name in hand) before navigating, mirroring
   // openLocalDevice; the device page then drives the already-active poll.
   if (device.type === 'TRANQUIL') {
-    tranquilCloud.connect({
-      id,
-      name: device.settings?.displayName ?? device.id,
-      type: device.type,
-      online: device.online,
+    tranquil.connect({
+      transport: 'cloud',
+      device: {
+        id,
+        name: device.settings?.displayName ?? device.id,
+        type: device.type,
+        online: device.online,
+      },
     })
   }
   router.push(`${base}/${id}`)
@@ -376,7 +377,7 @@ const openLocalDevice = (device: LocalDevice) => {
   // the already-active connection.
   const type = normalizeKoiosType(device.typeRaw)
   if (type === 'TRANQUIL') {
-    tranquilLocal.connect(device)
+    tranquil.connect({ transport: 'lan', device })
     router.push(`/tranquil/local/${encodeURIComponent(device.id)}`)
     return
   }
@@ -391,7 +392,7 @@ const openLocalDevice = (device: LocalDevice) => {
 
 const openLocalSettings = (device: LocalDevice) => {
   // Same connect-then-navigate dance as openLocalDevice, straight to settings.
-  tranquilLocal.connect(device)
+  tranquil.connect({ transport: 'lan', device })
   router.push(`/tranquil/local/${encodeURIComponent(device.id)}/settings`)
 }
 

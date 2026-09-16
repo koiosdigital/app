@@ -2054,6 +2054,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices/{deviceId}/tranquil/commands/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Outcome of a dispatched command (404 while pending) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    deviceId: string;
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Command result */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TranquilCommandResultDto"];
+                    };
+                };
+                /** @description No result yet: pending, never delivered, or evicted from the last-20 ring */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponseDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/devices/{deviceId}/tranquil/commands/play": {
         parameters: {
             query?: never;
@@ -2219,7 +2267,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Stop playback */
+        /** Stop playback (emergency = halt motion immediately) */
         post: {
             parameters: {
                 query?: never;
@@ -2229,7 +2277,12 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            /** @description Request body */
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["TranquilStopDto"];
+                };
+            };
             responses: {
                 /** @description Dispatch result */
                 200: {
@@ -2784,7 +2837,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update a playlist */
+        /** Update a playlist (partial: absent fields unchanged; patternUuids present replaces the list) */
         put: {
             parameters: {
                 query?: never;
@@ -4445,7 +4498,11 @@ export interface components {
             /** @description Gateway connection state (device.connected/disconnected) */
             online: boolean;
             player: components["schemas"]["TranquilPlayerStateDto"];
+            /** @description ms epoch of the last player report; null when never reported */
+            playerAt: number | null;
             downloads: components["schemas"]["TranquilDownloadEntryDto"][];
+            /** @description Outcomes of the last 20 cloud commands for this table, newest first */
+            commandResults: components["schemas"]["TranquilCommandResultDto"][];
         };
         TranquilPlayerStateDto: {
             state: components["schemas"]["TranquilPlaybackState"];
@@ -4474,6 +4531,16 @@ export interface components {
             done: boolean;
             /** @description ms epoch of the last report for this entry */
             updatedAt: number;
+        };
+        TranquilCommandResultDto: {
+            requestId: string;
+            success: boolean;
+            /** @description Human-readable detail from the device (may be empty) */
+            detail: string;
+            /** @description Device error code; 0 = none */
+            errorCode: number;
+            /** @description ms epoch when the result arrived */
+            at: number;
         };
         TranquilPatternsDto: {
             patterns: components["schemas"]["TranquilPatternDto"][];
@@ -4619,7 +4686,10 @@ export interface components {
             at: number | null;
         };
         TranquilDispatchDto: {
+            /** @description The gateway accepted the frame (false = table offline, nothing sent) */
             delivered: boolean;
+            /** @description Correlation id echoed by the device; poll GET /commands/{requestId} or /live commandResults */
+            requestId: string;
         };
         TranquilPlayDto: {
             patternUuid: string;
@@ -4635,11 +4705,16 @@ export interface components {
         TranquilSetPausedDto: {
             paused: boolean;
         };
+        TranquilStopDto: {
+            /** @description Halt motion immediately instead of draining queued moves (default false) */
+            emergency?: boolean;
+        };
         TranquilNavigateDto: {
             /** @enum {string} */
             direction: "NEXT" | "PREVIOUS";
         };
         TranquilFeedRateDto: {
+            /** @description Ball speed 1.0-5.0 (the firmware clamps) */
             feedRateRpm: number;
         };
         TranquilShuffleDto: {
@@ -4667,6 +4742,8 @@ export interface components {
             name: string;
         };
         TranquilCreatePlaylistDto: {
+            /** @description Client-chosen id; absent = the device assigns one */
+            uuid?: string;
             name: string;
             /** @default  */
             description: string;
@@ -4674,14 +4751,11 @@ export interface components {
             patternUuids: string[];
         };
         TranquilUpdatePlaylistDto: {
-            /** @default  */
-            name: string;
-            /** @default  */
-            description: string;
-            /** @default [] */
-            patternUuids: string[];
-            /** @default  */
-            featuredPattern: string;
+            name?: string;
+            description?: string;
+            /** @description Present (even empty) replaces the list; absent leaves it unchanged */
+            patternUuids?: string[];
+            featuredPattern?: string;
         };
         TranquilLedChannelDto: {
             channel: number;

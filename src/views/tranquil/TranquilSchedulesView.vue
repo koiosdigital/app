@@ -492,7 +492,10 @@ type Kind = 'playlist' | 'pattern' | 'random' | 'lights' | 'speed' | 'stop'
 const { setHeader } = usePageHeader()
 const toast = useCommandToast()
 const session = useTranquilSession()
-const { store, base, isActive, isCloud } = session
+const { store, base, isActive, transport } = session
+// Over the cloud a write is only confirmed as delivered; the table answers the
+// gateway, not us. The wording follows.
+const relayed = transport === 'cloud'
 const sched = useTranquilSchedule(session)
 const items = sched.items
 
@@ -533,10 +536,7 @@ function patternName(uuid: string): string {
 function playlistName(uuid: string): string {
   return playlists.value.find((p) => p.uuid === uuid)?.name ?? 'Playlist'
 }
-function thumbUrl(uuid: string): string {
-  const b = store.baseUrl()
-  return b ? `${b}/api/pattern_thumbs/${uuid}.png` : ''
-}
+const thumbUrl = (uuid: string) => store.thumbUrl(uuid)
 
 // ---- Labels -------------------------------------------------------------------
 const dayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -664,7 +664,7 @@ async function saveQuiet() {
   savingQuiet.value = true
   try {
     await sched.saveQuietHours(cloneQuiet(quietForm))
-    toast.ok(isCloud ? 'Quiet hours sent to the table' : 'Quiet hours saved')
+    toast.ok(relayed ? 'Quiet hours sent to the table' : 'Quiet hours saved')
   } catch (e) {
     toast.fail(e, 'Failed to save quiet hours')
     resetQuietForm()
@@ -850,7 +850,7 @@ async function saveForm() {
 }
 
 function reportRun(res: { success: boolean; detail?: string }, what: string) {
-  if (isCloud) toast.ok(`${what} sent to the table`)
+  if (relayed) toast.ok(`${what} sent to the table`)
   else if (res.success) toast.ok(`${what} started`)
   else toast.warn(`${what} did not run`, res.detail || undefined)
 }

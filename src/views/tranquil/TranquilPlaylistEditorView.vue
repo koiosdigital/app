@@ -164,10 +164,7 @@ const availablePatterns = computed<Pattern[]>(() => {
   return allPatterns.value.filter((p) => !inList.has(p.uuid))
 })
 
-function thumbUrl(uuid: string): string {
-  const base = store.baseUrl()
-  return base ? `${base}/api/pattern_thumbs/${uuid}.png` : ''
-}
+const thumbUrl = (uuid: string) => store.thumbUrl(uuid)
 
 const featuredThumb = computed(() => {
   const pl = playlist.value

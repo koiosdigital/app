@@ -1,19 +1,12 @@
 <template>
-  <TranquilPatternThumb :src="blobUrl" :alt="alt" :loading="loading" />
+  <TranquilPatternThumb :src="uuid ? tranquilStore.thumbUrl(uuid) : null" :alt="alt" />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useAuthenticatedImage } from '@/composables/useAuthenticatedImage'
 import { tranquilStore } from '@/lib/tranquil/cloudStore'
 import TranquilPatternThumb from './TranquilPatternThumb.vue'
 
-const props = defineProps<{ uuid: string; alt?: string }>()
-
-// Store thumbnails are behind device-api's gated /v1/store/* — they need the
-// user bearer, so they can't be a plain <img src>. Fetch to a blob, then render
-// it over the shared sand disc.
-const { blobUrl, loading } = useAuthenticatedImage(
-  computed(() => tranquilStore.thumbUrl(props.uuid)),
-)
+// A store pattern by uuid. The gated fetch (user bearer → blob) happens in
+// TranquilPatternThumb, which recognises store URLs.
+defineProps<{ uuid: string; alt?: string }>()
 </script>

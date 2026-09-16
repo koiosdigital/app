@@ -4,8 +4,8 @@
        render them over a mid-grey disc where they read clearly. -->
   <div class="tranquil-thumb" :class="{ 'tranquil-thumb--flat': flat }">
     <img
-      v-if="src"
-      :src="src"
+      v-if="resolvedSrc"
+      :src="resolvedSrc"
       :alt="alt ?? ''"
       class="tranquil-thumb__img"
       loading="lazy"
@@ -15,7 +15,11 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(
+import { computed } from 'vue'
+import { ENV } from '@/config/environment'
+import { useAuthenticatedImage } from '@/composables/useAuthenticatedImage'
+
+const props = withDefaults(
   defineProps<{ src?: string | null; alt?: string; loading?: boolean; flat?: boolean }>(),
   {
     src: null,
@@ -23,6 +27,14 @@ withDefaults(
     flat: false,
   },
 )
+
+// Store thumbnails live behind device-api's gated /v1/store/* and need the
+// user bearer, so they can't be a plain <img src>: fetch those to a blob. A
+// table's own LAN thumbnail loads directly. Deciding here keeps the views
+// transport-blind: they just pass whatever `thumbUrl()` gave them.
+const needsAuth = computed(() => !!props.src && props.src.startsWith(ENV.apiBaseUrl))
+const { blobUrl } = useAuthenticatedImage(computed(() => (needsAuth.value ? props.src : null)))
+const resolvedSrc = computed(() => (needsAuth.value ? blobUrl.value : props.src))
 
 // A broken/empty image should fall back to the empty disc, not a broken icon.
 function onError(e: Event) {

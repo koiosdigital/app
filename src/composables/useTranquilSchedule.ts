@@ -24,19 +24,24 @@ export function newScheduleId(): number {
 
 const byTime = (a: ScheduleItem, b: ScheduleItem) => a.time_of_day - b.time_of_day
 
+// Without a push, how long to wait for the cloud copy to catch up before
+// re-reading anyway.
+const CLOUD_ECHO_FALLBACK_MS = 2500
+
 /**
  * Schedule + quiet hours for the active table, over either transport.
  *
  * The device is the source of truth and the list is replaced as a whole on
  * every change, so each mutation here is optimistic (apply, save, revert on
- * failure). On LAN the PUT answers with the saved list; over the cloud only
- * delivery is confirmed and the device's own echo lands in the cloud cache a
- * moment later, so the list is refetched after a short delay. Any push from
- * the device (another client wrote) bumps `libraryVersion.schedule` and
- * triggers a reload.
+ * failure). On LAN the PUT answers with the saved list. Over the cloud only
+ * delivery is confirmed; the device's own echo lands in the cloud cache a
+ * moment later, the transport notices its `at` moved and bumps
+ * `libraryVersion.schedule`, and the list is reloaded then — with a short
+ * timer as a fallback in case the echo never shows. Any push from the device
+ * (another client wrote) bumps the same counter and reloads too.
  */
 export function useTranquilSchedule(session: ReturnType<typeof useTranquilSession>) {
-  const { store, isActive, isCloud } = session
+  const { store, isActive, capabilities, transport } = session
 
   const items = ref<ScheduleItem[]>([])
   const quiet = ref<QuietHours>(emptyQuietHours())
@@ -79,11 +84,16 @@ export function useTranquilSchedule(session: ReturnType<typeof useTranquilSessio
   }
 
   function scheduleReload(delayMs: number) {
-    if (reloadTimer) clearTimeout(reloadTimer)
+    cancelReload()
     reloadTimer = setTimeout(() => {
       reloadTimer = null
       void load()
     }, delayMs)
+  }
+
+  function cancelReload() {
+    if (reloadTimer) clearTimeout(reloadTimer)
+    reloadTimer = null
   }
 
   async function persist(next: { items?: ScheduleItem[]; quiet_hours?: QuietHours }): Promise<void> {
@@ -94,8 +104,10 @@ export function useTranquilSchedule(session: ReturnType<typeof useTranquilSessio
     saving.value = true
     try {
       const res = await store.api().schedule.set({ items: items.value, quiet_hours: quiet.value })
-      if (isCloud) scheduleReload(1500)
-      else apply(res)
+      // A pushing transport answers with the saved list; a polled one only
+      // confirms delivery, so wait for the echo (bump) or the fallback timer.
+      if (capabilities.livePush) apply(res)
+      else scheduleReload(CLOUD_ECHO_FALLBACK_MS)
     } catch (e) {
       items.value = prevItems
       quiet.value = prevQuiet
@@ -125,6 +137,9 @@ export function useTranquilSchedule(session: ReturnType<typeof useTranquilSessio
   watch(
     () => store.libraryVersion.schedule,
     () => {
+      // The device's copy moved (our echo or another client): this supersedes
+      // any pending fallback reload.
+      cancelReload()
       if (isActive.value) void load()
     },
   )
@@ -140,7 +155,7 @@ export function useTranquilSchedule(session: ReturnType<typeof useTranquilSessio
     loading,
     saving,
     error,
-    isCloud,
+    transport,
     load,
     upsert,
     remove,

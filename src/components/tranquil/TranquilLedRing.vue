@@ -10,14 +10,14 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
+import { useTranquilStore } from '@/stores/tranquil'
 import {
   createPixdriverPreview,
   type PixdriverPreview,
   type LedPreviewState,
 } from '@/lib/tranquil/pixdriver/runtime'
 
-const store = useTranquilLocalStore()
+const store = useTranquilStore()
 const canvasEl = useTemplateRef<HTMLCanvasElement>('canvasEl')
 
 let preview: PixdriverPreview | null = null

@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { computed, ref, toRef, watch } from 'vue'
 import type { LocalDevice } from '@/lib/mdns/discovery'
-import { createTranquilRest } from '@/lib/tranquil/local/rest'
+import { createTranquilRest, lanThumbUrl } from '@/lib/tranquil/transport/lan'
 import type { PlayerState } from '@/lib/tranquil/local/types'
 import BaseDeviceCard from './BaseDeviceCard.vue'
 import DeviceStatus from './DeviceStatus.vue'
@@ -88,9 +88,7 @@ watch(
 const thumbnailUrl = computed(() => {
   const uuid = playerState.value?.current_pattern_uuid
   const base = device.value.baseUrl
-  return uuid && base && playerState.value?.state !== 'STOPPED'
-    ? `${base}/api/pattern_thumbs/${uuid}.png`
-    : null
+  return uuid && base && playerState.value?.state !== 'STOPPED' ? lanThumbUrl(base, uuid) : null
 })
 
 const stateLabel = computed(() => {

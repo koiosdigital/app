@@ -43,8 +43,7 @@ const TranquilSettingsView = () => import('@/views/tranquil/TranquilSettingsView
 const TranquilSchedulesView = () => import('@/views/tranquil/TranquilSchedulesView.vue')
 const ClockDeviceView = () => import('@/views/clock/ClockDeviceView.vue')
 import { useAuthStore } from '@/stores/auth/auth'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
-import { useTranquilCloudStore } from '@/stores/tranquilCloud'
+import { useTranquilStore } from '@/stores/tranquil'
 import { useClockLocalStore } from '@/stores/clockLocal'
 
 const router = createRouter({
@@ -345,16 +344,16 @@ router.beforeEach(async (to) => {
   return true
 })
 
-// Own the LAN-direct Tranquil connection at the section level: it persists while
-// the user moves between a table's controls/patterns/store/settings pages and is
-// torn down only when they leave the device entirely. (connect() happens in
-// HomeView.openLocalDevice.)
-const TRANQUIL_PREFIX = '/tranquil/local/'
-const TRANQUIL_CLOUD_PREFIX = '/tranquil/cloud/'
+// Own the Tranquil connection at the section level: it persists while the user
+// moves between a table's controls/patterns/store/settings pages (over either
+// transport) and is torn down only when they leave the device entirely.
+// (connect() happens in HomeView.openDevice / openLocalDevice, or in
+// useTranquilControl for cloud deep links.)
+const TRANQUIL_PREFIX = '/tranquil/'
 const CLOCK_PREFIX = '/clock/local/'
 router.afterEach((to, from) => {
   const leftSection = (prefix: string) => from.path.startsWith(prefix) && !to.path.startsWith(prefix)
-  if (!leftSection(TRANQUIL_PREFIX) && !leftSection(TRANQUIL_CLOUD_PREFIX) && !leftSection(CLOCK_PREFIX)) {
+  if (!leftSection(TRANQUIL_PREFIX) && !leftSection(CLOCK_PREFIX)) {
     return
   }
   // After the page-leave fade: the old view is still mounted while it fades,
@@ -363,8 +362,7 @@ router.afterEach((to, from) => {
   // route when the timer fires in case the user already navigated back in.
   setTimeout(() => {
     const path = router.currentRoute.value.path
-    if (!path.startsWith(TRANQUIL_PREFIX)) useTranquilLocalStore().disconnect()
-    if (!path.startsWith(TRANQUIL_CLOUD_PREFIX)) useTranquilCloudStore().disconnect()
+    if (!path.startsWith(TRANQUIL_PREFIX)) useTranquilStore().disconnect()
     if (!path.startsWith(CLOCK_PREFIX)) useClockLocalStore().disconnect()
   }, 200)
 })

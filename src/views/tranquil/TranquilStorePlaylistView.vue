@@ -38,7 +38,7 @@
           block
           :icon="bulkBusy ? 'i-fa6-solid:spinner' : 'i-fa6-solid:layer-group'"
           :ui="bulkBusy ? { leadingIcon: 'animate-spin' } : undefined"
-          :disabled="!tranquilLocal.connected || bulkBusy || !playlist.patterns.length"
+          :disabled="!canSend || bulkBusy || !playlist.patterns.length"
           @click="downloadEntirePlaylist"
         >
           {{ bulkLabel }}
@@ -77,7 +77,7 @@
             size="sm"
             square
             icon="i-fa6-solid:down-to-bracket"
-            :disabled="!tranquilLocal.connected"
+            :disabled="!canSend"
             :aria-label="`Add ${pattern.name} to table`"
             @click="addToTable(pattern)"
           />
@@ -88,7 +88,7 @@
             size="sm"
             square
             icon="i-fa6-solid:arrow-rotate-right"
-            :disabled="!tranquilLocal.connected"
+            :disabled="!canSend"
             :aria-label="`Retry ${pattern.name}`"
             :title="downloadState(pattern.uuid)!.error || 'Download failed'"
             @click="retry(pattern)"
@@ -103,8 +103,8 @@
         </div>
       </div>
 
-      <p v-if="!tranquilLocal.connected" class="text-center text-xs text-white/50">
-        Connect to your table on your network to add patterns.
+      <p v-if="!canSend" class="text-center text-xs text-white/50">
+        {{ unreachableCopy }}
       </p>
     </div>
 
@@ -133,7 +133,15 @@ const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const authStore = useAuthStore()
-const { store: tranquilLocal, base } = useTranquilSession()
+const { store: table, base, transport } = useTranquilSession()
+
+// Downloads need the table itself reachable, not just the cloud API: over
+// LAN that is the socket, over the cloud the gateway's online flag.
+const canSend = computed(() => table.connected && table.online !== false)
+const unreachableCopy =
+  transport === 'cloud'
+    ? 'Your table is offline right now. Add patterns once it reconnects.'
+    : 'Connect to your table on your network to add patterns.'
 
 const uuid = route.params.uuid as string
 const backRoute = computed(
@@ -151,17 +159,17 @@ const featuredUuid = computed(() => {
 })
 
 // Same download flow as the store view: the table fetches the pattern itself;
-// we send the uuid and watch progress via tranquilLocal.downloads.
-const downloadState = (uuid: string) => tranquilLocal.downloads[uuid]
+// we send the uuid and watch progress via table.downloads.
+const downloadState = (uuid: string) => table.downloads[uuid]
 
 function addToTable(pattern: StorePattern) {
   notice.value = null
-  if (!tranquilLocal.connected) {
-    notice.value = 'Connect to your table on your network to add patterns.'
+  if (!canSend.value) {
+    notice.value = unreachableCopy
     return
   }
   try {
-    tranquilLocal.requestPatternDownload(pattern.uuid)
+    table.requestPatternDownload(pattern.uuid)
     notice.value = `Sending "${pattern.name}" to your table…`
   } catch {
     notice.value = 'Could not reach your table. Try again.'
@@ -169,7 +177,7 @@ function addToTable(pattern: StorePattern) {
 }
 
 function retry(pattern: StorePattern) {
-  tranquilLocal.clearDownload(pattern.uuid)
+  table.clearDownload(pattern.uuid)
   addToTable(pattern)
 }
 
@@ -202,7 +210,7 @@ async function fetchDevicePatternUuids(): Promise<Set<string>> {
   let page = 0
   // Hard page cap so a bad total_pages can't loop forever.
   for (let i = 0; i < 100; i++) {
-    const res = await tranquilLocal.api().patterns.list(page, 50)
+    const res = await table.api().patterns.list(page, 50)
     for (const p of res.patterns) present.add(p.uuid)
     if (page + 1 >= res.pagination.total_pages) break
     page++
@@ -215,20 +223,20 @@ async function fetchDevicePatternUuids(): Promise<Set<string>> {
 // can't hang forever.
 function downloadOne(pattern: StorePattern): Promise<void> {
   return new Promise((resolve, reject) => {
-    const cur = tranquilLocal.downloads[pattern.uuid]
+    const cur = table.downloads[pattern.uuid]
     if (cur && !cur.failed && cur.pct >= 100) {
       resolve()
       return
     }
-    if (cur) tranquilLocal.clearDownload(pattern.uuid)
+    if (cur) table.clearDownload(pattern.uuid)
     try {
-      tranquilLocal.requestPatternDownload(pattern.uuid)
+      table.requestPatternDownload(pattern.uuid)
     } catch (e) {
       reject(e instanceof Error ? e : new Error('Failed to start download'))
       return
     }
     const stop = watch(
-      () => tranquilLocal.downloads[pattern.uuid],
+      () => table.downloads[pattern.uuid],
       (s) => {
         if (!s) return
         if (s.failed) {
@@ -249,8 +257,8 @@ async function downloadEntirePlaylist() {
   if (!pl) return
   notice.value = null
   error.value = null
-  if (!tranquilLocal.connected) {
-    notice.value = 'Connect to your table on your network to add patterns.'
+  if (!canSend.value) {
+    notice.value = unreachableCopy
     return
   }
 
@@ -282,7 +290,7 @@ async function downloadEntirePlaylist() {
     // Send the manifest last: the full pattern list, in playlist order.
     bulkStep.value = 'creating'
     bulkCurrent.value = ''
-    await tranquilLocal.api().playlists.create({
+    await table.api().playlists.create({
       name: pl.name,
       description: pl.description || '',
       pattern_uuids: pl.patterns.map((p) => p.uuid),

@@ -21,7 +21,7 @@
             size="lg"
             icon="i-fa6-solid:down-to-bracket"
             block
-            :disabled="!tranquilLocal.connected"
+            :disabled="!canSend"
             @click="addToTable(selected)"
           >
             Add to table
@@ -33,7 +33,7 @@
             size="lg"
             icon="i-fa6-solid:arrow-rotate-right"
             block
-            :disabled="!tranquilLocal.connected"
+            :disabled="!canSend"
             @click="retry(selected)"
           >
             {{ downloadState(selected.uuid)!.error || 'Download failed' }} — Retry
@@ -60,8 +60,8 @@
           >
             On your table
           </UButton>
-          <p v-if="!tranquilLocal.connected" class="text-center text-xs text-white/50">
-            Connect to your table on your network to add patterns.
+          <p v-if="!canSend" class="text-center text-xs text-white/50">
+            {{ unreachableCopy }}
           </p>
         </div>
       </template>
@@ -301,7 +301,15 @@ const route = useRoute()
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const authStore = useAuthStore()
-const { store: tranquilLocal, base } = useTranquilSession()
+const { store: table, base, transport } = useTranquilSession()
+
+// Downloads need the table itself reachable, not just the cloud API: over
+// LAN that is the socket, over the cloud the gateway's online flag.
+const canSend = computed(() => table.connected && table.online !== false)
+const unreachableCopy =
+  transport === 'cloud'
+    ? 'Your table is offline right now. Add patterns once it reconnects.'
+    : 'Connect to your table on your network to add patterns.'
 
 
 const MODES = [
@@ -438,17 +446,17 @@ onUnmounted(() => clearTimeout(searchTimer))
 
 // Tell the table to fetch this pattern from the cloud. The device does the
 // encrypt-for-device + download itself over its device-plane link; we just send
-// the uuid and watch progress via tranquilLocal.downloads.
-const downloadState = (uuid: string) => tranquilLocal.downloads[uuid]
+// the uuid and watch progress via table.downloads.
+const downloadState = (uuid: string) => table.downloads[uuid]
 
 function addToTable(pattern: StorePattern) {
   notice.value = null
-  if (!tranquilLocal.connected) {
-    notice.value = 'Connect to your table on your network to add patterns.'
+  if (!canSend.value) {
+    notice.value = unreachableCopy
     return
   }
   try {
-    tranquilLocal.requestPatternDownload(pattern.uuid)
+    table.requestPatternDownload(pattern.uuid)
     notice.value = `Sending "${pattern.name}" to your table…`
   } catch {
     notice.value = 'Could not reach your table. Try again.'
@@ -457,7 +465,7 @@ function addToTable(pattern: StorePattern) {
 
 // Retry a failed download: clear the terminal entry, then request again.
 function retry(pattern: StorePattern) {
-  tranquilLocal.clearDownload(pattern.uuid)
+  table.clearDownload(pattern.uuid)
   addToTable(pattern)
 }
 

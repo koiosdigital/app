@@ -86,7 +86,7 @@ import TranquilSessionGate from '@/components/tranquil/TranquilSessionGate.vue'
 const router = useRouter()
 const { setHeader } = usePageHeader()
 const session = useTranquilSession()
-const { store, isCloud, base, isActive } = session
+const { store, capabilities, base, isActive } = session
 
 const patterns = ref<Pattern[]>([])
 const page = ref(0) // local device is 0-based
@@ -128,10 +128,7 @@ watch(
 
 const hasMore = computed(() => page.value + 1 < totalPages.value)
 
-function thumbUrl(uuid: string): string {
-  const base = store.baseUrl()
-  return base ? `${base}/api/pattern_thumbs/${uuid}.png` : ''
-}
+const thumbUrl = (uuid: string) => store.thumbUrl(uuid)
 
 async function fetchPage(next: number) {
   if (!isActive.value) return
@@ -190,8 +187,10 @@ onMounted(() => {
   setHeader({
     title: 'Patterns',
     backRoute: base,
-    // Upload streams a local file to the table — LAN only.
-    actions: isCloud ? [] : [{ icon: 'i-fa6-solid:upload', label: 'Upload', onClick: triggerUpload }],
+    // Upload streams a local file to the table — only where the transport can.
+    actions: capabilities.upload
+      ? [{ icon: 'i-fa6-solid:upload', label: 'Upload', onClick: triggerUpload }]
+      : [],
   })
   void refresh()
 })

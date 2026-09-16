@@ -1,41 +1,47 @@
 import { useRoute } from 'vue-router'
-import { useTranquilLocalStore } from '@/stores/tranquilLocal'
-import { useTranquilCloudStore } from '@/stores/tranquilCloud'
+import { useTranquilStore } from '@/stores/tranquil'
+import { LAN_CAPABILITIES } from '@/lib/tranquil/transport/lan'
+import { CLOUD_CAPABILITIES } from '@/lib/tranquil/transport/cloud'
+import type { TranquilCapabilities, TranquilTransportKind } from '@/lib/tranquil/client'
 
 /**
- * Transport-agnostic entry point for the Tranquil control views. A table is
- * reached either LAN-direct (`/tranquil/local/:id`) or over the cloud
- * (`/tranquil/cloud/:id`); both stores expose the same public surface, so a
- * view can drive whichever this resolves to.
+ * Entry point for the Tranquil control views. A table is reached either
+ * LAN-direct (`/tranquil/local/:id`) or over the cloud (`/tranquil/cloud/:id`);
+ * the route decides the transport, and the ONE store drives whichever it is.
  *
  * Returns:
- *  - `store`  — the active store (typed as the local store; the cloud store is
- *               structurally compatible for the shared surface).
- *  - `isCloud`— true on the cloud route (views hide LAN-only affordances).
- *  - `base`   — the current mode's device path prefix, for building links.
+ *  - `store`        — the Tranquil store.
+ *  - `transport`    — which transport this route uses (for copy only; gate
+ *                     affordances on `capabilities`).
+ *  - `capabilities` — what the route's transport supports. Static per route so
+ *                     templates can read it before the connection is up.
+ *  - `base`         — the current mode's device path prefix, for building links.
  *
- * On a cloud route it also (idempotently) connects the cloud store to the route
- * device, so deep-links work without going through the home screen. On a LAN
- * route the session is restored by useTranquilSession() (mDNS re-resolve).
+ * On a cloud route it also (idempotently) binds the store to the route device,
+ * so deep-links work without going through the home screen. On a LAN route the
+ * session is restored by useTranquilSession() (mDNS re-resolve).
  */
 export function useTranquilControl() {
   const route = useRoute()
   const id = String(route.params.id ?? '')
-  const isCloud = route.path.startsWith('/tranquil/cloud/')
+  const transport: TranquilTransportKind = route.path.startsWith('/tranquil/cloud/')
+    ? 'cloud'
+    : 'lan'
+  const store = useTranquilStore()
+  const capabilities: TranquilCapabilities =
+    transport === 'cloud' ? CLOUD_CAPABILITIES : LAN_CAPABILITIES
 
-  if (isCloud) {
-    const cloud = useTranquilCloudStore()
-    if (id && cloud.activeDevice?.id !== id) cloud.connect({ id })
-    return {
-      store: cloud as unknown as ReturnType<typeof useTranquilLocalStore>,
-      isCloud: true,
-      base: `/tranquil/cloud/${encodeURIComponent(id)}`,
+  if (transport === 'cloud' && id) {
+    const bound = store.activeDevice
+    if (bound?.id !== id || bound.transport !== 'cloud') {
+      store.connect({ transport: 'cloud', device: { id } })
     }
   }
 
   return {
-    store: useTranquilLocalStore(),
-    isCloud: false,
-    base: `/tranquil/local/${encodeURIComponent(id)}`,
+    store,
+    transport,
+    capabilities,
+    base: `/tranquil/${transport === 'cloud' ? 'cloud' : 'local'}/${encodeURIComponent(id)}`,
   }
 }
