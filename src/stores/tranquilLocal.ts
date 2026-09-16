@@ -645,7 +645,9 @@ function mapPlayerState(ps: {
           ? 'PLAYLIST_LOOP'
           : ps.mode === PlayerState_PlayMode.PLAYLIST_SHUFFLE
             ? 'PLAYLIST_SHUFFLE'
-            : 'SINGLE_PATTERN',
+            : ps.mode === PlayerState_PlayMode.RANDOM_LOOP
+              ? 'RANDOM_LOOP'
+              : 'SINGLE_PATTERN',
     current_pattern_uuid: ps.currentPatternUuid,
     current_playlist_uuid: ps.currentPlaylistUuid,
     progress_percent: ps.progressPercent,
