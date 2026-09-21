@@ -103,10 +103,13 @@
           <div class="mt-4 space-y-3 border-t border-white/10 pt-4">
             <div class="flex items-center justify-between gap-3">
               <div>
-                <p class="text-sm font-medium">Stop the table</p>
-                <p class="text-xs text-white/50">Stops playback when a window starts.</p>
+                <p class="text-sm font-medium">Pause the table</p>
+                <p class="text-xs text-white/50">
+                  Whatever is playing pauses when a window starts and picks up again when it
+                  ends. Play and pause still work in between.
+                </p>
               </div>
-              <USwitch v-model="quietForm.stop_playback" />
+              <USwitch v-model="quietForm.pause_playback" />
             </div>
             <div class="flex items-center justify-between gap-3">
               <div>
@@ -640,7 +643,7 @@ function nextRunLabel(s: ScheduleItem): string | null {
 // ---- Quiet hours form -----------------------------------------------------------
 const cloneQuiet = (q: QuietHours): QuietHours => ({
   windows: q.windows.map((w) => ({ ...w })),
-  stop_playback: q.stop_playback,
+  pause_playback: q.pause_playback,
   lights_off: q.lights_off,
 })
 const quietForm = reactive<QuietHours>(cloneQuiet(sched.quiet.value))

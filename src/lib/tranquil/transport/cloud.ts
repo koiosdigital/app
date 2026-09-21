@@ -358,7 +358,7 @@ function mapQuiet(q: QuietHoursDto | undefined): QuietHours {
       end_min: w.endMin,
       enabled: w.enabled ?? true,
     })),
-    stop_playback: !!q?.stopPlayback,
+    pause_playback: !!q?.pausePlayback,
     lights_off: !!q?.lightsOff,
   }
 }
@@ -370,7 +370,7 @@ function quietToDto(q: QuietHours): QuietHoursDto {
       endMin: w.end_min,
       enabled: w.enabled,
     })),
-    stopPlayback: q.stop_playback,
+    pausePlayback: q.pause_playback,
     lightsOff: q.lights_off,
   }
 }

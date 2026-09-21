@@ -4646,7 +4646,8 @@ export interface components {
         };
         TranquilQuietHoursDto: {
             windows: components["schemas"]["TranquilQuietWindowDto"][];
-            stopPlayback?: boolean;
+            /** @description Pause playback when a window starts and resume it when the window ends */
+            pausePlayback?: boolean;
             lightsOff?: boolean;
         };
         TranquilQuietWindowDto: {

@@ -341,8 +341,8 @@ export interface QuietWindow {
 
 export interface QuietHours {
   windows: QuietWindow[]
-  /** Stop the table when a window starts */
-  stop_playback: boolean
+  /** Pause playback when a window starts; it resumes when the window ends */
+  pause_playback: boolean
   /** LEDs off when a window starts, restored when it ends */
   lights_off: boolean
 }

@@ -11,7 +11,7 @@ import type {
 
 export const emptyQuietHours = (): QuietHours => ({
   windows: [],
-  stop_playback: false,
+  pause_playback: false,
   lights_off: false,
 })
 
