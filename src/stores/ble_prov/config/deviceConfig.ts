@@ -32,6 +32,7 @@ export const DEVICE_PREFIX_CONFIG: Record<string, DeviceUiConfig> = {
   'NEMOTO-': { popType: 'none', hasCrypto: true },
   'CLOCK-': { popType: 'none', hasCrypto: false },
   'TRANQUIL-': { popType: 'none', hasCrypto: false },
+  'EINK-': { popType: 'none', hasCrypto: true },
 }
 
 /**

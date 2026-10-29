@@ -27,6 +27,7 @@ export type KoiosDeviceType =
   | 'NIXIE'
   | 'WORDCLOCK'
   | 'FIBONACCI'
+  | 'EINK'
 
 const KNOWN_TYPES: KoiosDeviceType[] = [
   'MATRX',
@@ -36,6 +37,7 @@ const KNOWN_TYPES: KoiosDeviceType[] = [
   'NIXIE',
   'WORDCLOCK',
   'FIBONACCI',
+  'EINK',
 ]
 
 /** Clock variants — all run the KD Clock firmware and share one local HTTP API. */
@@ -124,7 +126,7 @@ export async function watchKoiosDevices(
   onEvent: (event: DiscoveryEvent) => void,
 ): Promise<DiscoveryHandle> {
   if (!isDiscoverySupported()) {
-    return { stop: async () => {} }
+    return { stop: async () => { } }
   }
 
   let stopped = false
