@@ -5,7 +5,7 @@ import { createEinkRest, type EinkRestClient } from '@/lib/eink/local/rest'
 import {
   screenDimensions,
   type EinkDeviceInfo,
-  type EinkDitherSettings,
+  type EinkPreset,
   type EinkSettings,
   type EinkSettingsUpdate,
 } from '@/lib/eink/local/types'
@@ -16,9 +16,9 @@ import {
  * control path, and it is only reachable while the frame is awake (it deep
  * sleeps between scheduled wakes). REST only.
  *
- * The frame's dither/saturation/gamma are write-only in the Tier 1 API
- * (/deviceInfo does not report them back), so `dither` here is the app's own
- * working copy, seeded with neutral defaults.
+ * `preset` here is the app's working copy of the frame's processing preset
+ * (the epdoptimize pipeline that runs on-device); it is seeded from the live
+ * GET /settings and written back through POST /settings.
  */
 export const useEinkLocalStore = defineStore('eink_local', () => {
   const activeDevice = ref<LocalDevice | null>(null)
@@ -28,7 +28,7 @@ export const useEinkLocalStore = defineStore('eink_local', () => {
   const info = ref<EinkDeviceInfo | null>(null)
   const settings = ref<EinkSettings | null>(null)
 
-  const dither = ref<EinkDitherSettings>({ dither: 0, saturation: 1, gamma: 1 })
+  const preset = ref<EinkPreset>(1) // epdoptimize "dynamic"; reseeded from the device on refresh()
 
   let rest: EinkRestClient | null = null
 
@@ -67,8 +67,8 @@ export const useEinkLocalStore = defineStore('eink_local', () => {
       const [di, cfg] = await Promise.all([api().deviceInfo(), api().getSettings()])
       info.value = di
       settings.value = cfg
-      // /settings now reports the live dither/sat/gamma, so seed the working copy.
-      dither.value = { dither: cfg.dither, saturation: cfg.saturation, gamma: cfg.gamma }
+      // /settings reports the live preset, so seed the working copy.
+      preset.value = cfg.preset
       connected.value = true
       error.value = null
     } catch (e) {
@@ -92,11 +92,11 @@ export const useEinkLocalStore = defineStore('eink_local', () => {
     }
   }
 
-  async function applyDither(next: EinkDitherSettings): Promise<void> {
+  async function applyPreset(next: EinkPreset): Promise<void> {
     busy.value = true
     try {
-      await api().setDither(next)
-      dither.value = { ...next }
+      settings.value = await api().updateSettings({ preset: next })
+      preset.value = next
       error.value = null
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Could not update display settings'
@@ -142,14 +142,14 @@ export const useEinkLocalStore = defineStore('eink_local', () => {
     error,
     info,
     settings,
-    dither,
+    preset,
     panel,
     battery,
     connect,
     disconnect,
     refresh,
     updateSettings,
-    applyDither,
+    applyPreset,
     clearScreen,
     showOnFrame,
   }

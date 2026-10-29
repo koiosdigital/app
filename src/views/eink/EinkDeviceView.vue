@@ -38,62 +38,29 @@
         </div>
       </UCard>
 
-      <!-- Display settings (dither / saturation / gamma -> /setDither) -->
+      <!-- Display settings (processing preset -> POST /settings) -->
       <h2 class="k-eyebrow mt-2">Display</h2>
       <UCard class="bg-white/5">
         <div class="flex flex-col gap-5">
           <div class="flex flex-col gap-2">
-            <span class="text-sm font-medium">Dithering</span>
-            <div class="grid grid-cols-2 gap-2">
+            <span class="text-sm font-medium">Preset</span>
+            <div class="flex flex-col gap-2">
               <UButton
-                :color="ditherForm.dither === 0 ? 'primary' : 'neutral'"
-                :variant="ditherForm.dither === 0 ? 'solid' : 'soft'"
+                v-for="p in EINK_PRESETS"
+                :key="p.value"
+                :color="presetForm === p.value ? 'primary' : 'neutral'"
+                :variant="presetForm === p.value ? 'solid' : 'soft'"
                 size="sm"
                 block
-                @click="ditherForm.dither = 0"
+                class="justify-start"
+                @click="presetForm = p.value"
               >
-                Floyd–Steinberg
-              </UButton>
-              <UButton
-                :color="ditherForm.dither === 1 ? 'primary' : 'neutral'"
-                :variant="ditherForm.dither === 1 ? 'solid' : 'soft'"
-                size="sm"
-                block
-                @click="ditherForm.dither = 1"
-              >
-                JJN
+                <span class="flex flex-col items-start text-left">
+                  <span class="font-medium">{{ p.label }}</span>
+                  <span class="text-xs opacity-70">{{ p.hint }}</span>
+                </span>
               </UButton>
             </div>
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center justify-between text-sm">
-              <span class="font-medium">Saturation</span>
-              <span class="text-white/60">{{ ditherForm.saturation.toFixed(2) }}</span>
-            </div>
-            <input
-              v-model.number="ditherForm.saturation"
-              type="range"
-              min="0"
-              max="2"
-              step="0.05"
-              class="w-full accent-primary-500"
-            />
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center justify-between text-sm">
-              <span class="font-medium">Gamma</span>
-              <span class="text-white/60">{{ ditherForm.gamma.toFixed(2) }}</span>
-            </div>
-            <input
-              v-model.number="ditherForm.gamma"
-              type="range"
-              min="0"
-              max="2"
-              step="0.05"
-              class="w-full accent-primary-500"
-            />
           </div>
 
           <div class="flex gap-2">
@@ -102,10 +69,10 @@
               size="sm"
               block
               :loading="store.busy"
-              :disabled="!store.connected"
-              @click="applyDither"
+              :disabled="!store.connected || presetForm === store.preset"
+              @click="applyPreset"
             >
-              Apply to new photos
+              Apply preset
             </UButton>
             <UButton
               color="neutral"
@@ -119,7 +86,8 @@
             </UButton>
           </div>
           <p class="text-xs text-white/40">
-            Dither, saturation and gamma apply to the next photo you send.
+            The preset is applied on the frame to the next photo you send and to
+            scheduled server pulls.
           </p>
         </div>
       </UCard>
@@ -257,7 +225,7 @@ import { useRoute, useRouter } from 'vue-router'
 import PageLayout from '@/layouts/PageLayout.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useEinkLocalStore } from '@/stores/einkLocal'
-import type { EinkDitherSettings, EinkSettingsUpdate } from '@/lib/eink/local/types'
+import { EINK_PRESETS, type EinkPreset, type EinkSettingsUpdate } from '@/lib/eink/local/types'
 import {
   addPhoto,
   deletePhoto,
@@ -275,13 +243,14 @@ const routeId = computed(() => route.params.id as string)
 // Connection is established by HomeView.openLocalDevice before navigation.
 const isActive = computed(() => store.activeDevice?.id === routeId.value)
 
-const ditherForm = reactive<EinkDitherSettings>({ ...store.dither })
-// refresh() seeds store.dither from the device's live /settings; keep the form
-// in sync when that lands.
+const presetForm = ref<EinkPreset>(store.preset)
+// refresh() seeds store.preset from the device's live /settings; keep the
+// picker in sync when that lands.
 watch(
-  () => store.dither,
-  (d) => Object.assign(ditherForm, d),
-  { deep: true },
+  () => store.preset,
+  (p) => {
+    presetForm.value = p
+  },
 )
 
 const scheduleForm = reactive({
@@ -366,8 +335,8 @@ async function removePhoto(photo: EinkPhotoMeta) {
   await loadGallery()
 }
 
-async function applyDither() {
-  await store.applyDither({ ...ditherForm }).catch(() => {})
+async function applyPreset() {
+  await store.applyPreset(presetForm.value).catch(() => {})
 }
 
 async function clearScreen() {

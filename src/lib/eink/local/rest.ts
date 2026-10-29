@@ -12,7 +12,6 @@
 import { lanFetch } from '@/lib/http/lanFetch'
 import type {
   EinkDeviceInfo,
-  EinkDitherSettings,
   EinkSettings,
   EinkSettingsUpdate,
   OkResponse,
@@ -24,7 +23,6 @@ export interface EinkRestClient {
   keepAlive(): Promise<OkResponse>
   getSettings(): Promise<EinkSettings>
   updateSettings(patch: EinkSettingsUpdate): Promise<EinkSettings>
-  setDither(settings: EinkDitherSettings): Promise<OkResponse>
   clearScreen(): Promise<OkResponse>
   /** Show a JPEG straight from memory, without writing it to the device's
    * (tiny) flash gallery — the phone keeps the gallery. */
@@ -61,7 +59,6 @@ export function createEinkRest(baseUrl: string): EinkRestClient {
     keepAlive: () => getJson<OkResponse>('/keepAlive'),
     getSettings: () => getJson<EinkSettings>('/settings'),
     updateSettings: (patch) => postJson<EinkSettings>('/settings', patch),
-    setDither: (settings) => postJson<OkResponse>('/setDither', settings),
     clearScreen: () => postJson<OkResponse>('/clearScreen'),
 
     // Plain fetch (not lanFetch): multipart can't go through CapacitorHttp.

@@ -18,16 +18,24 @@ export interface EinkDeviceInfo {
   max_idle: number
 }
 
-/** 0 = Floyd-Steinberg, 1 = JJN (matches eink-fw's dither field). */
+/** Legacy kernel toggle. eink-fw still reports it, but the processing preset
+ * now drives the whole dither pipeline. 0 = Floyd-Steinberg, 1 = JJN. */
 export type DitherMode = 0 | 1
 
-export interface EinkDitherSettings {
-  dither: DitherMode
-  /** 0..2, 1.0 = neutral. */
-  saturation: number
-  /** 0..2, 1.0 = neutral. */
-  gamma: number
-}
+/**
+ * epdoptimize processing preset (matches eink-fw's `preset` field). Drives the
+ * on-device tone mapping, dynamic-range compression, palette and diffusion for
+ * every image path — app uploads and scheduled server pulls alike.
+ */
+export type EinkPreset = 0 | 1 | 2 | 3 | 4
+
+export const EINK_PRESETS: { value: EinkPreset; label: string; hint: string }[] = [
+  { value: 0, label: 'Balanced', hint: 'Faithful colour, lifts shadows' },
+  { value: 1, label: 'Dynamic', hint: 'Punchier and more saturated' },
+  { value: 2, label: 'Vivid', hint: 'Brightest, strongest colour' },
+  { value: 3, label: 'Soft', hint: 'Smoothest, gentle contrast' },
+  { value: 4, label: 'Grayscale', hint: 'Black and white' },
+]
 
 /** Full settings from GET /settings. The upstream token is write-only: the
  * device never echoes it, only whether one is set. */
@@ -35,6 +43,7 @@ export interface EinkSettings {
   sleep_duration: number
   max_idle: number
   dither: DitherMode
+  preset: EinkPreset
   saturation: number
   gamma: number
   upstream_on: boolean
@@ -47,6 +56,7 @@ export interface EinkSettingsUpdate {
   sleep_duration?: number
   max_idle?: number
   dither?: DitherMode
+  preset?: EinkPreset
   saturation?: number
   gamma?: number
   upstream_on?: boolean

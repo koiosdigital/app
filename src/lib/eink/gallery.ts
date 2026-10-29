@@ -129,9 +129,10 @@ async function resizeToJpeg(
   return { blob, width, height }
 }
 
-// The frame buffers the whole JPEG in RAM to decode it; keep the panel-sized
-// upload comfortably under what fits beside the 960 KB framebuffer on 2 MB.
-const MAX_PANEL_JPEG_BYTES = 400 * 1024
+// The frame now streams the JPEG straight off the socket (no in-RAM buffer),
+// so quality is what matters: send a high-quality panel image. The cap is just
+// a generous guard against a pathologically large file, not a tight budget.
+const MAX_PANEL_JPEG_BYTES = 1500 * 1024
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -147,7 +148,7 @@ export async function addPhoto(
   panel: { width: number; height: number },
 ): Promise<EinkPhotoMeta> {
   const img = await loadImage(file)
-  const full = await resizeToJpeg(img, panel.width, panel.height, 0.82, MAX_PANEL_JPEG_BYTES)
+  const full = await resizeToJpeg(img, panel.width, panel.height, 0.92, MAX_PANEL_JPEG_BYTES)
   const thumb = await resizeToJpeg(img, 400, 400, 0.8)
 
   const record: EinkPhoto = {
