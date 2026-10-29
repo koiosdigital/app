@@ -26,7 +26,10 @@ export interface EinkRestClient {
   updateSettings(patch: EinkSettingsUpdate): Promise<EinkSettings>
   setDither(settings: EinkDitherSettings): Promise<OkResponse>
   clearScreen(): Promise<OkResponse>
-  /** Upload a JPEG to the device gallery (optionally show it immediately). */
+  /** Show a JPEG straight from memory, without writing it to the device's
+   * (tiny) flash gallery — the phone keeps the gallery. */
+  display(file: Blob, filename?: string): Promise<OkResponse>
+  /** Upload a JPEG into the device's own flash gallery (Bloomin8 compat). */
   upload(file: Blob, opts?: UploadOptions): Promise<OkResponse>
   /** Delete an image on the device gallery by its path under the gallery root. */
   deleteImage(path: string): Promise<OkResponse>
@@ -61,6 +64,15 @@ export function createEinkRest(baseUrl: string): EinkRestClient {
     setDither: (settings) => postJson<OkResponse>('/setDither', settings),
     clearScreen: () => postJson<OkResponse>('/clearScreen'),
 
+    // Plain fetch (not lanFetch): multipart can't go through CapacitorHttp.
+    async display(file, filename = 'image.jpg') {
+      const form = new FormData()
+      form.append('image', file, filename)
+      const res = await fetch(`${base}/display`, { method: 'POST', body: form })
+      if (!res.ok) throw new Error(`display failed: ${res.status} ${res.statusText}`)
+      return (await res.json()) as OkResponse
+    },
+
     async upload(file, opts = {}) {
       const params = new URLSearchParams()
       if (opts.filename) params.set('filename', opts.filename)
@@ -70,7 +82,6 @@ export function createEinkRest(baseUrl: string): EinkRestClient {
       const form = new FormData()
       form.append('image', file, opts.filename ?? 'image.jpg')
 
-      // Plain fetch (not lanFetch): multipart can't go through CapacitorHttp.
       const res = await fetch(`${base}/upload?${params.toString()}`, {
         method: 'POST',
         body: form,

@@ -119,11 +119,13 @@ export const useEinkLocalStore = defineStore('eink_local', () => {
     }
   }
 
-  /** Push a panel-sized JPEG to the frame and show it immediately. */
+  /** Push a panel-sized JPEG to the frame and show it immediately. Uses
+   * /display (decode-and-show, no flash write) so the frame's tiny gallery
+   * never fills up — the phone is the gallery. */
   async function showOnFrame(jpeg: Blob, filename: string): Promise<void> {
     busy.value = true
     try {
-      await api().upload(jpeg, { filename, showNow: true })
+      await api().display(jpeg, filename)
       error.value = null
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Could not send the photo to the frame'
