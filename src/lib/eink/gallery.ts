@@ -89,12 +89,19 @@ function loadImage(blob: Blob): Promise<HTMLImageElement> {
  * Fit the image inside maxW x maxH (preserving aspect, never upscaling) and
  * encode JPEG. This matches the frame's own Contain fit, so what the user sees
  * in the grid is what the panel shows.
+ *
+ * The frame can only buffer a bounded JPEG in RAM (its decoder needs random
+ * access, and a 2 MB-PSRAM board can't hold a big JPEG next to the 960 KB
+ * framebuffer). That's fine: the panel only renders 6 dithered colors, so a
+ * low-quality (small) JPEG looks identical on the panel to a high-quality one.
+ * So when `maxBytes` is set we step the quality down until the file fits.
  */
 async function resizeToJpeg(
   source: HTMLImageElement,
   maxW: number,
   maxH: number,
   quality: number,
+  maxBytes?: number,
 ): Promise<{ blob: Blob; width: number; height: number }> {
   const scale = Math.min(maxW / source.width, maxH / source.height, 1)
   const width = Math.max(1, Math.round(source.width * scale))
@@ -109,12 +116,22 @@ async function resizeToJpeg(
   ctx.fillRect(0, 0, width, height)
   ctx.drawImage(source, 0, 0, width, height)
 
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, 'image/jpeg', quality),
-  )
+  const encode = (q: number) =>
+    new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', q))
+
+  let q = quality
+  let blob = await encode(q)
+  while (maxBytes && blob && blob.size > maxBytes && q > 0.35) {
+    q = Math.max(0.35, q - 0.1)
+    blob = await encode(q)
+  }
   if (!blob) throw new Error('JPEG encode failed')
   return { blob, width, height }
 }
+
+// The frame buffers the whole JPEG in RAM to decode it; keep the panel-sized
+// upload comfortably under what fits beside the 960 KB framebuffer on 2 MB.
+const MAX_PANEL_JPEG_BYTES = 400 * 1024
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -130,7 +147,7 @@ export async function addPhoto(
   panel: { width: number; height: number },
 ): Promise<EinkPhotoMeta> {
   const img = await loadImage(file)
-  const full = await resizeToJpeg(img, panel.width, panel.height, 0.9)
+  const full = await resizeToJpeg(img, panel.width, panel.height, 0.82, MAX_PANEL_JPEG_BYTES)
   const thumb = await resizeToJpeg(img, 400, 400, 0.8)
 
   const record: EinkPhoto = {
