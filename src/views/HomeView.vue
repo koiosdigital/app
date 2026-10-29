@@ -161,6 +161,7 @@ import {
 import { useLocalDevicesStore } from '@/stores/localDevices'
 import { useTranquilStore } from '@/stores/tranquil'
 import { useClockLocalStore } from '@/stores/clockLocal'
+import { useEinkLocalStore } from '@/stores/einkLocal'
 import {
   CLOCK_TYPES,
   isClockType,
@@ -180,6 +181,7 @@ const { onReconnect } = useNetworkStatus()
 const localDevicesStore = useLocalDevicesStore()
 const tranquil = useTranquilStore()
 const clockLocal = useClockLocalStore()
+const einkLocal = useEinkLocalStore()
 
 let stopReconnectWatch: (() => void) | undefined
 
@@ -384,6 +386,11 @@ const openLocalDevice = (device: LocalDevice) => {
   if (isClockType(type)) {
     clockLocal.connect(device)
     router.push(`/clock/local/${encodeURIComponent(device.id)}`)
+    return
+  }
+  if (type === 'EINK') {
+    einkLocal.connect(device)
+    router.push(`/eink/local/${encodeURIComponent(device.id)}`)
     return
   }
   // TODO(fold-in): other device families' LAN pages not built yet.

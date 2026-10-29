@@ -42,9 +42,11 @@ const TranquilStorePlaylistView = () => import('@/views/tranquil/TranquilStorePl
 const TranquilSettingsView = () => import('@/views/tranquil/TranquilSettingsView.vue')
 const TranquilSchedulesView = () => import('@/views/tranquil/TranquilSchedulesView.vue')
 const ClockDeviceView = () => import('@/views/clock/ClockDeviceView.vue')
+const EinkDeviceView = () => import('@/views/eink/EinkDeviceView.vue')
 import { useAuthStore } from '@/stores/auth/auth'
 import { useTranquilStore } from '@/stores/tranquil'
 import { useClockLocalStore } from '@/stores/clockLocal'
+import { useEinkLocalStore } from '@/stores/einkLocal'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -311,6 +313,13 @@ const router = createRouter({
       name: 'clock-local-device',
       component: ClockDeviceView,
     },
+    {
+      // LAN-direct eInk frame, keyed by its mDNS service name. The active
+      // connection is set up in HomeView.openLocalDevice.
+      path: '/eink/local/:id',
+      name: 'eink-local-device',
+      component: EinkDeviceView,
+    },
   ],
 })
 
@@ -351,9 +360,10 @@ router.beforeEach(async (to) => {
 // useTranquilControl for cloud deep links.)
 const TRANQUIL_PREFIX = '/tranquil/'
 const CLOCK_PREFIX = '/clock/local/'
+const EINK_PREFIX = '/eink/local/'
 router.afterEach((to, from) => {
   const leftSection = (prefix: string) => from.path.startsWith(prefix) && !to.path.startsWith(prefix)
-  if (!leftSection(TRANQUIL_PREFIX) && !leftSection(CLOCK_PREFIX)) {
+  if (!leftSection(TRANQUIL_PREFIX) && !leftSection(CLOCK_PREFIX) && !leftSection(EINK_PREFIX)) {
     return
   }
   // After the page-leave fade: the old view is still mounted while it fades,
@@ -364,6 +374,7 @@ router.afterEach((to, from) => {
     const path = router.currentRoute.value.path
     if (!path.startsWith(TRANQUIL_PREFIX)) useTranquilStore().disconnect()
     if (!path.startsWith(CLOCK_PREFIX)) useClockLocalStore().disconnect()
+    if (!path.startsWith(EINK_PREFIX)) useEinkLocalStore().disconnect()
   }, 200)
 })
 
