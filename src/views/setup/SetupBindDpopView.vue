@@ -42,13 +42,12 @@
           </div>
         </div>
 
-        <!-- Matrix Device - 6-Digit PoP Code -->
+        <!-- 6-Digit PoP Code (Matrix, eInk, …) -->
         <div v-else-if="deviceConfig.popType === 'numeric'" class="space-y-4">
           <div class="space-y-2">
             <h2 class="text-lg font-medium text-white/90">Enter Pairing Code</h2>
             <p class="text-sm text-white/60">
-              Enter the 6-digit code displayed on your Matrix device to establish a secure
-              connection.
+              Enter the 6-digit code displayed on your device to establish a secure connection.
             </p>
           </div>
 

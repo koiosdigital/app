@@ -32,7 +32,10 @@ export const DEVICE_PREFIX_CONFIG: Record<string, DeviceUiConfig> = {
   'NEMOTO-': { popType: 'none', hasCrypto: true },
   'CLOCK-': { popType: 'none', hasCrypto: false },
   'TRANQUIL-': { popType: 'none', hasCrypto: false },
-  'EINK-': { popType: 'none', hasCrypto: true },
+  // EINK frames generate a random 6-digit SRP code per provisioning session
+  // and show it on the e-paper panel, so the user types it in (username is the
+  // static "koiosdigital"). It has a crypto module for cert provisioning.
+  'EINK-': { popType: 'numeric', hasCrypto: true },
 }
 
 /**
