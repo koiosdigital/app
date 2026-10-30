@@ -35,6 +35,20 @@
             <span class="text-white/60">Battery</span>
             <span class="text-right">{{ store.battery }}%</span>
           </template>
+          <template v-if="store.info.battery_voltage !== undefined">
+            <span class="text-white/60">Voltage</span>
+            <span class="text-right">{{ store.info.battery_voltage.toFixed(2) }} V</span>
+          </template>
+          <template v-if="store.info.battery_rate !== undefined">
+            <span class="text-white/60">Rate</span>
+            <span class="text-right">
+              {{ store.info.battery_rate >= 0 ? '+' : '' }}{{ store.info.battery_rate.toFixed(1) }} %/hr
+            </span>
+          </template>
+          <template v-if="store.info.power_good !== undefined">
+            <span class="text-white/60">Power</span>
+            <span class="text-right">{{ store.info.power_good ? 'Wall power' : 'Battery' }}</span>
+          </template>
         </div>
       </UCard>
 
@@ -144,6 +158,19 @@
             @click="saveSchedule"
           >
             Save
+          </UButton>
+
+          <UButton
+            color="neutral"
+            variant="soft"
+            size="sm"
+            block
+            icon="i-fa6-solid:rotate"
+            :loading="store.busy"
+            :disabled="!store.connected || !scheduleForm.upstreamOn"
+            @click="refreshNow"
+          >
+            Refresh from server now
           </UButton>
         </div>
       </UCard>
@@ -341,6 +368,10 @@ async function applyPreset() {
 
 async function clearScreen() {
   await store.clearScreen().catch(() => {})
+}
+
+async function refreshNow() {
+  await store.triggerReload().catch(() => {})
 }
 
 async function refresh() {

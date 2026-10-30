@@ -119,6 +119,21 @@ export const useEinkLocalStore = defineStore('eink_local', () => {
     }
   }
 
+  /** Trigger a server pull on the frame now ("refresh now"). The frame fetches
+   * and shows the next image from its configured upstream server. */
+  async function triggerReload(): Promise<void> {
+    busy.value = true
+    try {
+      await api().reload()
+      error.value = null
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Could not refresh from server'
+      throw e
+    } finally {
+      busy.value = false
+    }
+  }
+
   /** Push a panel-sized JPEG to the frame and show it immediately. Uses
    * /display (decode-and-show, no flash write) so the frame's tiny gallery
    * never fills up — the phone is the gallery. */
@@ -151,6 +166,7 @@ export const useEinkLocalStore = defineStore('eink_local', () => {
     updateSettings,
     applyPreset,
     clearScreen,
+    triggerReload,
     showOnFrame,
   }
 })

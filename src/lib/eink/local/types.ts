@@ -12,6 +12,14 @@ export interface EinkDeviceInfo {
   screen_model: string
   /** Battery percent, omitted by the firmware when no fuel gauge is present. */
   battery?: number
+  /** Cell voltage in volts (present only when the fuel gauge is). */
+  battery_voltage?: number
+  /** Charge rate in %/hour: positive charging, negative discharging. */
+  battery_rate?: number
+  /** Charger actively charging. */
+  charging?: boolean
+  /** On external (wall) power. */
+  power_good?: boolean
   /** Default seconds between scheduled wakes (read-only in the Tier 1 API). */
   sleep_duration: number
   /** Wake-window length in seconds before re-sleeping (read-only). */

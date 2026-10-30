@@ -24,6 +24,8 @@ export interface EinkRestClient {
   getSettings(): Promise<EinkSettings>
   updateSettings(patch: EinkSettingsUpdate): Promise<EinkSettings>
   clearScreen(): Promise<OkResponse>
+  /** Pull the current image from the configured upstream server now. */
+  reload(): Promise<OkResponse>
   /** Show a JPEG straight from memory, without writing it to the device's
    * (tiny) flash gallery — the phone keeps the gallery. */
   display(file: Blob, filename?: string): Promise<OkResponse>
@@ -60,6 +62,7 @@ export function createEinkRest(baseUrl: string): EinkRestClient {
     getSettings: () => getJson<EinkSettings>('/settings'),
     updateSettings: (patch) => postJson<EinkSettings>('/settings', patch),
     clearScreen: () => postJson<OkResponse>('/clearScreen'),
+    reload: () => postJson<OkResponse>('/reload'),
 
     // Plain fetch (not lanFetch): multipart can't go through CapacitorHttp.
     async display(file, filename = 'image.jpg') {
